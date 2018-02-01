@@ -66,24 +66,25 @@ node getNodeInfo
 ```
 You should see something similar to the following output:
 
-```json
-{ appName: 'IRI',
-  appVersion: '1.4.2.1',
-  jreAvailableProcessors: 1,
-  jreFreeMemory: 254842624,
-  jreVersion: '1.8.0_162',
-  jreMaxMemory: 2436628480,
-  jreTotalMemory: 1551228928,
-  latestMilestone: 'DTOBKQFTMARPDQUMUTYMKGWFZRRLYRYTFDRHBDBDSPMLNMIJRUBMQBLSFINR9DEXFW9EESMAIN9AZ9999',
-  latestMilestoneIndex: 340487,
-  latestSolidSubtangleMilestone: 'DTOBKQFTMARPDQUMUTYMKGWFZRRLYRYTFDRHBDBDSPMLNMIJRUBMQBLSFINR9DEXFW9EESMAIN9AZ9999',
-  latestSolidSubtangleMilestoneIndex: 340487,
-  neighbors: 6,
-  packetsQueueSize: 0,
-  time: 1517462460178,
-  tips: 9110,
-  transactionsToRequest: 538,
-  duration: 0
+```js
+{ 
+    appName: 'IRI',
+    appVersion: '1.4.2.1',
+    jreAvailableProcessors: 1,
+    jreFreeMemory: 254842624,
+    jreVersion: '1.8.0_162',
+    jreMaxMemory: 2436628480,
+    jreTotalMemory: 1551228928,
+    latestMilestone: 'DTOBKQFTMARPDQUMUTYMKGWFZRRLYRYTFDRHBDBDSPMLNMIJRUBMQBLSFINR9DEXFW9EESMAIN9AZ9999',
+    latestMilestoneIndex: 340487,
+    latestSolidSubtangleMilestone: 'DTOBKQFTMARPDQUMUTYMKGWFZRRLYRYTFDRHBDBDSPMLNMIJRUBMQBLSFINR9DEXFW9EESMAIN9AZ9999',
+    latestSolidSubtangleMilestoneIndex: 340487,
+    neighbors: 6,
+    packetsQueueSize: 0,
+    time: 1517462460178,
+    tips: 9110,
+    transactionsToRequest: 538,
+    duration: 0
 }
 ```
 
