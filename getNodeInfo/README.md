@@ -57,9 +57,9 @@ const pal = require("@iota-pico/pal-nodejs");
 })();
 ```
 
-## Running it
+## Running The Code
 
-Now you can run the code
+Now you can run the code using NodeJS.
 
 ```shell
 node getNodeInfo
