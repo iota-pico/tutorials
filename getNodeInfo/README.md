@@ -26,7 +26,7 @@ npm install @iota-pico/pal-nodejs --save
 
 ## Code
 
-Create the file getNodeInfo.js and copy the following into it (or grab the source  [here](./getNodeInfo.js)).
+Create the file getNodeInfo.js and copy the following into it (or grab the source [here](./getNodeInfo.js), TypeScript version [here](./getNodeInfo.ts)).
 
 ```js
 // Import the classes we need
