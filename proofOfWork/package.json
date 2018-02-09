@@ -1,0 +1,7 @@
+{
+  "name": "proofofwork",
+  "version": "1.0.0",
+  "main": "proofOfWork.js",
+  "author": "Martyn Janes",
+  "license": "MIT"
+}

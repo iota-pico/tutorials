@@ -1,0 +1,7 @@
+{
+  "name": "getNodeInfo",
+  "version": "1.0.0",
+  "main": "getNodeInfo.js",
+  "author": "Martyn Janes",
+  "license": "MIT"
+}

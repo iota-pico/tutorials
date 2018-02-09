@@ -5,6 +5,7 @@ A set of tutorials to help use the IOTA Pico Framework libraries.
 ## Tutorials
 
 * [Simple API getNodeInfo](./getNodeInfo/README.md)
+* [proofOfWork using JavaScript/NodeJS/WebGL](./proofOfWork/README.md)
 
 ## Examples
 

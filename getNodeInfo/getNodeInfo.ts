@@ -1,7 +1,7 @@
 // Import the classes we need
-import { NetworkEndPoint } from "@iota-pico/core/dist/network/networkEndPoint";
-import { NetworkClient } from "@iota-pico/pal-nodejs/dist/network/networkClient";
-import { ApiClient } from "@iota-pico/api/dist/client/apiClient";
+import { NetworkEndPoint } from "@iota-pico/core";
+import { NetworkClient } from "@iota-pico/pal-nodejs";
+import { ApiClient } from "@iota-pico/api";
 
 (async function () {
     // Create an end point to communicate with the node
