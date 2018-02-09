@@ -1,3 +1,5 @@
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/iotaeco/iota-pico-tutorials/master/LICENSE) [![Build Status](https://travis-ci.org/iotaeco/iota-pico-tutorials.svg?branch=master)](https://travis-ci.org/iotaeco/iota-pico-tutorials)
+
 # IOTA Pico Framework Tutorials
 
 A set of tutorials to help use the IOTA Pico Framework libraries.
