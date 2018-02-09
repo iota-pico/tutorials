@@ -34,8 +34,8 @@ install:
   - cd ../iota-pico-tutorials
 script:
   - cd getNodeInfo
-  - npm link @iota-pico/api @iota-pico/pal-nodejs
+  - npm link @iota-pico/core @iota-pico/api @iota-pico/pal-nodejs
   - node getNodeInfo
   - cd ../proofOfWork
-  - npm link @iota-pico/pow-js
+  - npm link @iota-pico/core @iota-pico/data @iota-pico/crypto @iota-pico/pow-js
   - node proofOfWork
