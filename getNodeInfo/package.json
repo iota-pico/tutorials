@@ -1,7 +1,11 @@
 {
-  "name": "getNodeInfo",
-  "version": "1.0.0",
-  "main": "getNodeInfo.js",
-  "author": "Martyn Janes",
-  "license": "MIT"
+    "name": "@iota-pico/tutorials-getnodeinfo",
+    "version": "1.0.0",
+    "main": "getNodeInfo.js",
+    "author": "martyn@iota.eco",
+    "license": "MIT",
+    "dependencies": {
+        "@iota-pico/api": "^0.6.0",
+        "@iota-pico/pal-nodejs": "^0.6.0"
+    }
 }

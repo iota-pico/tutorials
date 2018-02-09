@@ -1,0 +1,13 @@
+language: node_js
+node_js:
+  - "node"
+install:
+  - cd getNodeInfo
+  - npm install
+  - node getNodeInfo
+  - cd ../proofOfWork
+  - npm install
+  - node proofOfWork
+cache:
+  directories:
+    - "node_modules"

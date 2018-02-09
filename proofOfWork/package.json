@@ -1,7 +1,10 @@
 {
-  "name": "proofofwork",
-  "version": "1.0.0",
-  "main": "proofOfWork.js",
-  "author": "Martyn Janes",
-  "license": "MIT"
+    "name": "@iota-pico/tutorials-proofofwork",
+    "version": "1.0.0",
+    "main": "proofOfWork.js",
+    "author": "martyn@iota.eco",
+    "license": "MIT",
+    "dependencies": {
+        "@iota-pico/pow-js": "^0.6.0"
+    }
 }
