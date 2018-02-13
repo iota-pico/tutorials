@@ -1,6 +1,6 @@
 // Import the classes we need
 const data = require("@iota-pico/data");
-const proofOfWork = require("@iota-pico/pow-wasm");
+const proofOfWork = require("@iota-pico/pow-js");
 
 (async function () {
     try {
@@ -18,31 +18,23 @@ const proofOfWork = require("@iota-pico/pow-wasm");
         // method that is not supported
         await obj.initialize();
 
-        let totalTime = 0;
-        const numLoops = 10;
-        for (let i = 0; i < numLoops; i++) {
-            // Record the start time
-            const start = Date.now();
-            // Perform the proof of work
-            const newTrytes = await obj.pow(data.Trytes.create(trinaryString), minWeightMagnitude);
-            // Record the end time
-            const end = Date.now();
+        // Record the start time
+        const start = Date.now();
+        // Perform the proof of work
+        const newTrytes = await obj.pow(data.Trytes.create(trinaryString), minWeightMagnitude);
+        // Record the end time
+        const end = Date.now();
 
-            const newTrytesString = newTrytes.toString();
+        const newTrytesString = newTrytes.toString();
 
-            // And log the response
-            console.log("Output Data:", newTrytesString);
+        // And log the response
+        console.log("Output Data:", newTrytesString);
 
-            // Just the nonce
-            console.log("Nonce only:", newTrytesString.substr(-81));
+        // Just the nonce
+        console.log("Nonce only:", newTrytesString.substr(-81));
 
-            // Time taken
-            console.log("Time taken:", end-start, "ms");
-            if (i >= 1) {
-            totalTime += end-start;
-            }
-        }
-        console.log("Average time:", totalTime / (numLoops - 1), "ms");
+        // Time taken
+        console.log("Time taken:", end-start, "ms");
     } catch(err) {
         // Or log an error if it failed
         console.log(err);
