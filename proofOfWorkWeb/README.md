@@ -1,30 +1,30 @@
-# IOTA Pico Framework Tutorials - proofOfWork
+# IOTA Pico Framework Tutorials - proofOfWork Web
 
 ## Introduction
 
-This tutorial will demonstrate using the different proof of work implementations that can be used in NodeJS.
+This tutorial will demonstrate using the different proof of work implementations that can be used on a web page.
 
 ## Installation
 
-We are going to run the code for this tutorial on NodeJS so we have a choice of which proof of work module we can use, either the [JavaScript](https://github.com/iotaeco/iota-pico-pow-js), [NodeJS](https://github.com/iotaeco/iota-pico-pow-nodejs) or [WebAssembly](https://github.com/iotaeco/iota-pico-pow-wasm)  implementation. There is also a [WebGL](https://github.com/iotaeco/iota-pico-pow-webgl) version but this will only work when used in the browser.
+We are going to run the code for this tutorial on NodeJS so we have a choice of which proof of work module we can use, either the [JavaScript](https://github.com/iotaeco/iota-pico-pow-js), [WebGL](https://github.com/iotaeco/iota-pico-pow-webgl) or [WebAssembly](https://github.com/iotaeco/iota-pico-pow-wasm)  implementation.
 
 ```shell
 npm install @iota-pico/pow-js --save
 
 or
 
-npm install @iota-pico/pow-nodejs --save
+npm install @iota-pico/pow-wasm --save
 
 or
 
-npm install @iota-pico/pow-wasm --save
+npm install @iota-pico/pow-webgl --save
 ```
 
 @iota-pico/pow-js is a pure JavaScript implementation so can be very slow, but good for debugging.
 
-@iota-pico/pow-nodejs uses the IOTA [ccurl](https://github.com/iotaledger/ccurl/) binaries.
-
 @iota-pico/pow-wasm is a port of the [ccurl](https://github.com/iotaledger/ccurl/) source which is compiled using emscripten to be a WebAssembly.
+
+@iota-pico/pow-webgl is a port of the [ccurl.lib.js](https://github.com/iotaledger/curl.lib.js) WebGL2 implementation.
 
 These module will also bring with them [@iota-pico/core](https://github.com/iotaeco/iota-pico-core), [@iota-pico/data](https://github.com/iotaeco/iota-pico-data) and [@iota-pico/crypto](https://github.com/iotaeco/iota-pico-crypto) libraries for some additional functionality.
 
@@ -79,10 +79,10 @@ const proofOfWork = require("@iota-pico/pow-js");
 
 ## Running The Code
 
-Now you can run the code using NodeJS.
+Now you can run the code by opening the web page in your browser, we suggest running.
 
 ```shell
-node proofOfWork
+npm run serve
 ```
 You should see something similar to the following output:
 
@@ -104,12 +104,10 @@ const proofOfWork = require("@iota-pico/pow-js");
 ```
 or
 ```js
-const proofOfWork = require("@iota-pico/pow-nodejs");
+const proofOfWork = require("@iota-pico/pow-wasm");
 ```
 or
 ```js
-const proofOfWork = require("@iota-pico/pow-wasm");
+const proofOfWork = require("@iota-pico/pow-webgl");
 ```
 
-
-In addition there is the [WebGL](https://github.com/iotaeco/iota-pico-pow-webgl) version but that requires a browser with WebGL implemented so will not work with this NodeJS tutorial.
