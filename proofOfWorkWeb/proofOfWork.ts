@@ -1,5 +1,4 @@
 // Import the classes we need
-import { ErrorHelper } from "@iota-pico/core/dist/helpers/errorHelper";
 import { Trytes } from "@iota-pico/data/dist/data/trytes";
 import { CurlProofOfWork } from "@iota-pico/pow-webgl/dist/curlProofOfWork";
 
@@ -38,6 +37,6 @@ import { CurlProofOfWork } from "@iota-pico/pow-webgl/dist/curlProofOfWork";
         console.log("Time taken:", end-start, "ms");
     } catch(err) {
         // Or log an error if it failed
-        console.log(ErrorHelper.format(err, true));
+        console.log(err);
     }
 })();

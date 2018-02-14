@@ -1,5 +1,4 @@
 // Import the classes we need
-const errorHelper_1 = require("@iota-pico/core/dist/helpers/errorHelper");
 const trytes_1 = require("@iota-pico/data/dist/data/trytes");
 const curlProofOfWork_1 = require("@iota-pico/pow-webgl/dist/curlProofOfWork");
 
@@ -40,6 +39,6 @@ const curlProofOfWork_1 = require("@iota-pico/pow-webgl/dist/curlProofOfWork");
     }
     catch (err) {
         // Or log an error if it failed
-        console.log(errorHelper_1.ErrorHelper.format(err, true));
+        console.log(err);
     }
 })();
