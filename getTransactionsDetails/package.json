@@ -1,0 +1,14 @@
+{
+    "name": "@iota-pico/tutorials-gettransactionsdetails",
+    "version": "1.0.0",
+    "main": "getTransactionsDetails.js",
+    "author": "martyn@iota.eco",
+    "license": "MIT",
+    "dependencies": {
+        "@iota-pico/core": "^0.7.0",
+        "@iota-pico/data": "^0.7.0",
+        "@iota-pico/api": "^0.7.0",
+        "@iota-pico/business": "^0.7.0",
+        "@iota-pico/pal-nodejs": "^0.7.0"
+    }
+}

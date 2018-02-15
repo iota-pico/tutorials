@@ -1,4 +1,4 @@
-# IOTA Pico Framework Tutorials - getNodeInfo
+# IOTA Pico Framework Tutorials - getNodeInfo API
 
 ## Introduction
 
