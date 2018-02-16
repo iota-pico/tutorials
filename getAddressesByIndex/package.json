@@ -1,5 +1,5 @@
 {
-    "name": "@iota-pico/tutorials-gettips",
+    "name": "@iota-pico/tutorials-getnewaddressesindexed",
     "version": "1.0.0",
     "main": "getTips.js",
     "author": "martyn@iota.eco",

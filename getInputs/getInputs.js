@@ -21,16 +21,14 @@ const business = require("@iota-pico/business");
     try {
         const seed = data.Hash.create(data.Trytes.create("JCGUED9XQWAHWHJUIYIEYSJVGNQLJSGRSUQCEBJD9NQLZIZQGVDILVNNEFWLSCIPEBZTYBJYXWMJOEEZW"));
 
-        const start = new Date().getTime();
         // Make the call to the transaction client
-        const response = await transactionClient.getNewAddress(seed, 1, true, 15, business.AddressSecurity.low, true);
+        const response = await transactionClient.getInputs(seed, 0, 5, data.AddressSecurity.medium, undefined);
 
-        const end = new Date().getTime();
         // And log the response
-        response.forEach(address => {
-            console.log(address.toTrytesWithChecksum().toString());
+        console.log("Total:", response.totalBalance);
+        response.inputs.forEach(input => {
+            console.log(input);
         })
-        console.log((end - start)/15);
     } catch (err) {
         // Or log an error if it failed
         console.log(core.ErrorHelper.format(err, true));
