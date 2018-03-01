@@ -21,19 +21,19 @@ const business = require("@iota-pico/business");
     try {
         // Fill in any data for the search, if you supply multiple values the intersection of the resulting transactions is returned
         const bundles = [ 
-            data.Hash.create(data.Trytes.create("XMNKZSHVYZSHCHENJHJ9IBLHILZUUXHP9EVKNUNJKNEYABGWWLJSVZGFIMHLLDONJEDXBN9HGAXLTLQRC"))
+            data.Hash.fromTrytes(data.Trytes.fromString("XMNKZSHVYZSHCHENJHJ9IBLHILZUUXHP9EVKNUNJKNEYABGWWLJSVZGFIMHLLDONJEDXBN9HGAXLTLQRC"))
         ];
 
         const addresses = [ 
-            // data.Address.create(data.Trytes.create("MGCBEIBTRCXOVCEZKHAGGGA9KMFCEPARA9KDB9MVYMDBPTJF9PCCLKXDUEMDXQFXQOVGDS9MVUUYUUHDZ"))
+            // data.Address.fromTrytes(data.Trytes.fromString("MGCBEIBTRCXOVCEZKHAGGGA9KMFCEPARA9KDB9MVYMDBPTJF9PCCLKXDUEMDXQFXQOVGDS9MVUUYUUHDZ"))
         ];
 
         const tags = [ 
-            // data.Tag.create(data.Trytes.create("IOTA"))
+            // data.Tag.fromTrytes(data.Trytes.fromString("IOTA"))
         ];
 
         const approvees = [ 
-            // data.Hash.create(data.Trytes.create("OMNVLYSUGZDYJYTWMVHJYFUOCHFSUMCTRMVBQLRHBHK9LFCCPRSYINQTIHGZDDGADFOGNHIZVKJY99999"))
+            // data.Hash.fromTrytes(data.Trytes.fromString("OMNVLYSUGZDYJYTWMVHJYFUOCHFSUMCTRMVBQLRHBHK9LFCCPRSYINQTIHGZDDGADFOGNHIZVKJY99999"))
         ];
 
         // Make the call to the transaction client

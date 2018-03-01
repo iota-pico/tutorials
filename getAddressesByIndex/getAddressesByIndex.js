@@ -19,7 +19,7 @@ const business = require("@iota-pico/business");
     const transactionClient = new business.TransactionClient(apiClient);
 
     try {
-        const seed = data.Hash.create(data.Trytes.create("JCGUED9XQWAHWHJUIYIEYSJVGNQLJSGRSUQCEBJD9NQLZIZQGVDILVNNEFWLSCIPEBZTYBJYXWMJOEEZW"));
+        const seed = data.Hash.fromTrytes(data.Trytes.fromString("JCGUED9XQWAHWHJUIYIEYSJVGNQLJSGRSUQCEBJD9NQLZIZQGVDILVNNEFWLSCIPEBZTYBJYXWMJOEEZW"));
 
         // Make the call to the transaction client
         const response = await transactionClient.getAddressesByIndex(seed, 3, 5, true, business.AddressSecurity.low);

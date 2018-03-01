@@ -16,7 +16,6 @@
         "@iota-pico/pow-wasm": "^0.7.0",
         "@iota-pico/pow-webgl": "^0.7.0",
         "big-integer": "^1.6.26",
-        "crypto-js": "^3.1.9-1",
         "systemjs": "^0.21.0"
     },
     "devDependencies": {

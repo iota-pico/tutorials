@@ -1,6 +1,6 @@
 // Import the classes we need
 const trytes_1 = require("@iota-pico/data/dist/data/trytes");
-const curlProofOfWork_1 = require("@iota-pico/pow-webgl/dist/curlProofOfWork");
+const proofOfWork_1 = require("@iota-pico/pow-webgl/dist/proofOfWork");
 
 (async function () {
     try {
@@ -12,7 +12,7 @@ const curlProofOfWork_1 = require("@iota-pico/pow-webgl/dist/curlProofOfWork");
         console.log("Min Weight Magnitude:", minWeightMagnitude);
         console.log("Input Data:", trinaryString);
 
-        const obj = new curlProofOfWork_1.CurlProofOfWork();
+        const obj = new proofOfWork_1.ProofOfWork();
 
         // Initialize the proof of work, this might throw and exception if it is using a 
         // method that is not supported
@@ -22,7 +22,7 @@ const curlProofOfWork_1 = require("@iota-pico/pow-webgl/dist/curlProofOfWork");
         const start = Date.now();
 
         // Perform the proof of work
-        const newTrytes = await obj.pow(trytes_1.Trytes.create(trinaryString), minWeightMagnitude);
+        const newTrytes = await obj.pow(trytes_1.Trytes.fromString(trinaryString), minWeightMagnitude);
 
         // Record the end time
         const end = Date.now();

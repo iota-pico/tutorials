@@ -19,10 +19,10 @@ const business = require("@iota-pico/business");
     const transactionClient = new business.TransactionClient(apiClient);
 
     try {
-        const seed = data.Hash.create(data.Trytes.create("ISHKSEIVNKYFLYAUKVDRAWEUIZJIAAVICHFCIAEEUPSIJJXTLOLVJBZWEISNBVQLQJCSHCAUAFMATP9KN"));
+        const seed = data.Hash.fromTrytes(data.Trytes.fromString("ISHKSEIVNKYFLYAUKVDRAWEUIZJIAAVICHFCIAEEUPSIJJXTLOLVJBZWEISNBVQLQJCSHCAUAFMATP9KN"));
 
         const inputs = [
-            data.Input.fromParams(data.Address.create(data.Trytes.create("GGOUIA9VBWFTAUGFMEYYGYMOVBGT9XKBELVEFVWNKTRIUYGGWPTBJNSKOBNJGAXRGHHAZXBXZKLHTPICD")),
+            data.Input.fromParams(data.Address.fromTrytes(data.Trytes.fromString("GGOUIA9VBWFTAUGFMEYYGYMOVBGT9XKBELVEFVWNKTRIUYGGWPTBJNSKOBNJGAXRGHHAZXBXZKLHTPICD")),
                 data.AddressSecurity.medium,
                 0,
                 43)
@@ -31,10 +31,10 @@ const business = require("@iota-pico/business");
         // Make the call to the transaction client
         const response = await transactionClient.prepareTransfers(seed, [
             data.Transfer.fromParams(
-                data.Address.create(data.Trytes.create("YWFOASPRMMHRYPBTSPMRLZRUPQRUXXCXZRVTBHXETBUJFZXJVDHHLORPNECANTVYCTEQULGJXELPVNJGBKUUNDKVMX")),
+                data.Address.fromTrytes(data.Trytes.fromString("YWFOASPRMMHRYPBTSPMRLZRUPQRUXXCXZRVTBHXETBUJFZXJVDHHLORPNECANTVYCTEQULGJXELPVNJGBKUUNDKVMX")),
                 44,
-                data.Trytes.create("BLAHBLAHBLAHBLAH"),
-                data.Tag.create(data.Trytes.create("THISISATAG"))
+                data.Trytes.fromString("BLAHBLAHBLAHBLAH"),
+                data.Tag.fromTrytes(data.Trytes.fromString("THISISATAG"))
             )
         ], undefined, undefined, data.AddressSecurity.medium, undefined);
 

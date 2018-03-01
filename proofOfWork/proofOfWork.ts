@@ -1,6 +1,6 @@
 // Import the classes we need
 import { Trytes } from "@iota-pico/data";
-import { CurlProofOfWork } from "@iota-pico/pow-js";
+import { ProofOfWork } from "@iota-pico/pow-js";
 
 (async function () {
     try {
@@ -12,7 +12,7 @@ import { CurlProofOfWork } from "@iota-pico/pow-js";
         console.log("Min Weight Magnitude:", minWeightMagnitude);
         console.log("Input Data:", trinaryString);
 
-        const obj = new CurlProofOfWork();
+        const obj = new ProofOfWork();
 
         // Initialize the proof of work, this might throw and exception if it is using a 
         // method that is not supported
@@ -21,7 +21,7 @@ import { CurlProofOfWork } from "@iota-pico/pow-js";
         // Record the start time
         const start = Date.now();
         // Perform the proof of work
-        const newTrytes = await obj.pow(Trytes.create(trinaryString), minWeightMagnitude);
+        const newTrytes = await obj.pow(Trytes.fromString(trinaryString), minWeightMagnitude);
         // Record the end time
         const end = Date.now();
 
