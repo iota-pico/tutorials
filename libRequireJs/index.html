@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Iota Pico Tutorials - Library RequireJS</title>
+</head>
+
+<body>
+    <h1>Iota Pico Tutorials - Library RequireJS</h1>
+    <p>View the console for output.</p>
+    <script src="./node_modules/requirejs/require.js"></script>
+    <script>
+        requirejs.config({
+            paths: {
+                "IotaPico": "./node_modules/@iota-pico/lib-browser/pkg/iota-pico-lib-browser",
+                "big-integer": "./node_modules/big-integer/BigInteger"
+            }
+        });
+    </script>
+    <script>
+        require(["IotaPico"], function (IotaPico) {
+            const networkEndpoint = new IotaPico.NetworkEndPoint("https", "nodes.thetangle.org", undefined, 443);
+            const networkClient = new IotaPico.NetworkClient(networkEndpoint);
+            const apiClient = new IotaPico.ApiClient(networkClient);
+            apiClient.getNodeInfo()
+                .then(function (response) {
+                    console.log(response);
+                })
+                .catch(function (err) {
+                    console.error(err);
+                });
+        });
+    </script>
+</body>

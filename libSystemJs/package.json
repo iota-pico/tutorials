@@ -1,0 +1,14 @@
+{
+    "name": "@iota-pico/tutorials-lib-systemjs",
+    "version": "1.0.0",
+    "description": "Tutorials Library SystemJS",
+    "author": "martyn@iota.eco",
+    "license": "MIT",
+    "dependencies": {
+        "@iota-pico/lib-browser": "^0.7.0",
+        "big-integer": "^1.6.26"
+    },
+    "devDependencies": {
+        "systemjs": "^0.21.0"
+    }
+}

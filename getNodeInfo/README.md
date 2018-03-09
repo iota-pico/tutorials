@@ -36,7 +36,7 @@ const pal = require("@iota-pico/pal-nodejs");
 
 (async function () {
     // Create an end point to communicate with the node
-    const networkEndpoint = new core.NetworkEndPoint("http", "n1.iota.eco", undefined, 14265);
+    const networkEndpoint = new core.NetworkEndPoint("https", "nodes.thetangle.org", undefined, 443);
 
     // Create a network client from the PAL
     const networkClient = new pal.NetworkClient(networkEndpoint);

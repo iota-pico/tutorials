@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Iota Pico Tutorials - Library Script Include</title>
+</head>
+
+<body>
+    <h1>Iota Pico Tutorials - Library Script Include</h1>
+    <p>View the console for output.</p>
+    <script src="./node_modules/big-integer/BigInteger.min.js"></script>
+    <script src="./node_modules/@iota-pico/lib-browser/pkg/iota-pico-lib-browser.min.js"></script>
+    <script>
+        const networkEndpoint = new IotaPico.NetworkEndPoint("https", "nodes.thetangle.org", undefined, 443);
+        const networkClient = new IotaPico.NetworkClient(networkEndpoint);
+        const apiClient = new IotaPico.ApiClient(networkClient);
+        apiClient.getNodeInfo()
+            .then(function (response) {
+                console.log(response);
+            })
+            .catch(function (err) {
+                console.error(err);
+            });
+    </script>
+</body>
