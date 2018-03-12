@@ -1,0 +1,21 @@
+{
+    "name": "tutorials",
+    "version": "1.0.0",
+    "author": "martyn@iota.eco",
+    "license": "MIT",
+    "dependencies": {
+        "@iota-pico/core": "^0.7.0",
+        "@iota-pico/crypto": "^0.7.0",
+        "@iota-pico/data": "^0.7.0",
+        "@iota-pico/pal-nodejs": "^0.7.0",
+        "@iota-pico/pow-js": "^0.7.0",
+        "@iota-pico/pow-nodejs": "^0.7.0",
+        "@iota-pico/pow-wasm": "^0.7.0"
+    },
+    "devDependencies": {
+        "typescript": "^2.7.2"
+    },
+    "scripts": {
+        "build": "tsc"
+    }
+}

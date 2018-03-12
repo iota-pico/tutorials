@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>proofOfWork</title>
+</head>
+
+<body>
+    <h1>proofOfWork Example</h1>
+    <p>See console for output.</p>
+    <script src="./node_modules/systemjs/dist/system.js"></script>
+    <script>
+        System.config({
+            "packages": {
+                "": { defaultExtension: "js" }
+            },
+            "map": {
+                "@iota-pico": "./node_modules/@iota-pico",
+                "big-integer": "./node_modules/big-integer/BigInteger"
+            }
+        });
+    </script>
+    <script>
+        System.import("./proofOfWork.js");
+    </script>
+</body>

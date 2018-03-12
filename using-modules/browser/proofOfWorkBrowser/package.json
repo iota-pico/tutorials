@@ -1,0 +1,24 @@
+{
+    "name": "tutorials",
+    "version": "1.0.0",
+    "author": "martyn@iota.eco",
+    "license": "MIT",
+    "scripts": {
+        "build": "tsc",
+        "serve": "serve --open"
+    },
+    "dependencies": {
+        "@iota-pico/core": "^0.7.0",
+        "@iota-pico/crypto": "^0.7.0",
+        "@iota-pico/data": "^0.7.0",
+        "@iota-pico/pow-js": "^0.7.0",
+        "@iota-pico/pow-wasm": "^0.7.0",
+        "@iota-pico/pow-webgl": "^0.7.0",
+        "big-integer": "^1.6.26",
+        "systemjs": "^0.21.0",
+        "typescript": "^2.7.2"
+    },
+    "devDependencies": {
+        "serve": "^6.4.9"
+    }
+}

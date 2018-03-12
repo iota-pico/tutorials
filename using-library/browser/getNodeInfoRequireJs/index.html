@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Iota Pico Tutorials - Library RequireJS</title>
+</head>
+
+<body>
+    <h1>Iota Pico Tutorials - Library RequireJS</h1>
+    <p>View the console for output.</p>
+    <script src="./node_modules/requirejs/require.js"></script>
+    <script>
+        requirejs.config({
+            paths: {
+                "@iota-pico/lib-browser": "./node_modules/@iota-pico/lib-browser/pkg/iota-pico-lib-browser",
+                "big-integer": "./node_modules/big-integer/BigInteger"
+            }
+        });
+    </script>
+    <script>
+        require(["getNodeInfo"]);
+    </script>
+</body>

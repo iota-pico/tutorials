@@ -1,0 +1,19 @@
+{
+    "name": "tutorials",
+    "version": "1.0.0",
+    "author": "martyn@iota.eco",
+    "license": "MIT",
+    "dependencies": {
+        "@iota-pico/lib-browser": "^0.7.0",
+        "big-integer": "^1.6.26",
+        "requirejs": "^2.3.5"
+    },
+    "devDependencies": {
+        "serve": "^6.5.3",
+        "typescript": "^2.7.2"
+    },
+    "scripts": {
+        "build": "tsc",
+        "serve": "serve --open"
+    }
+}

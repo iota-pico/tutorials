@@ -2,19 +2,30 @@
 
 # IOTA Pico Framework Tutorials
 
-A set of tutorials to help use the IOTA Pico Framework libraries.
+A set of tutorials to help use the IOTA Pico Framework. The tutorial are split into two sections, one section uses the individual component modules to function and the other uses the all-in-one libraries. The tutorial are further separated by Browser and NodeJS.
 
-## Tutorials
+## Individual Component Libraries
 
-* [Simple API getNodeInfo](./getNodeInfo/README.md)
-* [proofOfWork NodeJS using JavaScript/NodeJS/WebAssembly](./proofOfWork/README.md)
-* [proofOfWork Web using JavaScript/WebAssembly/WebGL](./proofOfWorkWeb/README.md)
+### NodeJS
 
-## Examples
+* [API - getNodeInfo](./using-modules/node-js/getNodeInfoNodeJS/README.md)
+* [proofOfWork - JavaScript/NodeJS/WebAssembly](./using-modules/node-js/proofOfWorkNodeJS/README.md)
 
-For more complex examples see the following repos.
+### Browser
 
-* Browser Examples written in JavaScript [@iota-pico/examples-browser-js](https://github.com/iotaeco/iota-pico-examples-browser-js)
-* Browser Examples written in TypeScript [@iota-pico/examples-browser-ts](https://github.com/iotaeco/iota-pico-examples-browser-ts)
-* NodeJS CLI Examples written in JavaScript [@iota-pico/examples-nodejs-js](https://github.com/iotaeco/iota-pico-examples-nodejs-js)
-* NodeJS CLI Examples written in TypeScript [@iota-pico/examples-nodejs-ts](https://github.com/iotaeco/iota-pico-examples-nodejs-ts)
+* [API - getNodeInfo](./using-modules/browser/getNodeInfoBrowser/README.md)
+* [proofOfWork - JavaScript/WebAssembly/WebGL](./using-modules/browser/proofOfWorkBrowser/README.md)
+
+## All-In-One Libraries
+
+### NodeJS
+
+* [API - getNodeInfo](./using-library/node-js/getNodeInfoNodeJS/README.md)
+
+### Browser
+
+* [API - getNodeInfo using Script Include](./using-library/browser/getNodeInfoScriptInclude/README.md)
+* [API - getNodeInfo using Browserify](./using-library/browser/getNodeInfoBrowserify/README.md)
+* [API - getNodeInfo using RequireJS](./using-library/browser/getNodeInfoRequireJS/README.md)
+* [API - getNodeInfo using SystemJS](./using-library/browser/getNodeInfoSystemJS/README.md)
+* [API - getNodeInfo using Webpack](./using-library/browser/getNodeInfoWebpack/README.md)

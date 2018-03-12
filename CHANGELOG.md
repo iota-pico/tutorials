@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.7.0
+
+* Added breakdowns using compoment modules/all-in-one
+
 ## v0.0.2
 
 * Added proofOfWork Tutorial

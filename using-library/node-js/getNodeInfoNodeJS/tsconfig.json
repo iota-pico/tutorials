@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "target": "es2017",
+        "lib": [
+            "es2016",
+            "dom"
+        ],
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "noImplicitReturns": true,
+        "noUnusedLocals": true,
+        "strictNullChecks": false,
+        "types": [],
+        "esModuleInterop": true,
+        "stripInternal": true,
+        "inlineSourceMap": true,
+        "noImplicitUseStrict": true
+    }
+}

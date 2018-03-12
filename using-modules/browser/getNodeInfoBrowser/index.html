@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>getNodeInfo</title>
+</head>
+
+<body>
+    <h1>getNodeInfo Example</h1>
+    <p>See console for output.</p>
+    <script src="./node_modules/systemjs/dist/system.js"></script>
+    <script>
+        System.config({
+            "packages": {
+                "": { defaultExtension: "js" }
+            },
+            "map": {
+                "@iota-pico": "./node_modules/@iota-pico"
+            }
+        });
+    </script>
+    <script>
+        System.import("./getNodeInfo.js");
+    </script>
+</body>
