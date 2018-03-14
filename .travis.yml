@@ -74,17 +74,17 @@ install:
   - cd ../iota-pico-tutorials
 script:
   - cd using-library/node-js/getNodeInfoNodeJS
-  - npm link @iota-pico-lib-nodejs
+  - npm link @iota-pico/lib-nodejs
   - npm install
   - npm run build
   - node getNodeInfo.js
   - cd ../../../using-modules/node-js/getNodeInfoNodeJS
-  - npm link @iota-pico-lib-nodejs
+  - npm link @iota-pico/core @iota-pico/api @iota-pico/pal-nodejs
   - npm install
   - npm run build
   - node getNodeInfo.js
   - cd ../../../using-modules/node-js/proofOfWorkNodeJS
-  - npm link @iota-pico-lib-nodejs
+  - npm link @iota-pico/core @iota-pico/api @iota-pico/pal-nodejs
   - npm install
   - npm run build
   - node proofOfWork.js
