@@ -84,7 +84,7 @@ script:
   - npm run build
   - node getNodeInfo.js
   - cd ../../../using-modules/node-js/proofOfWorkNodeJS
-  - npm link @iota-pico/core @iota-pico/api @iota-pico/data @iota-pico/crypto @iota-pico/pal-nodejs @iota-pico/pow-nodejs @iota-pico/pow-warm @iota-pico/pow-js
+  - npm link @iota-pico/core @iota-pico/api @iota-pico/data @iota-pico/crypto @iota-pico/pal-nodejs @iota-pico/pow-nodejs @iota-pico/pow-wasm @iota-pico/pow-js
   - npm install
   - npm run build
   - node proofOfWork.js
