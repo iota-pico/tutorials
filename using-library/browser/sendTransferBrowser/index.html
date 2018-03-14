@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Iota Pico Tutorials - Library Send Transfer</title>
+</head>
+
+<body>
+    <h1>Iota Pico Tutorials - Library Send Transfer</h1>
+    <p>View the console for output.</p>
+    <script src="./node_modules/big-integer/BigInteger.min.js"></script>
+    <script src="./node_modules/@iota-pico/lib-browser/pkg/iota-pico-lib-browser.js"></script>
+    <script>
+        // Create an end point to communicate with the node
+        const networkEndpoint = new IotaPico.NetworkEndPoint("http", "node05.iotatoken.nl", 16265);
+
+        const consoleLogger = new IotaPico.ConsoleLogger();
+
+        // Create a network client from the PAL
+        const networkClient = new IotaPico.NetworkClient(networkEndpoint);
+
+        // Create an API client using the network client and the API version
+        const apiClient = new IotaPico.ApiClient(networkClient);
+
+        const pow = new IotaPico.ProofOfWorkWebGl();
+        pow.initialize()
+            .then(function () {
+
+                const transactionClient = new IotaPico.TransactionClient(apiClient, pow, undefined, undefined, consoleLogger);
+
+                const seed = IotaPico.Hash.fromTrytes(IotaPico.Trytes.fromString("ISHKSEIVNKYFLYAUKVDRAWEUIZJIAAVICHFCIAEEUPSIJJXTLOLVJBZWEISNBVQLQJCSHCAUAFMATP9KN"));
+
+                const transfers = [
+                    IotaPico.Transfer.fromParams(
+                        IotaPico.Address.fromTrytes(IotaPico.Trytes.fromString("NPDGGSIMKPQSMTAHVWFSLEYVISJGTKOBRVBSXPNLJITKVUAFKKISGB9ZDGJRYVMWCSDIZUNXHZGEXJKWYEGEKVC9BY")),
+                        2,
+                        IotaPico.Trytes.fromString("BLAHBLAHBLAHBLAH"),
+                        IotaPico.Tag.fromTrytes(IotaPico.Trytes.fromString("THISISATAG"))
+                    )
+                ];
+
+                // Make the call to the transaction client
+                transactionClient.sendTransfer(seed, 1, 15, transfers).then(function (response) {
+                    // And log the response
+                    consoleLogger.log("Completed Successfully", response);
+                })
+                    .catch(function (err) {
+                        // Or log an error if it failed
+                        consoleLogger.error("Error During Transfer", err);
+                    });
+            });
+    </script>
+</body>

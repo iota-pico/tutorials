@@ -31,11 +31,28 @@ install:
   - cd iotaeco/iota-pico-pal-nodejs
   - npm link @iota-pico/core
   - npm link
+  - cd ../../
+  - git clone --branch=$TRAVIS_BRANCH https://github.com/iotaeco/iota-pico-lib-browser.git iotaeco/iota-pico-lib-browser
+  - cd iotaeco/iota-pico-lib-browser
+  - npm link
+  - cd ../../
+  - git clone --branch=$TRAVIS_BRANCH https://github.com/iotaeco/iota-pico-lib-nodejs.git iotaeco/iota-pico-lib-nodejs
+  - cd iotaeco/iota-pico-lib-nodejs
+  - npm link
   - cd ../iota-pico-tutorials
 script:
-  - cd getNodeInfo
-  - npm link @iota-pico/core @iota-pico/api @iota-pico/pal-nodejs
-  - node getNodeInfo
-  - cd ../proofOfWork
-  - npm link @iota-pico/core @iota-pico/data @iota-pico/crypto @iota-pico/pow-js
-  - node proofOfWork
+  - cd using-library/node-js/getNodeInfoNodeJS
+  - npm link @iota-pico-lib-nodejs
+  - npm install
+  - npm run build
+  - node getNodeInfo.js
+  - cd ../../../using-modules/node-js/getNodeInfoNodeJS
+  - npm link @iota-pico-lib-nodejs
+  - npm install
+  - npm run build
+  - node getNodeInfo.js
+  - cd ../../../using-modules/node-js/proofOfWorkNodeJS
+  - npm link @iota-pico-lib-nodejs
+  - npm install
+  - npm run build
+  - node proofOfWork.js

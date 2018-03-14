@@ -6,7 +6,7 @@ const networkClient_1 = require("@iota-pico/pal-browser/dist/network/networkClie
 const apiClient_1 = require("@iota-pico/api/dist/client/apiClient");
 (async function () {
     // Create an end point to communicate with the node
-    const networkEndpoint = new networkEndPoint_1.NetworkEndPoint("https", "nodes.thetangle.org", undefined, 443);
+    const networkEndpoint = new networkEndPoint_1.NetworkEndPoint("https", "field.carriota.com", undefined, 443);
     // Create a network client from the PAL
     const networkClient = new networkClient_1.NetworkClient(networkEndpoint);
     // Create an API client using the network client and the API version

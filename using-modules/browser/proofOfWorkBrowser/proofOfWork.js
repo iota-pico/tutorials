@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 // Import the classes we need
 const trytes_1 = require("@iota-pico/data/dist/data/trytes");
-const proofOfWorkWasm_1 = require("@iota-pico/pow-wasm/dist/proofOfWorkWasm");
+const proofOfWorkWebGl_1 = require("@iota-pico/pow-webgl/dist/proofOfWorkWebGl");
 (async function () {
     try {
         console.log("Performing proof of work");
@@ -10,7 +10,7 @@ const proofOfWorkWasm_1 = require("@iota-pico/pow-wasm/dist/proofOfWorkWasm");
         const minWeightMagnitude = 5;
         console.log("Min Weight Magnitude:", minWeightMagnitude);
         console.log("Input Data:", trinaryString);
-        const obj = new proofOfWorkWasm_1.ProofOfWorkWasm();
+        const obj = new proofOfWorkWebGl_1.ProofOfWorkWebGl();
         // Initialize the proof of work, this might throw and exception if it is using a 
         // method that is not supported
         await obj.initialize();

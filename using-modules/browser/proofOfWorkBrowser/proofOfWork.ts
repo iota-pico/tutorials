@@ -1,6 +1,6 @@
 // Import the classes we need
 import { Trytes } from "@iota-pico/data/dist/data/trytes";
-import { ProofOfWorkWasm as ProofOfWork } from "@iota-pico/pow-wasm/dist/proofOfWorkWasm";
+import { ProofOfWorkWebGl as ProofOfWork } from "@iota-pico/pow-webgl/dist/proofOfWorkWebGl";
 
 (async function () {
     try {

@@ -21,6 +21,7 @@ A set of tutorials to help use the IOTA Pico Framework. The tutorial are split i
 ### NodeJS
 
 * [API - getNodeInfo](./using-library/node-js/getNodeInfoNodeJS/README.md)
+* [API - send a transfer](./using-library/node-js/sendTransferNodeJS/README.md)
 
 ### Browser
 
@@ -29,3 +30,4 @@ A set of tutorials to help use the IOTA Pico Framework. The tutorial are split i
 * [API - getNodeInfo using RequireJS](./using-library/browser/getNodeInfoRequireJS/README.md)
 * [API - getNodeInfo using SystemJS](./using-library/browser/getNodeInfoSystemJS/README.md)
 * [API - getNodeInfo using Webpack](./using-library/browser/getNodeInfoWebpack/README.md)
+* [API - send a transfer](./using-library/browser/sendTransferBrowser/README.md)

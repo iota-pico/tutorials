@@ -5,7 +5,7 @@ import { ApiClient } from "@iota-pico/api";
 
 (async function () {
     // Create an end point to communicate with the node
-    const networkEndpoint = new NetworkEndPoint("https", "nodes.thetangle.org", 443);
+    const networkEndpoint = new NetworkEndPoint("https", "field.carriota.com", 443);
 
     // Create a network client from the PAL
     const networkClient = new NetworkClient(networkEndpoint);
