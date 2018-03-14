@@ -13,12 +13,12 @@
     <script src="./node_modules/@iota-pico/lib-browser/pkg/iota-pico-lib-browser.js"></script>
     <script>
         // Create an end point to communicate with the node
-        const networkEndpoint = new IotaPico.NetworkEndPoint("http", "node05.iotatoken.nl", 16265);
+        const networkEndpoint = new IotaPico.NetworkEndPoint("http", "field.carriota.com", 443);
 
         const consoleLogger = new IotaPico.ConsoleLogger();
 
         // Create a network client from the PAL
-        const networkClient = new IotaPico.NetworkClient(networkEndpoint);
+        const networkClient = IotaPico.NetworkClientFactory.instance().create("default", networkEndpoint);
 
         // Create an API client using the network client and the API version
         const apiClient = new IotaPico.ApiClient(networkClient);

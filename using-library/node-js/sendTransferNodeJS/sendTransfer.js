@@ -13,7 +13,7 @@ const IotaPico = __importStar(require("@iota-pico/lib-nodejs"));
     const networkEndpoint = new IotaPico.NetworkEndPoint("https", "field.carriota.com", 443);
     const consoleLogger = new IotaPico.ConsoleLogger();
     // Create a network client from the PAL
-    const networkClient = new IotaPico.NetworkClient(networkEndpoint);
+    const networkClient = IotaPico.NetworkClientFactory.instance().create("default", networkEndpoint);
     // Create an API client using the network client and the API version
     const apiClient = new IotaPico.ApiClient(networkClient);
     try {

@@ -10,13 +10,13 @@
     <h1>Iota Pico Tutorials - Library Script Include</h1>
     <p>View the console for output.</p>
     <script src="./node_modules/big-integer/BigInteger.min.js"></script>
-    <script src="./node_modules/@iota-pico/lib-browser/pkg/iota-pico-lib-browser.min.js"></script>
+    <script src="./node_modules/@iota-pico/lib-browser/pkg/iota-pico-lib-browser.js"></script>
     <script>
         // Create an end point to communicate with the node
         const networkEndpoint = new IotaPico.NetworkEndPoint("https", "field.carriota.com", 443);
 
         // Create a network client from the PAL
-        const networkClient = new IotaPico.NetworkClient(networkEndpoint);
+        const networkClient = IotaPico.NetworkClientFactory.instance().create("default", networkEndpoint);
 
         // Create an API client using the network client and the API version
         const apiClient = new IotaPico.ApiClient(networkClient);

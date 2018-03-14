@@ -24,7 +24,7 @@ The [index.html](./index.html) contains all the script loading and code.
     const networkEndpoint = new IotaPico.NetworkEndPoint("https", "field.carriota.com", 443);
 
     // Create a network client from the PAL
-    const networkClient = new IotaPico.NetworkClient(networkEndpoint);
+    const networkClient = IotaPico.NetworkClientFactory.instance().create("default", networkEndpoint);
 
     // Create an API client using the network client and the API version
     const apiClient = new IotaPico.ApiClient(networkClient);
