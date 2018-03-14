@@ -64,8 +64,8 @@ install:
   - cd ../../
   - git clone --branch=$TRAVIS_BRANCH https://github.com/iotaeco/iota-pico-lib-nodejs.git iotaeco/iota-pico-lib-nodejs
   - cd iotaeco/iota-pico-lib-nodejs
-  - npm link
   - npm link @iota-pico/core @iota-pico/data @iota-pico/api @iota-pico/crypto @iota-pico/business @iota-pico/pal-nodejs @iota-pico/pow-js @iota-pico/pow-box @iota-pico/pow-wasm @iota-pico/pow-nodejs  
+  - npm link
   - cd ../iota-pico-tutorials
 script:
   - cd using-library/node-js/getNodeInfoNodeJS
