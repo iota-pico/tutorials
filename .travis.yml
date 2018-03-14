@@ -1,6 +1,6 @@
 language: node_js
 node_js:
-  - "node"
+  - "8"
 install:
   - cd ../../
   - git clone --branch=$TRAVIS_BRANCH https://github.com/iotaeco/iota-pico-core.git iotaeco/iota-pico-core
@@ -29,6 +29,21 @@ install:
   - cd ../../
   - git clone --branch=$TRAVIS_BRANCH https://github.com/iotaeco/iota-pico-pow-js.git iotaeco/iota-pico-pow-js
   - cd iotaeco/iota-pico-pow-js
+  - npm link @iota-pico/core @iota-pico/data @iota-pico/crypto
+  - npm link
+  - cd ../../
+  - git clone --branch=$TRAVIS_BRANCH https://github.com/iotaeco/iota-pico-pow-box.git iotaeco/iota-pico-pow-box
+  - cd iotaeco/iota-pico-pow-box
+  - npm link @iota-pico/core @iota-pico/data @iota-pico/crypto
+  - npm link
+  - cd ../../
+  - git clone --branch=$TRAVIS_BRANCH https://github.com/iotaeco/iota-pico-pow-wasm.git iotaeco/iota-pico-pow-wasm
+  - cd iotaeco/iota-pico-pow-wasm
+  - npm link @iota-pico/core @iota-pico/data @iota-pico/crypto
+  - npm link
+  - cd ../../
+  - git clone --branch=$TRAVIS_BRANCH https://github.com/iotaeco/iota-pico-pow-webgl.git iotaeco/iota-pico-pow-webgl
+  - cd iotaeco/iota-pico-pow-webgl
   - npm link @iota-pico/core @iota-pico/data @iota-pico/crypto
   - npm link
   - cd ../../
