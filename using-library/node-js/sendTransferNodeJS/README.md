@@ -24,7 +24,7 @@ import * as IotaPico from "@iota-pico/lib-nodejs";
 
 (async function () {
     // Create an end point to communicate with the node
-    const networkEndpoint = new IotaPico.NetworkEndPoint("https", "field.carriota.com", 443);
+    const networkEndpoint = new IotaPico.NetworkEndPoint("https", "nodes.thetangle.org", 443);
 
     // Create a network client from the PAL
     const networkClient = IotaPico.NetworkClientFactory.instance().create("default", networkEndpoint);

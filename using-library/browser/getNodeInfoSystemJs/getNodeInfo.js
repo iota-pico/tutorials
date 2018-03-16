@@ -10,7 +10,7 @@ System.register(["@iota-pico/lib-browser"], function (exports_1, context_1) {
         execute: function () {
             (async function () {
                 // Create an end point to communicate with the node
-                const networkEndpoint = new IotaPico.NetworkEndPoint("https", "field.carriota.com", 443);
+                const networkEndpoint = new IotaPico.NetworkEndPoint("https", "nodes.thetangle.org", 443);
                 // Create a network client from the PAL
                 const networkClient = IotaPico.NetworkClientFactory.instance().create("default", networkEndpoint);
                 // Create an API client using the network client and the API version

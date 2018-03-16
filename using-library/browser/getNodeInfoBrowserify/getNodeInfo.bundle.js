@@ -3197,7 +3197,7 @@ function () {
 
 TryteNumber.LENGTH_9 = 9;
 /**
- * An emnpty 9 length tryte number.
+ * An empty 9 length tryte number.
  */
 
 TryteNumber.EMPTY_9 = TryteNumber.fromNumber(0, TryteNumber.LENGTH_9);
@@ -18418,7 +18418,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const IotaPico = __importStar(require("@iota-pico/lib-browser"));
 (async function () {
     // Create an end point to communicate with the node
-    const networkEndpoint = new IotaPico.NetworkEndPoint("https", "field.carriota.com", 443);
+    const networkEndpoint = new IotaPico.NetworkEndPoint("https", "nodes.thetangle.org", 443);
     // Create a network client from the PAL
     const networkClient = IotaPico.NetworkClientFactory.instance().create("default", networkEndpoint);
     // Create an API client using the network client and the API version

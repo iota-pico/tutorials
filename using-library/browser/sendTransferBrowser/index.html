@@ -13,7 +13,7 @@
     <script src="./node_modules/@iota-pico/lib-browser/pkg/iota-pico-lib-browser.js"></script>
     <script>
         // Create an end point to communicate with the node
-        const networkEndpoint = new IotaPico.NetworkEndPoint("http", "field.carriota.com", 443);
+        const networkEndpoint = new IotaPico.NetworkEndPoint("http", "nodes.thetangle.org", 443);
 
         const consoleLogger = new IotaPico.ConsoleLogger();
 
@@ -29,7 +29,7 @@
 
                 const transactionClient = new IotaPico.TransactionClient(apiClient, pow, undefined, undefined, consoleLogger);
 
-                const seed = IotaPico.Hash.fromTrytes(IotaPico.Trytes.fromString("ISHKSEIVNKYFLYAUKVDRAWEUIZJIAAVICHFCIAEEUPSIJJXTLOLVJBZWEISNBVQLQJCSHCAUAFMATP9KN"));
+                const seed = IotaPico.Hash.fromTrytes(IotaPico.Trytes.fromString("SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9S"));
 
                 const transfers = [
                     IotaPico.Transfer.fromParams(
