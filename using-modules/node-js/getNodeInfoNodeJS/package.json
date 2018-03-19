@@ -9,7 +9,6 @@
         "@iota-pico/pal-nodejs": "^0.9.1"
     },
     "devDependencies": {
-        "@types/node": "^9.4.7",
         "typescript": "^2.7.2"
     },
     "scripts": {
