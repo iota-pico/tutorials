@@ -8,6 +8,7 @@
         "big-integer": "^1.6.26"
     },
     "devDependencies": {
+        "@types/node": "^9.4.7",
         "typescript": "^2.7.2"
     },
     "scripts": {
