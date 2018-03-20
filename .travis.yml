@@ -74,17 +74,17 @@ install:
   - cd ../iota-pico-tutorials
 script:
   - cd using-library/node-js/getNodeInfoNodeJS
-  - npm link @iota-pico/lib-nodejs
-  - npm install
-  - npm run build
-  - node getNodeInfo.js
+  - npm link @iota-pico/lib-nodejs || travis_terminate 1
+  - npm install || travis_terminate 1
+  - npm run build || travis_terminate 1
+  - node getNodeInfo.js || travis_terminate 1
   - cd ../../../using-modules/node-js/getNodeInfoNodeJS
-  - npm link @iota-pico/core @iota-pico/api @iota-pico/pal-nodejs
-  - npm install
-  - npm run build
-  - node getNodeInfo.js
+  - npm link @iota-pico/core @iota-pico/api @iota-pico/pal-nodejs || travis_terminate 1
+  - npm install || travis_terminate 1
+  - npm run build || travis_terminate 1
+  - node getNodeInfo.js || travis_terminate 1
   - cd ../../../using-modules/node-js/proofOfWorkNodeJS
-  - npm link @iota-pico/core @iota-pico/api @iota-pico/data @iota-pico/crypto @iota-pico/pal-nodejs @iota-pico/pow-nodejs @iota-pico/pow-wasm @iota-pico/pow-js
-  - npm install
-  - npm run build
-  - node proofOfWork.js
+  - npm link @iota-pico/core @iota-pico/api @iota-pico/data @iota-pico/crypto @iota-pico/pal-nodejs @iota-pico/pow-nodejs @iota-pico/pow-wasm @iota-pico/pow-js || travis_terminate 1
+  - npm install || travis_terminate 1
+  - npm run build || travis_terminate 1
+  - node proofOfWork.js || travis_terminate 1
