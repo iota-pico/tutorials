@@ -56,7 +56,7 @@ import { ProofOfWorkNodeJs as ProofOfWork } from "@iota-pico/pow-nodejs";
         // Record the start time
         const start = Date.now();
         // Perform the proof of work
-        const newTrytes = await obj.pow(undefined, undefined, [ Trytes.fromString(trinaryString) ], minWeightMagnitude);
+        const newTrytes = await obj.singlePow(Trytes.fromString(trinaryString), minWeightMagnitude);
         // Record the end time
         const end = Date.now();
 

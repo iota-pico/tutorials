@@ -17,7 +17,7 @@ const proofOfWorkWebGl_1 = require("@iota-pico/pow-webgl/dist/proofOfWorkWebGl")
         // Record the start time
         const start = Date.now();
         // Perform the proof of work
-        const newTrytes = await obj.pow(undefined, undefined, [trytes_1.Trytes.fromString(trinaryString)], minWeightMagnitude);
+        const newTrytes = await obj.singlePow(trytes_1.Trytes.fromString(trinaryString), minWeightMagnitude);
         // Record the end time
         const end = Date.now();
         const newTrytesString = newTrytes.toString();

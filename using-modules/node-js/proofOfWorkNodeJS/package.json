@@ -10,8 +10,7 @@
         "@iota-pico/pal-nodejs": "^0.9.2",
         "@iota-pico/pow-js": "^0.9.2",
         "@iota-pico/pow-nodejs": "^0.9.2",
-        "@iota-pico/pow-wasm": "^0.9.2",
-        "big-integer": "^1.6.26"
+        "@iota-pico/pow-wasm": "^0.9.2"
     },
     "devDependencies": {
         "typescript": "^2.7.2"
