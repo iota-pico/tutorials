@@ -27,6 +27,11 @@ install:
   - npm link @iota-pico/core @iota-pico/data @iota-pico/crypto @iota-pico/api
   - npm link
   - cd ../../
+  - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/storage.git iota-pico/storage
+  - cd iota-pico/business
+  - npm link @iota-pico/core @iota-pico/data @iota-pico/crypto @iota-pico/api @iota-pico/business
+  - npm link
+  - cd ../../
   - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/pow-js.git iota-pico/pow-js
   - cd iota-pico/pow-js
   - npm link @iota-pico/core @iota-pico/data @iota-pico/crypto
@@ -64,12 +69,12 @@ install:
   - cd ../../
   - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/lib-browser.git iota-pico/lib-browser
   - cd iota-pico/lib-browser
-  - npm link @iota-pico/core @iota-pico/data @iota-pico/api @iota-pico/crypto @iota-pico/business @iota-pico/pal-browser @iota-pico/pow-js @iota-pico/pow-box @iota-pico/pow-wasm @iota-pico/pow-webgl
+  - npm link @iota-pico/core @iota-pico/data @iota-pico/api @iota-pico/crypto @iota-pico/business @iota-pico/storage @iota-pico/pal-browser @iota-pico/pow-js @iota-pico/pow-box @iota-pico/pow-wasm @iota-pico/pow-webgl
   - npm link
   - cd ../../
   - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/lib-nodejs.git iota-pico/lib-nodejs
   - cd iota-pico/lib-nodejs
-  - npm link @iota-pico/core @iota-pico/data @iota-pico/api @iota-pico/crypto @iota-pico/business @iota-pico/pal-nodejs @iota-pico/pow-js @iota-pico/pow-box @iota-pico/pow-wasm @iota-pico/pow-nodejs  
+  - npm link @iota-pico/core @iota-pico/data @iota-pico/api @iota-pico/crypto @iota-pico/business @iota-pico/storage @iota-pico/pal-nodejs @iota-pico/pow-js @iota-pico/pow-box @iota-pico/pow-wasm @iota-pico/pow-nodejs  
   - npm link
   - cd ../tutorials
 script:
