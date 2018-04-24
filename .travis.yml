@@ -4,71 +4,71 @@ node_js:
 install:
   - cd ../../
   - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/core.git iota-pico/core
-  - cd core
+  - cd iota-pico/core
   - npm link
   - cd ../../
   - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/api.git iota-pico/api
-  - cd api
+  - cd iota-pico/api
   - npm link @iota-pico/core
   - npm link
   - cd ../../
   - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/data.git iota-pico/data
-  - cd data
+  - cd iota-pico/data
   - npm link @iota-pico/core
   - npm link
   - cd ../../
   - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/crypto.git iota-pico/crypto
-  - cd crypto
+  - cd iota-pico/crypto
   - npm link @iota-pico/core @iota-pico/data
   - npm link
   - cd ../../
   - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/business.git iota-pico/business
-  - cd business
+  - cd iota-pico/business
   - npm link @iota-pico/core @iota-pico/data @iota-pico/crypto @iota-pico/api
   - npm link
   - cd ../../
   - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/pow-js.git iota-pico/pow-js
-  - cd pow-js
+  - cd iota-pico/pow-js
   - npm link @iota-pico/core @iota-pico/data @iota-pico/crypto
   - npm link
   - cd ../../
   - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/pow-box.git iota-pico/pow-box
-  - cd pow-box
+  - cd iota-pico/pow-box
   - npm link @iota-pico/core @iota-pico/data @iota-pico/crypto
   - npm link
   - cd ../../
   - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/pow-wasm.git iota-pico/pow-wasm
-  - cd pow-wasm
+  - cd iota-pico/pow-wasm
   - npm link @iota-pico/core @iota-pico/data @iota-pico/crypto
   - npm link
   - cd ../../
   - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/pow-webgl.git iota-pico/pow-webgl
-  - cd pow-webgl
+  - cd iota-pico/pow-webgl
   - npm link @iota-pico/core @iota-pico/data @iota-pico/crypto
   - npm link
   - cd ../../
   - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/pow-nodejs.git iota-pico/pow-nodejs
-  - cd pow-nodejs
+  - cd iota-pico/pow-nodejs
   - npm link @iota-pico/core @iota-pico/data @iota-pico/crypto
   - npm link
   - cd ../../
   - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/pal-browser.git iota-pico/pal-browser
-  - cd pal-browser
+  - cd iota-pico/pal-browser
   - npm link @iota-pico/core
   - npm link
   - cd ../../
   - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/pal-nodejs.git iota-pico/pal-nodejs
-  - cd pal-nodejs
+  - cd iota-pico/pal-nodejs
   - npm link @iota-pico/core
   - npm link
   - cd ../../
   - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/lib-browser.git iota-pico/lib-browser
-  - cd lib-browser
+  - cd iota-pico/lib-browser
   - npm link @iota-pico/core @iota-pico/data @iota-pico/api @iota-pico/crypto @iota-pico/business @iota-pico/pal-browser @iota-pico/pow-js @iota-pico/pow-box @iota-pico/pow-wasm @iota-pico/pow-webgl
   - npm link
   - cd ../../
   - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/lib-nodejs.git iota-pico/lib-nodejs
-  - cd lib-nodejs
+  - cd iota-pico/lib-nodejs
   - npm link @iota-pico/core @iota-pico/data @iota-pico/api @iota-pico/crypto @iota-pico/business @iota-pico/pal-nodejs @iota-pico/pow-js @iota-pico/pow-box @iota-pico/pow-wasm @iota-pico/pow-nodejs  
   - npm link
   - cd ../tutorials
