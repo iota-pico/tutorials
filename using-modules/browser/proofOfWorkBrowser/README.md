@@ -6,7 +6,7 @@ This tutorial will demonstrate using the different proof of work implementations
 
 ## Installation
 
-We are going to run the code for this tutorial in the browser so we have a choice of which proof of work module we can use, either the [JavaScript](https://github.com/iotaeco/iota-pico-pow-js), [WebGL](https://github.com/iotaeco/iota-pico-pow-webgl) or [WebAssembly](https://github.com/iotaeco/iota-pico-pow-wasm)  implementation.
+We are going to run the code for this tutorial in the browser so we have a choice of which proof of work module we can use, either the [JavaScript](https://github.com/iota-pico/pow-js), [WebGL](https://github.com/iota-pico/pow-webgl) or [WebAssembly](https://github.com/iota-pico/pow-wasm)  implementation.
 
 ```shell
 npm install @iota-pico/pow-js --save
@@ -26,7 +26,7 @@ npm install @iota-pico/pow-webgl --save
 
 @iota-pico/pow-webgl is a port of the [ccurl.lib.js](https://github.com/iotaledger/curl.lib.js) WebGL2 implementation.
 
-These module will also bring with them [@iota-pico/core](https://github.com/iotaeco/iota-pico-core), [@iota-pico/data](https://github.com/iotaeco/iota-pico-data) and [@iota-pico/crypto](https://github.com/iotaeco/iota-pico-crypto) libraries for some additional functionality.
+These module will also bring with them [@iota-pico/core](https://github.com/iota-pico/core), [@iota-pico/data](https://github.com/iota-pico/data) and [@iota-pico/crypto](https://github.com/iota-pico/crypto) libraries for some additional functionality.
 
 ## Code
 

@@ -3,75 +3,75 @@ node_js:
   - "8"
 install:
   - cd ../../
-  - git clone --branch=$TRAVIS_BRANCH https://github.com/iotaeco/iota-pico-core.git iotaeco/iota-pico-core
-  - cd iotaeco/iota-pico-core
+  - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/core.git https://github.com/iota-pico/core
+  - cd https://github.com/iota-pico/core
   - npm link
   - cd ../../
-  - git clone --branch=$TRAVIS_BRANCH https://github.com/iotaeco/iota-pico-api.git iotaeco/iota-pico-api
-  - cd iotaeco/iota-pico-api
+  - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/api.git https://github.com/iota-pico/api
+  - cd https://github.com/iota-pico/api
   - npm link @iota-pico/core
   - npm link
   - cd ../../
-  - git clone --branch=$TRAVIS_BRANCH https://github.com/iotaeco/iota-pico-data.git iotaeco/iota-pico-data
-  - cd iotaeco/iota-pico-data
+  - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/data.git https://github.com/iota-pico/data
+  - cd https://github.com/iota-pico/data
   - npm link @iota-pico/core
   - npm link
   - cd ../../
-  - git clone --branch=$TRAVIS_BRANCH https://github.com/iotaeco/iota-pico-crypto.git iotaeco/iota-pico-crypto
-  - cd iotaeco/iota-pico-crypto
+  - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/crypto.git https://github.com/iota-pico/crypto
+  - cd https://github.com/iota-pico/crypto
   - npm link @iota-pico/core @iota-pico/data
   - npm link
   - cd ../../
-  - git clone --branch=$TRAVIS_BRANCH https://github.com/iotaeco/iota-pico-business.git iotaeco/iota-pico-business
-  - cd iotaeco/iota-pico-business
+  - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/business.git https://github.com/iota-pico/business
+  - cd https://github.com/iota-pico/business
   - npm link @iota-pico/core @iota-pico/data @iota-pico/crypto @iota-pico/api
   - npm link
   - cd ../../
-  - git clone --branch=$TRAVIS_BRANCH https://github.com/iotaeco/iota-pico-pow-js.git iotaeco/iota-pico-pow-js
-  - cd iotaeco/iota-pico-pow-js
+  - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/pow-js.git https://github.com/iota-pico/pow-js
+  - cd https://github.com/iota-pico/pow-js
   - npm link @iota-pico/core @iota-pico/data @iota-pico/crypto
   - npm link
   - cd ../../
-  - git clone --branch=$TRAVIS_BRANCH https://github.com/iotaeco/iota-pico-pow-box.git iotaeco/iota-pico-pow-box
-  - cd iotaeco/iota-pico-pow-box
+  - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/pow-box.git https://github.com/iota-pico/pow-box
+  - cd https://github.com/iota-pico/pow-box
   - npm link @iota-pico/core @iota-pico/data @iota-pico/crypto
   - npm link
   - cd ../../
-  - git clone --branch=$TRAVIS_BRANCH https://github.com/iotaeco/iota-pico-pow-wasm.git iotaeco/iota-pico-pow-wasm
-  - cd iotaeco/iota-pico-pow-wasm
+  - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/pow-wasm.git https://github.com/iota-pico/pow-wasm
+  - cd https://github.com/iota-pico/pow-wasm
   - npm link @iota-pico/core @iota-pico/data @iota-pico/crypto
   - npm link
   - cd ../../
-  - git clone --branch=$TRAVIS_BRANCH https://github.com/iotaeco/iota-pico-pow-webgl.git iotaeco/iota-pico-pow-webgl
-  - cd iotaeco/iota-pico-pow-webgl
+  - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/pow-webgl.git https://github.com/iota-pico/pow-webgl
+  - cd https://github.com/iota-pico/pow-webgl
   - npm link @iota-pico/core @iota-pico/data @iota-pico/crypto
   - npm link
   - cd ../../
-  - git clone --branch=$TRAVIS_BRANCH https://github.com/iotaeco/iota-pico-pow-nodejs.git iotaeco/iota-pico-pow-nodejs
-  - cd iotaeco/iota-pico-pow-nodejs
+  - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/pow-nodejs.git https://github.com/iota-pico/pow-nodejs
+  - cd https://github.com/iota-pico/pow-nodejs
   - npm link @iota-pico/core @iota-pico/data @iota-pico/crypto
   - npm link
   - cd ../../
-  - git clone --branch=$TRAVIS_BRANCH https://github.com/iotaeco/iota-pico-pal-browser.git iotaeco/iota-pico-pal-browser
-  - cd iotaeco/iota-pico-pal-browser
+  - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/pal-browser.git https://github.com/iota-pico/pal-browser
+  - cd https://github.com/iota-pico/pal-browser
   - npm link @iota-pico/core
   - npm link
   - cd ../../
-  - git clone --branch=$TRAVIS_BRANCH https://github.com/iotaeco/iota-pico-pal-nodejs.git iotaeco/iota-pico-pal-nodejs
-  - cd iotaeco/iota-pico-pal-nodejs
+  - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/pal-nodejs.git https://github.com/iota-pico/pal-nodejs
+  - cd https://github.com/iota-pico/pal-nodejs
   - npm link @iota-pico/core
   - npm link
   - cd ../../
-  - git clone --branch=$TRAVIS_BRANCH https://github.com/iotaeco/iota-pico-lib-browser.git iotaeco/iota-pico-lib-browser
-  - cd iotaeco/iota-pico-lib-browser
+  - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/lib-browser.git https://github.com/iota-pico/lib-browser
+  - cd https://github.com/iota-pico/lib-browser
   - npm link @iota-pico/core @iota-pico/data @iota-pico/api @iota-pico/crypto @iota-pico/business @iota-pico/pal-browser @iota-pico/pow-js @iota-pico/pow-box @iota-pico/pow-wasm @iota-pico/pow-webgl
   - npm link
   - cd ../../
-  - git clone --branch=$TRAVIS_BRANCH https://github.com/iotaeco/iota-pico-lib-nodejs.git iotaeco/iota-pico-lib-nodejs
-  - cd iotaeco/iota-pico-lib-nodejs
+  - git clone --branch=$TRAVIS_BRANCH https://github.com/iota-pico/lib-nodejs.git https://github.com/iota-pico/lib-nodejs
+  - cd https://github.com/iota-pico/lib-nodejs
   - npm link @iota-pico/core @iota-pico/data @iota-pico/api @iota-pico/crypto @iota-pico/business @iota-pico/pal-nodejs @iota-pico/pow-js @iota-pico/pow-box @iota-pico/pow-wasm @iota-pico/pow-nodejs  
   - npm link
-  - cd ../iota-pico-tutorials
+  - cd ../tutorials
 script:
   - cd using-library/node-js/getNodeInfoNodeJS
   - npm link @iota-pico/lib-nodejs || travis_terminate 1

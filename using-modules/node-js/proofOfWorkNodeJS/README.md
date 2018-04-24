@@ -6,7 +6,7 @@ This tutorial will demonstrate using the different proof of work implementations
 
 ## Installation
 
-We are going to run the code for this tutorial on NodeJS so we have a choice of which proof of work module we can use, either the [JavaScript](https://github.com/iotaeco/iota-pico-pow-js), [NodeJS](https://github.com/iotaeco/iota-pico-pow-nodejs) or [WebAssembly](https://github.com/iotaeco/iota-pico-pow-wasm)  implementation. There is also a [WebGL](https://github.com/iotaeco/iota-pico-pow-webgl) version but this will only work when used in the browser.
+We are going to run the code for this tutorial on NodeJS so we have a choice of which proof of work module we can use, either the [JavaScript](https://github.com/iota-pico/pow-js), [NodeJS](https://github.com/iota-pico/pow-nodejs) or [WebAssembly](https://github.com/iota-pico/pow-wasm)  implementation. There is also a [WebGL](https://github.com/iota-pico/pow-webgl) version but this will only work when used in the browser.
 
 ```shell
 npm install @iota-pico/pow-js --save
@@ -26,7 +26,7 @@ npm install @iota-pico/pow-wasm --save
 
 @iota-pico/pow-wasm is a port of the [ccurl](https://github.com/iotaledger/ccurl/) source which is compiled using emscripten to be a WebAssembly.
 
-These module will also bring with them [@iota-pico/core](https://github.com/iotaeco/iota-pico-core), [@iota-pico/data](https://github.com/iotaeco/iota-pico-data) and [@iota-pico/crypto](https://github.com/iotaeco/iota-pico-crypto) libraries for some additional functionality.
+These module will also bring with them [@iota-pico/core](https://github.com/iota-pico/core), [@iota-pico/data](https://github.com/iota-pico/data) and [@iota-pico/crypto](https://github.com/iota-pico/crypto) libraries for some additional functionality.
 
 ## Code
 
@@ -113,4 +113,4 @@ import { proofOfWorkWebGl as ProofOfWork } from "@iota-pico/pow-webgl/dist/proof
 
 
 
-In addition there is the [WebGL](https://github.com/iotaeco/iota-pico-pow-webgl) version but that requires a browser with WebGL implemented so will not work with this NodeJS tutorial.
+In addition there is the [WebGL](https://github.com/iota-pico/pow-webgl) version but that requires a browser with WebGL implemented so will not work with this NodeJS tutorial.

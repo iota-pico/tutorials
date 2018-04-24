@@ -1,4 +1,4 @@
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/iotaeco/iota-pico-tutorials/master/LICENSE) [![Build Status](https://travis-ci.org/iotaeco/iota-pico-tutorials.svg?branch=master)](https://travis-ci.org/iotaeco/iota-pico-tutorials)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/https://github.com/iota-pico/tutorials/master/LICENSE) [![Build Status](https://travis-ci.org/https://github.com/iota-pico/tutorials.svg?branch=master)](https://travis-ci.org/https://github.com/iota-pico/tutorials)
 
 # IOTA Pico Framework Tutorials
 
