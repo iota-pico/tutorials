@@ -26,7 +26,6 @@
         const pow = new IotaPico.ProofOfWorkWebGl();
         pow.initialize()
             .then(function () {
-
                 const transactionClient = new IotaPico.TransactionClient(apiClient, pow, undefined, undefined, consoleLogger);
 
                 const seed = IotaPico.Hash.fromTrytes(IotaPico.Trytes.fromString("SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9S"));

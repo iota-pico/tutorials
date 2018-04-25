@@ -2,7 +2,8 @@
 
 ## v0.9.3
 
-* Fix Release
+* Added Proof Of Work WebGL
+* Repo rename
 
 ## v0.9.2
 

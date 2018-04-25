@@ -7,5 +7,8 @@ module.exports = {
     output: {
         path: __dirname,
         filename: "getNodeInfo.bundle.js",
+    },
+    node: {
+        fs: "empty"
     }
 };
