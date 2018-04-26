@@ -1496,6 +1496,7 @@ function () {
     /**
      * Add a list of neighbors to your node. It should be noted that this is only temporary,
      * and the added neighbors will be removed from your set of neighbors after you relaunch IRI.
+     * @param request The add neighbours request object.
      * @returns Promise which resolves to the addNeighbors response object or rejects with error.
      */
 
@@ -1542,6 +1543,7 @@ function () {
     /**
      * Removes a list of neighbors from your node. This is only temporary, and if you have your
      * neighbors added via the command line, they will be retained after you restart your node.
+     * @param request The remove neighbours request object.
      * @returns Promise which resolves to the removeNeighbors response object or rejects with error.
      */
 
@@ -1619,6 +1621,7 @@ function () {
      * for which a list of return values (transaction hashes), in the same order, is returned for all
      * individual elements. The input fields can either be bundles, addresses, tags or approvees.
      * Using multiple of these input fields returns the intersection of the values.
+     * @param request The find transactions request object.
      * @returns Promise which resolves to the findTransactions response object or rejects with error.
      */
 
@@ -1671,6 +1674,7 @@ function () {
     /**
      * Returns the raw transaction data (trytes) of a specific transaction.
      * These trytes can then be easily converted into the actual transaction object.
+     * @param request The get trytes request object.
      * @returns Promise which resolves to the findTransactions response object or rejects with error.
      */
 
@@ -1718,6 +1722,7 @@ function () {
      * Get the inclusion states of a set of transactions. This is for determining if a transaction
      * was accepted and confirmed by the network or not. You can search for multiple tips (and thus,
      * milestones) to get past inclusion states of transactions.
+     * @param request The get inclusion states request object.
      * @returns Promise which resolves to the getInclusionStates response object or rejects with error.
      */
 
@@ -3449,6 +3454,7 @@ function () {
      * Prepare a bundle.
      * @param timeService To use for stamping the transactions.
      * @param transfers The transfers to add to the bundle.
+     * @returns Bundle information.
      */
 
   }, {
@@ -3619,7 +3625,8 @@ function () {
 
           for (var i = 0; i < bundle.transactions.length; i++) {
             bundle.transactions[i].currentIndex = tryteNumber_1.TryteNumber.fromNumber(i);
-            bundle.transactions[i].lastIndex = tryteNumber_1.TryteNumber.fromNumber(bundle.transactions.length - 1);
+            bundle.transactions[i].lastIndex = tryteNumber_1.TryteNumber.fromNumber(bundle.transactions.length - 1); // tslint:disable:restrict-plus-operands false positive
+
             var bundleEssence = trits_1.Trits.fromTrytes(trytes_1.Trytes.fromString(bundle.transactions[i].address.toTrytes().toString() + bundle.transactions[i].value.toTrytes().toString() + transaction_1.Transaction.CHECK_VALUE + bundle.transactions[i].obsoleteTag.toTrytes().toString() + bundle.transactions[i].timestamp.toTrytes().toString() + bundle.transactions[i].currentIndex.toTrytes().toString() + bundle.transactions[i].lastIndex.toTrytes().toString())).toArray();
             kerl.absorb(bundleEssence, 0, bundleEssence.length);
           }
@@ -3884,6 +3891,7 @@ function () {
      * @param balance The balance available for the transfer, if 0 will call getBalances to lookup available.
      * @param transfers The transfers to perform.
      * @param remainderAddress If there is a remainder after the transfer then send the amount to this address.
+     * @returns Bundle of the prepared transfer.
      */
     value: function () {
       var _prepareTransfer = _asyncToGenerator(
@@ -4187,6 +4195,7 @@ function () {
   }
   /**
    * Add bundle to the HMAC.
+   * @param bundle The bundle to add the HMAC to.
    */
 
 
@@ -4206,7 +4215,8 @@ function () {
           curl.absorb(bundleHashTrits, 0, bundleHashTrits.length);
           curl.squeeze(hmac, 0, hmac.length);
           var hmacTrytes = trits_1.Trits.fromArray(hmac).toTrytes().toString();
-          var rest = bundle.transactions[i].signatureMessageFragment.toTrytes().toString().substring(81, signatureMessageFragment_1.SignatureMessageFragment.LENGTH);
+          var rest = bundle.transactions[i].signatureMessageFragment.toTrytes().toString().substring(81, signatureMessageFragment_1.SignatureMessageFragment.LENGTH); // tslint:disable:restrict-plus-operands false positive
+
           bundle.transactions[i].signatureMessageFragment = signatureMessageFragment_1.SignatureMessageFragment.fromTrytes(trytes_1.Trytes.fromString(hmacTrytes + rest));
         }
       }
@@ -4281,6 +4291,7 @@ function () {
   /**
    * Allow the proof of work to perform any initialization.
    * Will throw an exception if the implementation is not supported.
+   * @returns Promise.
    */
 
 
@@ -4676,6 +4687,7 @@ function () {
     }()
     /**
      * Get the transaction details of specific transactions.
+     * @param transactionHashes The hashes to get the transactions for.
      * @returns Promise which resolves to the list of transactions or rejects with error.
      */
 
@@ -4743,6 +4755,7 @@ function () {
     }()
     /**
      * Get the inclusion states of a list of transaction hashes.
+     * @param transactionHashes The hashes to get the inclusion states for.
      * @returns Promise which resolves to the list of inclusion states or rejects with error.
      */
 
@@ -5290,12 +5303,7 @@ function () {
      * Prepares transfer by generating bundle, finding and signing inputs.
      * @param seed The seed to prepare the transfer for.
      * @param transfers The transfers to prepare.
-     * @param transferOptions
-     *      @property inputs List of inputs used for funding the transfer.
-     *      @property security Security level to be used for the private key / addresses.
-     *      @property remainderAddress If defined, this address will be used for sending the remainder value (of the inputs) to.
-     *      @property hmacKey Hmac key to sign the bundle.
-     *      @property reference The transaction to reference.
+     * @param transferOptions Additional options for the transfer.
      * @returns Promise which resolves to the array of Trytes for the transfer or rejects with error.
      */
 
@@ -5339,6 +5347,7 @@ function () {
                   transfer.tag = transfer.tag || tag_1.Tag.EMPTY;
 
                   if (addHMAC && transfer.value > 0) {
+                    // tslint:disable:restrict-plus-operands false positive
                     transfer.message = trytes_1.Trytes.fromString(TransactionClient.NULL_HASH_TRYTES + transfer.message.toString());
                     addedHMAC = true;
                   }
@@ -5619,10 +5628,6 @@ function () {
      * @param minWeightMagnitude The minimum weight magnitude for the proof of work.
      * @param transfers The transfers to send.
      * @param transferOptions Additional options for the transfer.
-     *      @property inputs List of inputs used for funding the transfer.
-     *      @property security Security level to be used for the private key / addresses.
-     *      @property remainderAddress If defined, this address will be used for sending the remainder value (of the inputs) to.
-     *      @property hmacKey Hmac key to sign the bundle.
      * @param reference The reference to send with the transactions.
      * @returns Promise which resolves to the list of transactions created or rejects with an error.
      */
@@ -5831,8 +5836,6 @@ function () {
      * @param minWeightMagnitude The minimum weight magnitude for the proof of work.
      * @param transfers The transfers to send.
      * @param promoteOptions Additional options for the promote.
-     *      @property delay Delay between promotion transfers
-     *      @property interrupt Flag or method to terminate promotion.
      * @returns Promise which resolves to the list of transactions created or rejects with an error.
      */
 
@@ -7578,6 +7581,7 @@ function (_extendableBuiltin2) {
 
     /**
      * Format the error to a readable version.
+     * @returns Formatted version of the error.
      */
     value: function format() {
       var _this2 = this;
@@ -8427,7 +8431,7 @@ function () {
     /**
      * Is the value an object if given type.
      * @param value Object to test.
-     * @param type The type of the object
+     * @param typeConstructor A callback method which returns an instance of the object.
      * @returns True if the value is an object of the specified type.
      */
 
@@ -8653,6 +8657,8 @@ var ConsoleLogger =
 function () {
   /**
    * Create and instance of the console logger.
+   * @param loggingObject The object to send all the logging to.
+   * @returns A new instance of ConsoleLogger.
    */
   function ConsoleLogger(loggingObject) {
     _classCallCheck(this, ConsoleLogger);
@@ -9090,6 +9096,7 @@ function () {
      * Create a background task.
      * @param task The task to run in the background.
      * @param delay The delay before running the task.
+     * @returns The result of the background task.
      */
     value: function () {
       var _create = _asyncToGenerator(
@@ -10666,7 +10673,7 @@ function () {
      * Create the key for the seed.
      * @param seed The seed to create the key for.
      * @param index The index to use for the seed.
-     * @param length The security level to create the key.
+     * @param security The security level to create the key.
      * @param spongeType The sponge type to use for operations.
      * @returns the key.
      */
@@ -11157,6 +11164,7 @@ function () {
      * @param trits The trits to convert.
      * @param offset Offset within the array to start.
      * @param length The length of the trits array to convert.
+     * @returns Big integer version of trits.
      */
     value: function tritsToBigInteger(trits, offset, length) {
       if (!objectHelper_1.ObjectHelper.isType(trits, Int8Array) || trits.length === 0) {
@@ -11304,6 +11312,7 @@ function () {
      * @param source The source bytes.
      * @param offset The offset within the bytes to start conversion.
      * @param length The length of the bytes to use for conversion.
+     * @returns Big integer version of bytes.
      */
 
   }, {
@@ -11578,6 +11587,7 @@ function () {
   /**
    * Allow the proof of work to perform any initialization.
    * Will throw an exception if the implementation is not supported.
+   * @returns Promise.
    */
 
 
@@ -11792,7 +11802,7 @@ function () {
   }
   /**
    * Get the constant for the spone.
-   * @name The name of the contant to get.
+   * @param name The name of the constant to get.
    * @returns The constant.
    */
 
@@ -12010,7 +12020,7 @@ function () {
   }
   /**
    * Get the constant for the spone.
-   * @name The name of the contant to get.
+   * @param name The name of the constant to get.
    * @returns The constant.
    */
 
@@ -13019,7 +13029,7 @@ function () {
 
     /**
      * Convert a string value into trytes.
-     * @param string value to convert into trytes.
+     * @param value value to convert into trytes.
      * @returns The trytes representation of the value.
      */
     value: function to(value) {
@@ -13132,7 +13142,7 @@ function () {
 
     /**
      * Convert an object value into trytes.
-     * @param object to convert into trytes.
+     * @param value to convert into trytes.
      * @returns The trytes representation of the object.
      */
     value: function to(value) {
@@ -14130,7 +14140,7 @@ function () {
    * Create instance of transfer from parameters.
    * @param address The address.
    * @param value The value.
-   * @param messsage The message for the transfer.
+   * @param message The message for the transfer.
    * @param tag The tag.
    * @returns New instance of Transfer.
    */
@@ -14939,6 +14949,8 @@ Object.defineProperty(exports, "__esModule", {
 
 var platformError_1 = __webpack_require__(/*! @iota-pico/core/dist/error/platformError */ "../core/dist/error/platformError.js");
 
+var objectHelper_1 = __webpack_require__(/*! @iota-pico/core/dist/helpers/objectHelper */ "../core/dist/helpers/objectHelper.js");
+
 var stringHelper_1 = __webpack_require__(/*! @iota-pico/core/dist/helpers/stringHelper */ "../core/dist/helpers/stringHelper.js");
 
 var crypto = __importStar(__webpack_require__(/*! crypto */ "./node_modules/crypto-browserify/index.js"));
@@ -14950,28 +14962,21 @@ var crypto = __importStar(__webpack_require__(/*! crypto */ "./node_modules/cryp
 var PlatformCrypto =
 /*#__PURE__*/
 function () {
-  /**
-   * Create a new instance of PlatformCrypto.
-   * @param publicKey The key to use for decoding data.
-   * @param privateKey The key to use for encoding data.
-   */
-  function PlatformCrypto(publicKey, privateKey) {
+  function PlatformCrypto() {
     _classCallCheck(this, PlatformCrypto);
-
-    this._privateKey = privateKey;
-    this._publicKey = publicKey;
   }
-  /**
-   * Encrypt the given data.
-   * @param data The data to encrypt.
-   * @returns The encrypted data.
-   */
-
 
   _createClass(PlatformCrypto, [{
     key: "encrypt",
-    value: function encrypt(data) {
-      if (stringHelper_1.StringHelper.isEmpty(this._privateKey)) {
+
+    /**
+     * Encrypt the given data.
+     * @param privateKey The key to use for encrypting data.
+     * @param data The data to encrypt.
+     * @returns The encrypted data.
+     */
+    value: function encrypt(privateKey, data) {
+      if (stringHelper_1.StringHelper.isEmpty(privateKey)) {
         throw new platformError_1.PlatformError("The privateKey must be a non empty string");
       }
 
@@ -14980,20 +14985,21 @@ function () {
       }
 
       var buffer = new Buffer(data, "ascii");
-      var encrypted = crypto.privateEncrypt(this._privateKey, buffer);
+      var encrypted = crypto.privateEncrypt(privateKey, buffer);
       return encrypted.toString("hex");
     }
     /**
      * Decrypt the given data.
+     * @param publicKey The key to use for decrypting data.
      * @param data The data to decrypt.
      * @returns The decrypted data.
      */
 
   }, {
     key: "decrypt",
-    value: function decrypt(data) {
-      if (stringHelper_1.StringHelper.isEmpty(this._privateKey) && stringHelper_1.StringHelper.isEmpty(this._publicKey)) {
-        throw new platformError_1.PlatformError("The privateKey or publicKey must be a non empty string");
+    value: function decrypt(publicKey, data) {
+      if (stringHelper_1.StringHelper.isEmpty(publicKey)) {
+        throw new platformError_1.PlatformError("The publicKey must be a non empty string");
       }
 
       if (stringHelper_1.StringHelper.isEmpty(data)) {
@@ -15001,19 +15007,20 @@ function () {
       }
 
       var buffer = new Buffer(data, "hex");
-      var decrypted = crypto.publicDecrypt(this._publicKey || this._privateKey, buffer);
+      var decrypted = crypto.publicDecrypt(publicKey, buffer);
       return decrypted.toString("ascii");
     }
     /**
      * Sign the given data.
+     * @param privateKey The key to use for signing data.
      * @param data The data to sign.
      * @returns The signature.
      */
 
   }, {
     key: "sign",
-    value: function sign(data) {
-      if (stringHelper_1.StringHelper.isEmpty(this._privateKey)) {
+    value: function sign(privateKey, data) {
+      if (stringHelper_1.StringHelper.isEmpty(privateKey)) {
         throw new platformError_1.PlatformError("The privateKey must be a non empty string");
       }
 
@@ -15023,10 +15030,11 @@ function () {
 
       var signer = crypto.createSign("RSA-SHA256");
       signer.update(data);
-      return signer.sign(this._privateKey, "hex");
+      return signer.sign(privateKey, "hex");
     }
     /**
      * Verify the given data.
+     * @param publicKey The key to use for verifying data.
      * @param data The data to verify.
      * @param signature The signature to verify againt the data.
      * @returns True if the verification is successful.
@@ -15034,8 +15042,8 @@ function () {
 
   }, {
     key: "verify",
-    value: function verify(data, signature) {
-      if (stringHelper_1.StringHelper.isEmpty(this._publicKey)) {
+    value: function verify(publicKey, data, signature) {
+      if (stringHelper_1.StringHelper.isEmpty(publicKey)) {
         throw new platformError_1.PlatformError("The publicKey must be a non empty string");
       }
 
@@ -15049,7 +15057,56 @@ function () {
 
       var verifier = crypto.createVerify("RSA-SHA256");
       verifier.update(data);
-      return verifier.verify(this._publicKey, signature, "hex");
+      return verifier.verify(publicKey, signature, "hex");
+    }
+    /**
+     * Hash the data.
+     * @param algo The algorithm to use.
+     * @param data The data to hash.
+     * @param dataType The type of the input data utf8, ascii, latin1.
+     * @param encoding The encoding to return the data latin1, hex, base64.
+     * @returns The hash of the data.
+     */
+
+  }, {
+    key: "hash",
+    value: function hash(algo, data, dataType, encoding) {
+      if (stringHelper_1.StringHelper.isEmpty(algo)) {
+        throw new platformError_1.PlatformError("The algo must be a non empty string");
+      }
+
+      if (stringHelper_1.StringHelper.isEmpty(data)) {
+        throw new platformError_1.PlatformError("The data must be a non empty string");
+      }
+
+      return crypto.createHash(algo).update(data, dataType).digest(encoding);
+    }
+    /**
+     * HMAC the data.
+     * @param algo The algorithm to use.
+     * @param key The key to hash the data with.
+     * @param data The data to hash.
+     * @param dataType The type of the input data utf8, ascii, latin1.
+     * @param encoding The encoding to return the data latin1, hex, base64.
+     * @returns The hash of the data.
+     */
+
+  }, {
+    key: "hmac",
+    value: function hmac(algo, key, data, dataType, encoding) {
+      if (stringHelper_1.StringHelper.isEmpty(algo)) {
+        throw new platformError_1.PlatformError("The algo must be a non empty string");
+      }
+
+      if (objectHelper_1.ObjectHelper.isEmpty(key)) {
+        throw new platformError_1.PlatformError("The key must be non empty");
+      }
+
+      if (stringHelper_1.StringHelper.isEmpty(data)) {
+        throw new platformError_1.PlatformError("The data must be a non empty string");
+      }
+
+      return crypto.createHmac(algo, key).update(data, dataType).digest(encoding);
     }
   }]);
 
@@ -15201,8 +15258,8 @@ function () {
     }()
     /**
      * Post data asynchronously.
-     * @param additionalPath An additional path append to the endpoint path.
      * @param data The data to send.
+     * @param additionalPath An additional path append to the endpoint path.
      * @param additionalHeaders Extra headers to send with the request.
      * @returns Promise which resolves to the object returned or rejects with error.
      */
@@ -15349,7 +15406,14 @@ function () {
         return _postJson.apply(this, arguments);
       };
     }()
-    /* @internal */
+    /**
+     * Perform a request asynchronously.
+     * @param method The method to send the data with.
+     * @param data The data to send.
+     * @param additionalPath An additional path append to the endpoint path.
+     * @param additionalHeaders Extra headers to send with the request.
+     * @returns Promise which resolves to the object returned or rejects with error.
+     */
 
   }, {
     key: "doRequest",
@@ -15499,6 +15563,7 @@ function () {
 
     /**
      * Perform any initialization for the PAL.
+     * @returns Promise.
      */
     value: function () {
       var _initialize = _asyncToGenerator(
@@ -15516,8 +15581,8 @@ function () {
                   rngServiceFactory_1.RngServiceFactory.instance().register("default", function () {
                     return new rngService_1.RngService();
                   });
-                  platformCryptoFactory_1.PlatformCryptoFactory.instance().register("default", function (publicKey, privateKey) {
-                    return new platformCrypto_1.PlatformCrypto(publicKey, privateKey);
+                  platformCryptoFactory_1.PlatformCryptoFactory.instance().register("default", function () {
+                    return new platformCrypto_1.PlatformCrypto();
                   });
                 }
 
@@ -15572,6 +15637,7 @@ var RngService =
 function () {
   /**
    * Create a new instance of RngService.
+   * @param randomSource The source for the random generator.
    */
   function RngService(randomSource) {
     _classCallCheck(this, RngService);
@@ -16492,6 +16558,7 @@ function () {
   /**
    * Allow the proof of work to perform any initialization.
    * Will throw an exception if the implementation is not supported.
+   * @returns Promise.
    */
 
 
@@ -18782,6 +18849,7 @@ function (_proofOfWorkBase_1$Pr) {
   /**
    * Allow the proof of work to perform any initialization.
    * Will throw an exception if the implementation is not supported.
+   * @returns Promise.
    */
 
 
@@ -23219,6 +23287,7 @@ function () {
   }
   /**
    * Initialize the PearlDiver main instance.
+   * @param webGLPlatform The platform so initialize the pearl diver with.
    */
 
 
@@ -23624,6 +23693,7 @@ function (_proofOfWorkBase_1$Pr) {
   /**
    * Allow the proof of work to perform any initialization.
    * Will throw an exception if the implementation is not supported.
+   * @returns Promise.
    */
 
 
@@ -23972,6 +24042,7 @@ function () {
 
     /**
      * Create a WebGL Context.
+     * @param webGLPlatform The platform to create the context with.
      * @returns The context if successfuly or throws an error if it cannot be created.
      */
     value: function createContext(webGLPlatform) {
@@ -24283,6 +24354,7 @@ function () {
      * @param y The y position to read from.
      * @param n The width position to read from.
      * @param m The height position to read from.
+     * @returns The data at the requested position.
      */
 
   }, {
