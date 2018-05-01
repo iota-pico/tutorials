@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.9.5
+
+* GitHub and Npm Version alignment
+
+## v0.9.4
+
+* Fixed repo links in readme and coverage config
+
 ## v0.9.3
 
 * Added Proof Of Work WebGL

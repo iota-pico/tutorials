@@ -8,12 +8,12 @@
         "serve": "serve --open"
     },
     "dependencies": {
-        "@iota-pico/core": "^0.9.3",
-        "@iota-pico/crypto": "^0.9.3",
-        "@iota-pico/data": "^0.9.3",
-        "@iota-pico/pow-js": "^0.9.3",
-        "@iota-pico/pow-wasm": "^0.9.3",
-        "@iota-pico/pow-webgl": "^0.9.3",
+        "@iota-pico/core": "^0.9.5",
+        "@iota-pico/crypto": "^0.9.5",
+        "@iota-pico/data": "^0.9.5",
+        "@iota-pico/pow-js": "^0.9.5",
+        "@iota-pico/pow-wasm": "^0.9.5",
+        "@iota-pico/pow-webgl": "^0.9.5",
         "big-integer": "^1.6.26",
         "systemjs": "^0.21.0",
         "typescript": "^2.7.2"

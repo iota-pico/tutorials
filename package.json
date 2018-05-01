@@ -1,6 +1,6 @@
 {
     "name": "@iota-pico/tutorials",
-    "version": "0.9.3",
+    "version": "0.9.5",
     "description": "Tutorials for IOTA Pico Framework.",
     "author": "martyn@iota.eco",
     "license": "MIT"
