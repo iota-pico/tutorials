@@ -1,8 +1,8 @@
-# IOTA Pico Framework Tutorials - getNodeInfo API
+# IOTA Pico Framework Tutorials - sendTransfer API
 
 ## Introduction
 
-This tutorial will demonstrate using the getNodeInfo API on the NodeJS platform using the all-in-one library.
+This tutorial will demonstrate using the sendTransfer API on the NodeJS platform using the all-in-one library. The proof of work will be carried out using the Ccurl library.
 
 ## Installation
 
@@ -16,7 +16,7 @@ npm install @iota-pico/lib-nodejs --save
 
 ## Code
 
-[getNodeInfo.ts](./getNodeInfo.ts) shows some example code in TypeScript, this is compiled to [getNodeInfo.js](./getNodeInfo.js) before execution.
+[sendTransfer.ts](./sendTransfer.ts) shows some example code in TypeScript, this is compiled to [sendTransfer.js](./sendTransfer.js) before execution.
 
 ```typescript
 // Import the all-in-one library
@@ -26,6 +26,8 @@ import * as IotaPico from "@iota-pico/lib-nodejs";
     // Create an end point to communicate with the node
     const networkEndpoint = new IotaPico.NetworkEndPoint("https", "nodes.thetangle.org", 443);
 
+    const consoleLogger = new IotaPico.ConsoleLogger();
+
     // Create a network client from the PAL
     const networkClient = IotaPico.NetworkClientFactory.instance().create("default", networkEndpoint);
 
@@ -33,14 +35,35 @@ import * as IotaPico from "@iota-pico/lib-nodejs";
     const apiClient = new IotaPico.ApiClient(networkClient);
 
     try {
-        // Make the call to the API
-        const response = await apiClient.getNodeInfo();
+        // Setup the proof of work using Ccurl
+        const pow = new IotaPico.ProofOfWorkNodeJs();
+        await pow.initialize();
+
+        // Create the transaction client with the proof of work module
+        const transactionClient = new IotaPico.TransactionClient(apiClient, pow, undefined, undefined, consoleLogger);
+
+        // This is the seed we are going to send the transfer from
+        const seed = IotaPico.Hash.fromTrytes(IotaPico.Trytes.fromString("SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9S"));
+
+        // The transfers we are going to make destination address, amount, message and tag
+        const transfers: IotaPico.Transfer[] = [
+            IotaPico.Transfer.fromParams(
+                IotaPico.Address.fromTrytes(IotaPico.Trytes.fromString("NPDGGSIMKPQSMTAHVWFSLEYVISJGTKOBRVBSXPNLJITKVUAFKKISGB9ZDGJRYVMWCSDIZUNXHZGEXJKWY")),
+                0,
+                IotaPico.Trytes.fromString("BLAHBLAHBLAHBLAH"),
+                IotaPico.Tag.fromTrytes(IotaPico.Trytes.fromString("THISISATAG"))
+            )
+        ];
+
+        // Make the call to the transaction client
+        const response = await transactionClient.sendTransfer(seed, 1, 15, transfers);                                                                                          
 
         // And log the response
-        console.log(response);
+        consoleLogger.log("Completed Successfully", response);
+        consoleLogger.log(`You can now view your transaction bundle online at https://thetangle.org/bundle/${response.transactions[0].bundle}`);
     } catch(err) {
         // Or log an error if it failed
-        console.error(err);
+        consoleLogger.error("Error During Transfer", err);
     }
 })();
 ```
@@ -50,29 +73,34 @@ import * as IotaPico from "@iota-pico/lib-nodejs";
 Now you can run the code using NodeJS.
 
 ```shell
-node getNodeInfo
+node sendTransfer
 ```
-You should see something similar to the following output in the console:
+You will see lots of logging as the transaction client performs its operations, on success you should be presented with something similar to the output below:
 
 ```js
-{ 
-    appName: 'IRI',
-    appVersion: '1.4.2.1',
-    jreAvailableProcessors: 1,
-    jreFreeMemory: 254842624,
-    jreVersion: '1.8.0_162',
-    jreMaxMemory: 2436628480,
-    jreTotalMemory: 1551228928,
-    latestMilestone: 'DTOBKQFTMARPDQUMUTYMKGWFZRRLYRYTFDRHBDBDSPMLNMIJRUBMQBLSFINR9DEXFW9EESMAIN9AZ9999',
-    latestMilestoneIndex: 340487,
-    latestSolidSubtangleMilestone: 'DTOBKQFTMARPDQUMUTYMKGWFZRRLYRYTFDRHBDBDSPMLNMIJRUBMQBLSFINR9DEXFW9EESMAIN9AZ9999',
-    latestSolidSubtangleMilestoneIndex: 340487,
-    neighbors: 6,
-    packetsQueueSize: 0,
-    time: 1517462460178,
-    tips: 9110,
-    transactionsToRequest: 538,
-    duration: 0
+Completed Successfully
+{
+    transactions: [
+    {
+        signatureMessageFragment: "BLAHBLAHBLAHBLAH99...99999999999999999999999999999999999999999"
+        address: "NPDGGSIMKPQSMTAHVWFSLEYVISJGTKOBRVBSXPNLJITKVUAFKKISGB9ZDGJRYVMWCSDIZUNXHZGEXJKWY"
+        value: 0
+        obsoleteTag: "BIISISATAG99999999999999999"
+        timestamp: 1525239440
+        currentIndex: 0
+        lastIndex: 0
+        bundle: "FCGTFNDZDUKLKOGWVOIFPRCG9UIHXQICIZIKTIYXCBEWLDAYAFKAGTGDZMRICQUGHBHKGKECGQOCZZGOZ"
+        trunkTransaction: "RYRTGUFBPJAAKQMBVMVYWMAMJJQHGXQOIGSYQHIERRJOIFLRXKGFRVFHSKXSNGMMUGR9DBZSOUONA9999"
+        branchTransaction: "ZSGLEDSETDMU9VQUUGTCCGSBSDVVOIZSNRUNXOPBYR9MUHWQDPVPGPANLXRVWGTNEAWCSWEUZFAAA9999"
+        tag: "THISISATAG99999999999999999"
+        attachmentTimestamp: 1525239442332
+        attachmentTimestampLowerBound: 0
+        attachmentTimestampUpperBound: 3812798742493
+        nonce: "WCA9999999LL999999999999999"
+    }
+    ]
 }
+
+You can now view your transaction bundle online at https://thetangle.org/bundle/FCGTFNDZDUKLKOGWVOIFPRCG9UIHXQICIZIKTIYXCBEWLDAYAFKAGTGDZMRICQUGHBHKGKECGQOCZZGOZ
 ```
 

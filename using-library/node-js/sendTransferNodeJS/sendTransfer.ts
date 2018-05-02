@@ -14,17 +14,21 @@ import * as IotaPico from "@iota-pico/lib-nodejs";
     const apiClient = new IotaPico.ApiClient(networkClient);
 
     try {
+        // Setup the proof of work using Ccurl
         const pow = new IotaPico.ProofOfWorkNodeJs();
         await pow.initialize();
 
+        // Create the transaction client with the proof of work module
         const transactionClient = new IotaPico.TransactionClient(apiClient, pow, undefined, undefined, consoleLogger);
 
+        // This is the seed we are going to send the transfer from
         const seed = IotaPico.Hash.fromTrytes(IotaPico.Trytes.fromString("SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9SEED9S"));
 
+        // The transfers we are going to make destination address, amount, message and tag
         const transfers: IotaPico.Transfer[] = [
             IotaPico.Transfer.fromParams(
                 IotaPico.Address.fromTrytes(IotaPico.Trytes.fromString("NPDGGSIMKPQSMTAHVWFSLEYVISJGTKOBRVBSXPNLJITKVUAFKKISGB9ZDGJRYVMWCSDIZUNXHZGEXJKWY")),
-                1,
+                0,
                 IotaPico.Trytes.fromString("BLAHBLAHBLAHBLAH"),
                 IotaPico.Tag.fromTrytes(IotaPico.Trytes.fromString("THISISATAG"))
             )
@@ -35,6 +39,7 @@ import * as IotaPico from "@iota-pico/lib-nodejs";
 
         // And log the response
         consoleLogger.log("Completed Successfully", response);
+        consoleLogger.log(`You can now view your transaction bundle online at https://thetangle.org/bundle/${response.transactions[0].bundle}`);
     } catch(err) {
         // Or log an error if it failed
         consoleLogger.error("Error During Transfer", err);
