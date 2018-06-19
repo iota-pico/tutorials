@@ -4,9 +4,9 @@
     "author": "martyn@iota.eco",
     "license": "MIT",
     "dependencies": {
-        "@iota-pico/api": "^0.9.5",
-        "@iota-pico/core": "^0.9.5",
-        "@iota-pico/pal-browser": "^0.9.5",
+        "@iota-pico/api": "^0.9.6",
+        "@iota-pico/core": "^0.9.6",
+        "@iota-pico/pal-browser": "^0.9.6",
         "systemjs": "^0.21.0",
         "typescript": "^2.7.2"
     },

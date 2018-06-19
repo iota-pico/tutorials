@@ -180,7 +180,7 @@ var bigInt = (function (undefined) {
     function subtractAny(a, b, sign) {
         var value;
         if (compareAbs(a, b) >= 0) {
-            value = subtract(a,b);
+            value = subtract(a, b);
         } else {
             value = subtract(b, a);
             sign = !sign;
@@ -355,16 +355,16 @@ var bigInt = (function (undefined) {
         return new BigInteger(multiplyLong(b, smallToArray(a)), sign);
     }
     SmallInteger.prototype._multiplyBySmall = function (a) {
-            if (isPrecise(a.value * this.value)) {
-                return new SmallInteger(a.value * this.value);
-            }
-            return multiplySmallAndArray(Math.abs(a.value), smallToArray(Math.abs(this.value)), this.sign !== a.sign);
+        if (isPrecise(a.value * this.value)) {
+            return new SmallInteger(a.value * this.value);
+        }
+        return multiplySmallAndArray(Math.abs(a.value), smallToArray(Math.abs(this.value)), this.sign !== a.sign);
     };
     BigInteger.prototype._multiplyBySmall = function (a) {
-            if (a.value === 0) return Integer[0];
-            if (a.value === 1) return this;
-            if (a.value === -1) return this.negate();
-            return multiplySmallAndArray(Math.abs(a.value), this.value, this.sign !== a.sign);
+        if (a.value === 0) return Integer[0];
+        if (a.value === 1) return this;
+        if (a.value === -1) return this.negate();
+        return multiplySmallAndArray(Math.abs(a.value), this.value, this.sign !== a.sign);
     };
     SmallInteger.prototype.multiply = function (v) {
         return parseValue(v)._multiplyBySmall(this);
@@ -417,7 +417,7 @@ var bigInt = (function (undefined) {
         for (shift = a_l - b_l; shift >= 0; shift--) {
             quotientDigit = base - 1;
             if (remainder[shift + b_l] !== divisorMostSignificantDigit) {
-              quotientDigit = Math.floor((remainder[shift + b_l] * base + remainder[shift + b_l - 1]) / divisorMostSignificantDigit);
+                quotientDigit = Math.floor((remainder[shift + b_l] * base + remainder[shift + b_l - 1]) / divisorMostSignificantDigit);
             }
             // quotientDigit <= base - 1
             carry = 0;
@@ -800,7 +800,7 @@ var bigInt = (function (undefined) {
         for (i = 0; i < a.length; i++) {
             x = bigInt(a[i]).modPow(b, n);
             if (x.equals(Integer[1]) || x.equals(nPrev)) continue;
-            for (t = true, d = b; t && d.lesser(nPrev) ; d = d.multiply(2)) {
+            for (t = true, d = b; t && d.lesser(nPrev); d = d.multiply(2)) {
                 x = x.square().mod(n);
                 if (x.equals(nPrev)) t = false;
             }
@@ -976,6 +976,29 @@ var bigInt = (function (undefined) {
         return x & -x;
     }
 
+    function integerLogarithm(value, base) {
+        if (base.compareTo(value) <= 0) {
+            var tmp = integerLogarithm(value, base.square(base));
+            var p = tmp.p;
+            var e = tmp.e;
+            var t = p.multiply(base);
+            return t.compareTo(value) <= 0 ? { p: t, e: e * 2 + 1 } : { p: p, e: e * 2 };
+        }
+        return { p: bigInt(1), e: 0 };
+    }
+
+    BigInteger.prototype.bitLength = function () {
+        var n = this;
+        if (n.compareTo(bigInt(0)) < 0) {
+            n = n.negate().subtract(bigInt(1));
+        }
+        if (n.compareTo(bigInt(0)) === 0) {
+            return bigInt(0);
+        }
+        return bigInt(integerLogarithm(n, bigInt(2)).e).add(bigInt(1));
+    }
+    SmallInteger.prototype.bitLength = BigInteger.prototype.bitLength;
+
     function max(a, b) {
         a = parseValue(a);
         b = parseValue(b);
@@ -1037,26 +1060,26 @@ var bigInt = (function (undefined) {
     }
     var parseBase = function (text, base) {
         var length = text.length;
-		var i;
-		var absBase = Math.abs(base);
-		for(var i = 0; i < length; i++) {
-			var c = text[i].toLowerCase();
-			if(c === "-") continue;
-			if(/[a-z0-9]/.test(c)) {
-			    if(/[0-9]/.test(c) && +c >= absBase) {
-					if(c === "1" && absBase === 1) continue;
+        var i;
+        var absBase = Math.abs(base);
+        for (var i = 0; i < length; i++) {
+            var c = text[i].toLowerCase();
+            if (c === "-") continue;
+            if (/[a-z0-9]/.test(c)) {
+                if (/[0-9]/.test(c) && +c >= absBase) {
+                    if (c === "1" && absBase === 1) continue;
                     throw new Error(c + " is not a valid digit in base " + base + ".");
-				} else if(c.charCodeAt(0) - 87 >= absBase) {
-					throw new Error(c + " is not a valid digit in base " + base + ".");
-				}
-			}
-		}
+                } else if (c.charCodeAt(0) - 87 >= absBase) {
+                    throw new Error(c + " is not a valid digit in base " + base + ".");
+                }
+            }
+        }
         if (2 <= base && base <= 36) {
             if (length <= LOG_MAX_INT / Math.log(base)) {
-				var result = parseInt(text, base);
-				if(isNaN(result)) {
-					throw new Error(c + " is not a valid digit in base " + base + ".");
-				}
+                var result = parseInt(text, base);
+                if (isNaN(result)) {
+                    throw new Error(c + " is not a valid digit in base " + base + ".");
+                }
                 return new SmallInteger(parseInt(text, base));
             }
         }
@@ -1097,25 +1120,25 @@ var bigInt = (function (undefined) {
     function toBase(n, base) {
         base = bigInt(base);
         if (base.isZero()) {
-            if (n.isZero()) return {value: [0], isNegative: false};
+            if (n.isZero()) return { value: [0], isNegative: false };
             throw new Error("Cannot convert nonzero numbers to base 0.");
         }
         if (base.equals(-1)) {
-            if (n.isZero()) return {value: [0], isNegative: false};
+            if (n.isZero()) return { value: [0], isNegative: false };
             if (n.isNegative())
-              return {
-                value: [].concat.apply([], Array.apply(null, Array(-n))
-                            .map(Array.prototype.valueOf, [1, 0])
-                          ),
-                isNegative: false
-              };
+                return {
+                    value: [].concat.apply([], Array.apply(null, Array(-n))
+                        .map(Array.prototype.valueOf, [1, 0])
+                    ),
+                    isNegative: false
+                };
 
             var arr = Array.apply(null, Array(+n - 1))
-              .map(Array.prototype.valueOf, [0, 1]);
+                .map(Array.prototype.valueOf, [0, 1]);
             arr.unshift([1]);
             return {
-              value: [].concat.apply([], arr),
-              isNegative: false
+                value: [].concat.apply([], arr),
+                isNegative: false
             };
         }
 
@@ -1125,12 +1148,12 @@ var bigInt = (function (undefined) {
             n = n.abs();
         }
         if (base.equals(1)) {
-            if (n.isZero()) return {value: [0], isNegative: false};
-            
+            if (n.isZero()) return { value: [0], isNegative: false };
+
             return {
-              value: Array.apply(null, Array(+n))
-                       .map(Number.prototype.valueOf, 1),
-              isNegative: neg
+                value: Array.apply(null, Array(+n))
+                    .map(Number.prototype.valueOf, 1),
+                isNegative: neg
             };
         }
         var out = [];
@@ -1146,7 +1169,7 @@ var bigInt = (function (undefined) {
             out.push(digit.toJSNumber());
         }
         out.push(left.toJSNumber());
-        return {value: out.reverse(), isNegative: neg};
+        return { value: out.reverse(), isNegative: neg };
     }
 
     function toBaseString(n, base) {
@@ -1155,11 +1178,11 @@ var bigInt = (function (undefined) {
     }
 
     BigInteger.prototype.toArray = function (radix) {
-      return toBase(this, radix);
+        return toBase(this, radix);
     };
 
     SmallInteger.prototype.toArray = function (radix) {
-      return toBase(this, radix);
+        return toBase(this, radix);
     };
 
     BigInteger.prototype.toString = function (radix) {
@@ -1179,7 +1202,7 @@ var bigInt = (function (undefined) {
         if (radix != 10) return toBaseString(this, radix);
         return String(this.value);
     };
-    BigInteger.prototype.toJSON = SmallInteger.prototype.toJSON = function() { return this.toString(); }
+    BigInteger.prototype.toJSON = SmallInteger.prototype.toJSON = function () { return this.toString(); }
 
     BigInteger.prototype.valueOf = function () {
         return parseInt(this.toString(), 10);
@@ -1192,42 +1215,42 @@ var bigInt = (function (undefined) {
     SmallInteger.prototype.toJSNumber = SmallInteger.prototype.valueOf;
 
     function parseStringValue(v) {
-            if (isPrecise(+v)) {
-                var x = +v;
-                if (x === truncate(x))
-                    return new SmallInteger(x);
-                throw "Invalid integer: " + v;
+        if (isPrecise(+v)) {
+            var x = +v;
+            if (x === truncate(x))
+                return new SmallInteger(x);
+            throw new Error("Invalid integer: " + v);
+        }
+        var sign = v[0] === "-";
+        if (sign) v = v.slice(1);
+        var split = v.split(/e/i);
+        if (split.length > 2) throw new Error("Invalid integer: " + split.join("e"));
+        if (split.length === 2) {
+            var exp = split[1];
+            if (exp[0] === "+") exp = exp.slice(1);
+            exp = +exp;
+            if (exp !== truncate(exp) || !isPrecise(exp)) throw new Error("Invalid integer: " + exp + " is not a valid exponent.");
+            var text = split[0];
+            var decimalPlace = text.indexOf(".");
+            if (decimalPlace >= 0) {
+                exp -= text.length - decimalPlace - 1;
+                text = text.slice(0, decimalPlace) + text.slice(decimalPlace + 1);
             }
-            var sign = v[0] === "-";
-            if (sign) v = v.slice(1);
-            var split = v.split(/e/i);
-            if (split.length > 2) throw new Error("Invalid integer: " + split.join("e"));
-            if (split.length === 2) {
-                var exp = split[1];
-                if (exp[0] === "+") exp = exp.slice(1);
-                exp = +exp;
-                if (exp !== truncate(exp) || !isPrecise(exp)) throw new Error("Invalid integer: " + exp + " is not a valid exponent.");
-                var text = split[0];
-                var decimalPlace = text.indexOf(".");
-                if (decimalPlace >= 0) {
-                    exp -= text.length - decimalPlace - 1;
-                    text = text.slice(0, decimalPlace) + text.slice(decimalPlace + 1);
-                }
-                if (exp < 0) throw new Error("Cannot include negative exponent part for integers");
-                text += (new Array(exp + 1)).join("0");
-                v = text;
-            }
-            var isValid = /^([0-9][0-9]*)$/.test(v);
-            if (!isValid) throw new Error("Invalid integer: " + v);
-            var r = [], max = v.length, l = LOG_BASE, min = max - l;
-            while (max > 0) {
-                r.push(+v.slice(min, max));
-                min -= l;
-                if (min < 0) min = 0;
-                max -= l;
-            }
-            trim(r);
-            return new BigInteger(r, sign);
+            if (exp < 0) throw new Error("Cannot include negative exponent part for integers");
+            text += (new Array(exp + 1)).join("0");
+            v = text;
+        }
+        var isValid = /^([0-9][0-9]*)$/.test(v);
+        if (!isValid) throw new Error("Invalid integer: " + v);
+        var r = [], max = v.length, l = LOG_BASE, min = max - l;
+        while (max > 0) {
+            r.push(+v.slice(min, max));
+            min -= l;
+            if (min < 0) min = 0;
+            max -= l;
+        }
+        trim(r);
+        return new BigInteger(r, sign);
     }
 
     function parseNumberValue(v) {
@@ -1276,10 +1299,10 @@ if (typeof module !== "undefined" && module.hasOwnProperty("exports")) {
 }
 
 //amd check
-if ( typeof define === "function" && define.amd ) {
-  define( "big-integer", [], function() {
-    return bigInt;
-  });
+if (typeof define === "function" && define.amd) {
+    define("big-integer", [], function () {
+        return bigInt;
+    });
 }
 
 },{}],2:[function(require,module,exports){
@@ -1331,17 +1354,32 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
 /******/ 		}
 /******/ 	};
 /******/
 /******/ 	// define __esModule on exports
 /******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
 /******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
 /******/ 	};
 /******/
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
@@ -1373,7 +1411,12 @@ return /******/ (function(modules) { // webpackBootstrap
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var _regeneratorRuntime = __webpack_require__(/*! @babel/runtime/regenerator */ "../api/node_modules/@babel/runtime/regenerator/index.js");
+"use strict";
+
+
+var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ "../api/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } } function _next(value) { step("next", value); } function _throw(err) { step("throw", err); } _next(); }); }; }
 
@@ -1444,8 +1487,8 @@ function () {
     value: function () {
       var _getNodeInfo = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee() {
-        return _regeneratorRuntime.wrap(function _callee$(_context) {
+      _regenerator.default.mark(function _callee() {
+        return _regenerator.default.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
@@ -1474,8 +1517,8 @@ function () {
     value: function () {
       var _getNeighbors = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee2() {
-        return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+      _regenerator.default.mark(function _callee2() {
+        return _regenerator.default.wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
@@ -1505,8 +1548,8 @@ function () {
     value: function () {
       var _addNeighbors = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee3(request) {
-        return _regeneratorRuntime.wrap(function _callee3$(_context3) {
+      _regenerator.default.mark(function _callee3(request) {
+        return _regenerator.default.wrap(function _callee3$(_context3) {
           while (1) {
             switch (_context3.prev = _context3.next) {
               case 0:
@@ -1552,8 +1595,8 @@ function () {
     value: function () {
       var _removeNeighbors = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee4(request) {
-        return _regeneratorRuntime.wrap(function _callee4$(_context4) {
+      _regenerator.default.mark(function _callee4(request) {
+        return _regenerator.default.wrap(function _callee4$(_context4) {
           while (1) {
             switch (_context4.prev = _context4.next) {
               case 0:
@@ -1597,8 +1640,8 @@ function () {
     value: function () {
       var _getTips = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee5() {
-        return _regeneratorRuntime.wrap(function _callee5$(_context5) {
+      _regenerator.default.mark(function _callee5() {
+        return _regenerator.default.wrap(function _callee5$(_context5) {
           while (1) {
             switch (_context5.prev = _context5.next) {
               case 0:
@@ -1630,9 +1673,9 @@ function () {
     value: function () {
       var _findTransactions = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee6(request) {
+      _regenerator.default.mark(function _callee6(request) {
         var bundlesEmpty, addressesEmpty, tagsEmpty, approveesEmpty;
-        return _regeneratorRuntime.wrap(function _callee6$(_context6) {
+        return _regenerator.default.wrap(function _callee6$(_context6) {
           while (1) {
             switch (_context6.prev = _context6.next) {
               case 0:
@@ -1683,8 +1726,8 @@ function () {
     value: function () {
       var _getTrytes = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee7(request) {
-        return _regeneratorRuntime.wrap(function _callee7$(_context7) {
+      _regenerator.default.mark(function _callee7(request) {
+        return _regenerator.default.wrap(function _callee7$(_context7) {
           while (1) {
             switch (_context7.prev = _context7.next) {
               case 0:
@@ -1731,8 +1774,8 @@ function () {
     value: function () {
       var _getInclusionStates = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee8(request) {
-        return _regeneratorRuntime.wrap(function _callee8$(_context8) {
+      _regenerator.default.mark(function _callee8(request) {
+        return _regenerator.default.wrap(function _callee8$(_context8) {
           while (1) {
             switch (_context8.prev = _context8.next) {
               case 0:
@@ -1788,8 +1831,8 @@ function () {
     value: function () {
       var _getBalances = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee9(request) {
-        return _regeneratorRuntime.wrap(function _callee9$(_context9) {
+      _regenerator.default.mark(function _callee9(request) {
+        return _regenerator.default.wrap(function _callee9$(_context9) {
           while (1) {
             switch (_context9.prev = _context9.next) {
               case 0:
@@ -1844,8 +1887,8 @@ function () {
     value: function () {
       var _getTransactionsToApprove = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee10(request) {
-        return _regeneratorRuntime.wrap(function _callee10$(_context10) {
+      _regenerator.default.mark(function _callee10(request) {
+        return _regenerator.default.wrap(function _callee10$(_context10) {
           while (1) {
             switch (_context10.prev = _context10.next) {
               case 0:
@@ -1908,8 +1951,8 @@ function () {
     value: function () {
       var _attachToTangle = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee11(request) {
-        return _regeneratorRuntime.wrap(function _callee11$(_context11) {
+      _regenerator.default.mark(function _callee11(request) {
+        return _regenerator.default.wrap(function _callee11$(_context11) {
           while (1) {
             switch (_context11.prev = _context11.next) {
               case 0:
@@ -1977,8 +2020,8 @@ function () {
     value: function () {
       var _interruptAttachingToTangle = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee12() {
-        return _regeneratorRuntime.wrap(function _callee12$(_context12) {
+      _regenerator.default.mark(function _callee12() {
+        return _regenerator.default.wrap(function _callee12$(_context12) {
           while (1) {
             switch (_context12.prev = _context12.next) {
               case 0:
@@ -2007,8 +2050,8 @@ function () {
     value: function () {
       var _broadcastTransactions = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee13(request) {
-        return _regeneratorRuntime.wrap(function _callee13$(_context13) {
+      _regenerator.default.mark(function _callee13(request) {
+        return _regenerator.default.wrap(function _callee13$(_context13) {
           while (1) {
             switch (_context13.prev = _context13.next) {
               case 0:
@@ -2053,8 +2096,8 @@ function () {
     value: function () {
       var _storeTransactions = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee14(request) {
-        return _regeneratorRuntime.wrap(function _callee14$(_context14) {
+      _regenerator.default.mark(function _callee14(request) {
+        return _regenerator.default.wrap(function _callee14$(_context14) {
           while (1) {
             switch (_context14.prev = _context14.next) {
               case 0:
@@ -2099,8 +2142,8 @@ function () {
     value: function () {
       var _getMissingTransactions = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee15() {
-        return _regeneratorRuntime.wrap(function _callee15$(_context15) {
+      _regenerator.default.mark(function _callee15() {
+        return _regenerator.default.wrap(function _callee15$(_context15) {
           while (1) {
             switch (_context15.prev = _context15.next) {
               case 0:
@@ -2129,8 +2172,8 @@ function () {
     value: function () {
       var _checkConsistency = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee16(request) {
-        return _regeneratorRuntime.wrap(function _callee16$(_context16) {
+      _regenerator.default.mark(function _callee16(request) {
+        return _regenerator.default.wrap(function _callee16$(_context16) {
           while (1) {
             switch (_context16.prev = _context16.next) {
               case 0:
@@ -2175,8 +2218,8 @@ function () {
     value: function () {
       var _wereAddressesSpentFrom = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee17(request) {
-        return _regeneratorRuntime.wrap(function _callee17$(_context17) {
+      _regenerator.default.mark(function _callee17(request) {
+        return _regenerator.default.wrap(function _callee17$(_context17) {
           while (1) {
             switch (_context17.prev = _context17.next) {
               case 0:
@@ -2217,10 +2260,10 @@ function () {
     value: function () {
       var _sendCommand = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee18(command, request) {
+      _regenerator.default.mark(function _callee18(command, request) {
         var _this = this;
 
-        return _regeneratorRuntime.wrap(function _callee18$(_context18) {
+        return _regenerator.default.wrap(function _callee18$(_context18) {
           while (1) {
             switch (_context18.prev = _context18.next) {
               case 0:
@@ -2291,13 +2334,22 @@ exports.ApiClient = ApiClient;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -2325,7 +2377,7 @@ function (_coreError_1$CoreErro) {
 
     _classCallCheck(this, ApiError);
 
-    _this = _possibleConstructorReturn(this, (ApiError.__proto__ || Object.getPrototypeOf(ApiError)).call(this, message, additional, innerError));
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(ApiError).call(this, message, additional, innerError));
     _this.domain = "API";
     return _this;
   }
@@ -2343,6 +2395,9 @@ exports.ApiError = ApiError;
   \****************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function __export(m) {
   for (var p in m) {
@@ -2363,22 +2418,22 @@ __export(__webpack_require__(/*! ./error/apiError */ "../api/dist/error/apiError
 
 /***/ }),
 
-/***/ "../api/node_modules/@babel/runtime/regenerator/index.js":
-/*!***************************************************************!*\
-  !*** ../api/node_modules/@babel/runtime/regenerator/index.js ***!
-  \***************************************************************/
+/***/ "../api/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js":
+/*!*****************************************************************************************************************************!*\
+  !*** ../api/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js ***!
+  \*****************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! regenerator-runtime */ "../api/node_modules/regenerator-runtime/runtime-module.js");
+module.exports = __webpack_require__(/*! regenerator-runtime */ "../api/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js");
 
 
 /***/ }),
 
-/***/ "../api/node_modules/regenerator-runtime/runtime-module.js":
-/*!*****************************************************************!*\
-  !*** ../api/node_modules/regenerator-runtime/runtime-module.js ***!
-  \*****************************************************************/
+/***/ "../api/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js":
+/*!*****************************************************************************************************************************!*\
+  !*** ../api/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js ***!
+  \*****************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -2404,7 +2459,7 @@ var oldRuntime = hadRuntime && g.regeneratorRuntime;
 // Force reevalutation of runtime.js.
 g.regeneratorRuntime = undefined;
 
-module.exports = __webpack_require__(/*! ./runtime */ "../api/node_modules/regenerator-runtime/runtime.js");
+module.exports = __webpack_require__(/*! ./runtime */ "../api/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js");
 
 if (hadRuntime) {
   // Restore the original runtime.
@@ -2421,10 +2476,10 @@ if (hadRuntime) {
 
 /***/ }),
 
-/***/ "../api/node_modules/regenerator-runtime/runtime.js":
-/*!**********************************************************!*\
-  !*** ../api/node_modules/regenerator-runtime/runtime.js ***!
-  \**********************************************************/
+/***/ "../api/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js":
+/*!**********************************************************************************************************************!*\
+  !*** ../api/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js ***!
+  \**********************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -3166,13 +3221,22 @@ if (hadRuntime) {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -3200,7 +3264,7 @@ function (_coreError_1$CoreErro) {
 
     _classCallCheck(this, BusinessError);
 
-    _this = _possibleConstructorReturn(this, (BusinessError.__proto__ || Object.getPrototypeOf(BusinessError)).call(this, message, additional, innerError));
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(BusinessError).call(this, message, additional, innerError));
     _this.domain = "Business";
     return _this;
   }
@@ -3218,6 +3282,9 @@ exports.BusinessError = BusinessError;
   \*************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -3278,6 +3345,9 @@ exports.AddressHelper = AddressHelper;
   \************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -3670,6 +3740,9 @@ exports.BundleHelper = BundleHelper;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function __export(m) {
   for (var p in m) {
     if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -3705,6 +3778,9 @@ __export(__webpack_require__(/*! ./transactions/transactionClient */ "../busines
   \****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -3802,7 +3878,12 @@ exports.MultiSigAddress = MultiSigAddress;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var _regeneratorRuntime = __webpack_require__(/*! @babel/runtime/regenerator */ "../business/node_modules/@babel/runtime/regenerator/index.js");
+"use strict";
+
+
+var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ "../business/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } } function _next(value) { step("next", value); } function _throw(err) { step("throw", err); } _next(); }); }; }
 
@@ -3896,9 +3977,9 @@ function () {
     value: function () {
       var _prepareTransfer = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee(address, securitySum, balance, transfers, remainderAddress) {
+      _regenerator.default.mark(function _callee(address, securitySum, balance, transfers, remainderAddress) {
         var emptyTrytes, prepared, totalBalance, request, response, timestamp;
-        return _regeneratorRuntime.wrap(function _callee$(_context) {
+        return _regenerator.default.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
@@ -4159,6 +4240,9 @@ exports.MultiSigClient = MultiSigClient;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -4240,7 +4324,12 @@ exports.HmacCurl = HmacCurl;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var _regeneratorRuntime = __webpack_require__(/*! @babel/runtime/regenerator */ "../business/node_modules/@babel/runtime/regenerator/index.js");
+"use strict";
+
+
+var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ "../business/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } } function _next(value) { step("next", value); } function _throw(err) { step("throw", err); } _next(); }); }; }
 
@@ -4300,8 +4389,8 @@ function () {
     value: function () {
       var _initialize = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee() {
-        return _regeneratorRuntime.wrap(function _callee$(_context) {
+      _regenerator.default.mark(function _callee() {
+        return _regenerator.default.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
@@ -4333,9 +4422,9 @@ function () {
     value: function () {
       var _pow = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee2(trunkTransaction, branchTransaction, trytes, minWeightMagnitude) {
+      _regenerator.default.mark(function _callee2(trunkTransaction, branchTransaction, trytes, minWeightMagnitude) {
         var attachToTangleRequest, attachToTangleResponse;
-        return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+        return _regenerator.default.wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
@@ -4425,7 +4514,12 @@ exports.ProofOfWorkApi = ProofOfWorkApi;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var _regeneratorRuntime = __webpack_require__(/*! @babel/runtime/regenerator */ "../business/node_modules/@babel/runtime/regenerator/index.js");
+"use strict";
+
+
+var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ "../business/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } } function _next(value) { step("next", value); } function _throw(err) { step("throw", err); } _next(); }); }; }
 
@@ -4522,9 +4616,9 @@ function () {
     value: function () {
       var _getTransactionsInProgress = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee() {
+      _regenerator.default.mark(function _callee() {
         var response, resp;
-        return _regeneratorRuntime.wrap(function _callee$(_context) {
+        return _regenerator.default.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
@@ -4582,9 +4676,9 @@ function () {
     value: function () {
       var _findTransactions = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee2(bundles, addresses, tags, approvees) {
+      _regenerator.default.mark(function _callee2(bundles, addresses, tags, approvees) {
         var hasBundle, hasAddresses, hasTags, hasApprovees, request, response, resp;
-        return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+        return _regenerator.default.wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
@@ -4696,9 +4790,9 @@ function () {
     value: function () {
       var _getTransactionsObjects = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee3(transactionHashes) {
+      _regenerator.default.mark(function _callee3(transactionHashes) {
         var request, response, resp;
-        return _regeneratorRuntime.wrap(function _callee3$(_context3) {
+        return _regenerator.default.wrap(function _callee3$(_context3) {
           while (1) {
             switch (_context3.prev = _context3.next) {
               case 0:
@@ -4764,9 +4858,9 @@ function () {
     value: function () {
       var _getLatestInclusion = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee4(transactionHashes) {
+      _regenerator.default.mark(function _callee4(transactionHashes) {
         var nodeInfo, request, response;
-        return _regeneratorRuntime.wrap(function _callee4$(_context4) {
+        return _regenerator.default.wrap(function _callee4$(_context4) {
           while (1) {
             switch (_context4.prev = _context4.next) {
               case 0:
@@ -4851,9 +4945,9 @@ function () {
     value: function () {
       var _getNewAddress = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee5(seed, startIndex, endIndex, includeChecksum, security) {
+      _regenerator.default.mark(function _callee5(seed, startIndex, endIndex, includeChecksum, security) {
         var localStartIndex, hasEndIndex, localSecurity, addresses, total;
-        return _regeneratorRuntime.wrap(function _callee5$(_context5) {
+        return _regenerator.default.wrap(function _callee5$(_context5) {
           while (1) {
             switch (_context5.prev = _context5.next) {
               case 0:
@@ -4966,9 +5060,9 @@ function () {
     value: function () {
       var _getAddressesByIndex = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee6(seed, startIndex, endIndex, includeChecksum, security) {
+      _regenerator.default.mark(function _callee6(seed, startIndex, endIndex, includeChecksum, security) {
         var total, addresses, i;
-        return _regeneratorRuntime.wrap(function _callee6$(_context6) {
+        return _regenerator.default.wrap(function _callee6$(_context6) {
           while (1) {
             switch (_context6.prev = _context6.next) {
               case 0:
@@ -5060,9 +5154,9 @@ function () {
     value: function () {
       var _getAddressesToUnused = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee7(seed, startIndex, includeChecksum, security) {
+      _regenerator.default.mark(function _callee7(seed, startIndex, includeChecksum, security) {
         var localStartIndex, isUsed, addresses, address, addressNoChecksum, spentFromRequest, spentFromResponse, findTransactionsRequest, findResponse;
-        return _regeneratorRuntime.wrap(function _callee7$(_context7) {
+        return _regenerator.default.wrap(function _callee7$(_context7) {
           while (1) {
             switch (_context7.prev = _context7.next) {
               case 0:
@@ -5166,9 +5260,9 @@ function () {
     value: function () {
       var _getInputs = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee8(seed, startIndex, endIndex, security, totalRequired) {
+      _regenerator.default.mark(function _callee8(seed, startIndex, endIndex, security, totalRequired) {
         var addresses, request, response, inputs, totalBalance, i, balance, resp;
-        return _regeneratorRuntime.wrap(function _callee8$(_context8) {
+        return _regenerator.default.wrap(function _callee8$(_context8) {
           while (1) {
             switch (_context8.prev = _context8.next) {
               case 0:
@@ -5312,9 +5406,9 @@ function () {
     value: function () {
       var _prepareTransfers = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee9(seed, transfers, transferOptions) {
+      _regenerator.default.mark(function _callee9(seed, transfers, transferOptions) {
         var localTransferOptions, emptyTrytes, addHMAC, addedHMAC, prepared, bundle, lastTag, totalValue, signatureMessageFragments, request, balances, confirmedInputs, totalBalance, i, balance, inputsResponse;
-        return _regeneratorRuntime.wrap(function _callee9$(_context9) {
+        return _regenerator.default.wrap(function _callee9$(_context9) {
           while (1) {
             switch (_context9.prev = _context9.next) {
               case 0:
@@ -5480,9 +5574,9 @@ function () {
     value: function () {
       var _attachToTangle = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee10(bundle, depth, minWeightMagnitude, reference) {
+      _regenerator.default.mark(function _callee10(bundle, depth, minWeightMagnitude, reference) {
         var transactionsToApproveRequest, transactionsToApprove, allTrytes, powTransactions, newBundle;
-        return _regeneratorRuntime.wrap(function _callee10$(_context10) {
+        return _regenerator.default.wrap(function _callee10$(_context10) {
           while (1) {
             switch (_context10.prev = _context10.next) {
               case 0:
@@ -5576,9 +5670,9 @@ function () {
     value: function () {
       var _sendTransactions = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee11(bundle, depth, minWeightMagnitude, reference) {
+      _regenerator.default.mark(function _callee11(bundle, depth, minWeightMagnitude, reference) {
         var attachedTransactionsBundle, storeTransactionsRequest, broadcastTransactionsRequest;
-        return _regeneratorRuntime.wrap(function _callee11$(_context11) {
+        return _regenerator.default.wrap(function _callee11$(_context11) {
           while (1) {
             switch (_context11.prev = _context11.next) {
               case 0:
@@ -5637,9 +5731,9 @@ function () {
     value: function () {
       var _sendTransfer = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee12(seed, depth, minWeightMagnitude, transfers, transferOptions, reference) {
+      _regenerator.default.mark(function _callee12(seed, depth, minWeightMagnitude, transfers, transferOptions, reference) {
         var transferTrytes, sentBundle;
-        return _regeneratorRuntime.wrap(function _callee12$(_context12) {
+        return _regenerator.default.wrap(function _callee12$(_context12) {
           while (1) {
             switch (_context12.prev = _context12.next) {
               case 0:
@@ -5683,9 +5777,9 @@ function () {
     value: function () {
       var _isPromotable = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee13(transactionTail) {
+      _regenerator.default.mark(function _callee13(transactionTail) {
         var checkConsistencyRequest, checkConsistencyResponse;
-        return _regeneratorRuntime.wrap(function _callee13$(_context13) {
+        return _regenerator.default.wrap(function _callee13$(_context13) {
           while (1) {
             switch (_context13.prev = _context13.next) {
               case 0:
@@ -5735,10 +5829,10 @@ function () {
     value: function () {
       var _isReattachable = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee14(addresses) {
+      _regenerator.default.mark(function _callee14(addresses) {
         var addrsTxsMap, i, addressString, transactions, valueTransactions, results, inclusionStates, _i2;
 
-        return _regeneratorRuntime.wrap(function _callee14$(_context14) {
+        return _regenerator.default.wrap(function _callee14$(_context14) {
           while (1) {
             switch (_context14.prev = _context14.next) {
               case 0:
@@ -5844,11 +5938,11 @@ function () {
     value: function () {
       var _promoteTransaction = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee16(transactionTail, depth, minWeightMagnitude, transfers, promoteOptions) {
+      _regenerator.default.mark(function _callee16(transactionTail, depth, minWeightMagnitude, transfers, promoteOptions) {
         var _this = this;
 
         var localPromoteOptions, isPromotable, sendTransferResponse;
-        return _regeneratorRuntime.wrap(function _callee16$(_context16) {
+        return _regenerator.default.wrap(function _callee16$(_context16) {
           while (1) {
             switch (_context16.prev = _context16.next) {
               case 0:
@@ -5927,8 +6021,8 @@ function () {
                 /*#__PURE__*/
                 _asyncToGenerator(
                 /*#__PURE__*/
-                _regeneratorRuntime.mark(function _callee15() {
-                  return _regeneratorRuntime.wrap(function _callee15$(_context15) {
+                _regenerator.default.mark(function _callee15() {
+                  return _regenerator.default.wrap(function _callee15$(_context15) {
                     while (1) {
                       switch (_context15.prev = _context15.next) {
                         case 0:
@@ -5987,9 +6081,9 @@ function () {
     value: function () {
       var _getBundle = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee17(transactionHash) {
+      _regenerator.default.mark(function _callee17(transactionHash) {
         var transactions, bundle, isValid;
-        return _regeneratorRuntime.wrap(function _callee17$(_context17) {
+        return _regenerator.default.wrap(function _callee17$(_context17) {
           while (1) {
             switch (_context17.prev = _context17.next) {
               case 0:
@@ -6049,9 +6143,9 @@ function () {
     value: function () {
       var _traverseBundle = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee18(trunkTransaction, bundleHash) {
+      _regenerator.default.mark(function _callee18(trunkTransaction, bundleHash) {
         var allBundleTransactions, newTrunkTransaction, newBundleHash, getTrytesRequest, getTrytesResponse, trytes, transactionObject, hasHash, localBundleHash;
-        return _regeneratorRuntime.wrap(function _callee18$(_context18) {
+        return _regenerator.default.wrap(function _callee18$(_context18) {
           while (1) {
             switch (_context18.prev = _context18.next) {
               case 0:
@@ -6151,9 +6245,9 @@ function () {
     value: function () {
       var _reattachBundle = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee19(transactionHash, depth, minWeightMagnitude) {
+      _regenerator.default.mark(function _callee19(transactionHash, depth, minWeightMagnitude) {
         var bundle, sendTransactionsResponse;
-        return _regeneratorRuntime.wrap(function _callee19$(_context19) {
+        return _regenerator.default.wrap(function _callee19$(_context19) {
           while (1) {
             switch (_context19.prev = _context19.next) {
               case 0:
@@ -6198,9 +6292,9 @@ function () {
     value: function () {
       var _rebroadcastBundle = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee20(transactionHash) {
+      _regenerator.default.mark(function _callee20(transactionHash) {
         var bundle, broadcastTransactionsRequest;
-        return _regeneratorRuntime.wrap(function _callee20$(_context20) {
+        return _regenerator.default.wrap(function _callee20$(_context20) {
           while (1) {
             switch (_context20.prev = _context20.next) {
               case 0:
@@ -6250,9 +6344,9 @@ function () {
     value: function () {
       var _findTransactionObjects = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee21(bundles, addresses, tags, approvees) {
+      _regenerator.default.mark(function _callee21(bundles, addresses, tags, approvees) {
         var transactions, resp;
-        return _regeneratorRuntime.wrap(function _callee21$(_context21) {
+        return _regenerator.default.wrap(function _callee21$(_context21) {
           while (1) {
             switch (_context21.prev = _context21.next) {
               case 0:
@@ -6313,9 +6407,9 @@ function () {
     value: function () {
       var _getTransfers = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee22(seed, startIndex, endIndex, security, inclusionStates) {
+      _regenerator.default.mark(function _callee22(seed, startIndex, endIndex, security, inclusionStates) {
         var localStartIndex, addresses, bundles;
-        return _regeneratorRuntime.wrap(function _callee22$(_context22) {
+        return _regenerator.default.wrap(function _callee22$(_context22) {
           while (1) {
             switch (_context22.prev = _context22.next) {
               case 0:
@@ -6376,9 +6470,9 @@ function () {
     value: function () {
       var _getAccountData = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee23(seed, startIndex, endIndex, security) {
+      _regenerator.default.mark(function _callee23(seed, startIndex, endIndex, security) {
         var localStartIndex, addresses, bundles, accountData, balanceRequest, balanceResponse, i, balance;
-        return _regeneratorRuntime.wrap(function _callee23$(_context23) {
+        return _regenerator.default.wrap(function _callee23$(_context23) {
           while (1) {
             switch (_context23.prev = _context23.next) {
               case 0:
@@ -6459,9 +6553,9 @@ function () {
     value: function () {
       var _bundlesFromAddresses = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee24(addresses, inclusionStates) {
+      _regenerator.default.mark(function _callee24(addresses, inclusionStates) {
         var transactionObjects, tailTransactions, nonTailBundleHashes, nonTailBundleTransactions, finalBundles, tailTxArray, tailTxStates, i, bundle;
-        return _regeneratorRuntime.wrap(function _callee24$(_context24) {
+        return _regenerator.default.wrap(function _callee24$(_context24) {
           while (1) {
             switch (_context24.prev = _context24.next) {
               case 0:
@@ -6584,9 +6678,9 @@ function () {
     value: function () {
       var _addRemainder = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee25(seed, bundle, transferOptions, inputs, signatureMessageFragments, totalValue, tag, addedHMAC) {
+      _regenerator.default.mark(function _callee25(seed, bundle, transferOptions, inputs, signatureMessageFragments, totalValue, tag, addedHMAC) {
         var totalTransferValue, i, timestamp, remainder, startIndex, k, addresses, ts;
-        return _regeneratorRuntime.wrap(function _callee25$(_context25) {
+        return _regenerator.default.wrap(function _callee25$(_context25) {
           while (1) {
             switch (_context25.prev = _context25.next) {
               case 0:
@@ -6695,22 +6789,22 @@ exports.TransactionClient = TransactionClient;
 
 /***/ }),
 
-/***/ "../business/node_modules/@babel/runtime/regenerator/index.js":
-/*!********************************************************************!*\
-  !*** ../business/node_modules/@babel/runtime/regenerator/index.js ***!
-  \********************************************************************/
+/***/ "../business/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js":
+/*!**********************************************************************************************************************************!*\
+  !*** ../business/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js ***!
+  \**********************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! regenerator-runtime */ "../business/node_modules/regenerator-runtime/runtime-module.js");
+module.exports = __webpack_require__(/*! regenerator-runtime */ "../business/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js");
 
 
 /***/ }),
 
-/***/ "../business/node_modules/regenerator-runtime/runtime-module.js":
-/*!**********************************************************************!*\
-  !*** ../business/node_modules/regenerator-runtime/runtime-module.js ***!
-  \**********************************************************************/
+/***/ "../business/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js":
+/*!**********************************************************************************************************************************!*\
+  !*** ../business/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js ***!
+  \**********************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -6736,7 +6830,7 @@ var oldRuntime = hadRuntime && g.regeneratorRuntime;
 // Force reevalutation of runtime.js.
 g.regeneratorRuntime = undefined;
 
-module.exports = __webpack_require__(/*! ./runtime */ "../business/node_modules/regenerator-runtime/runtime.js");
+module.exports = __webpack_require__(/*! ./runtime */ "../business/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js");
 
 if (hadRuntime) {
   // Restore the original runtime.
@@ -6753,10 +6847,10 @@ if (hadRuntime) {
 
 /***/ }),
 
-/***/ "../business/node_modules/regenerator-runtime/runtime.js":
-/*!***************************************************************!*\
-  !*** ../business/node_modules/regenerator-runtime/runtime.js ***!
-  \***************************************************************/
+/***/ "../business/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js":
+/*!***************************************************************************************************************************!*\
+  !*** ../business/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js ***!
+  \***************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -7498,6 +7592,9 @@ if (hadRuntime) {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -7506,9 +7603,15 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 function _extendableBuiltin(cls) {
   function ExtendableBuiltin() {
@@ -7563,7 +7666,7 @@ function (_extendableBuiltin2) {
 
     _classCallCheck(this, CoreError);
 
-    _this = _possibleConstructorReturn(this, (CoreError.__proto__ || Object.getPrototypeOf(CoreError)).call(this, message));
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(CoreError).call(this, message));
     _this.additional = additional ? additional : {};
     _this.innerError = innerError;
     _this.domain = "Core";
@@ -7631,13 +7734,22 @@ exports.CoreError = CoreError;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -7665,7 +7777,7 @@ function (_coreError_1$CoreErro) {
 
     _classCallCheck(this, NetworkError);
 
-    _this = _possibleConstructorReturn(this, (NetworkError.__proto__ || Object.getPrototypeOf(NetworkError)).call(this, message, additional, innerError));
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(NetworkError).call(this, message, additional, innerError));
     _this.domain = "Network";
     return _this;
   }
@@ -7684,13 +7796,22 @@ exports.NetworkError = NetworkError;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -7718,7 +7839,7 @@ function (_coreError_1$CoreErro) {
 
     _classCallCheck(this, PlatformError);
 
-    _this = _possibleConstructorReturn(this, (PlatformError.__proto__ || Object.getPrototypeOf(PlatformError)).call(this, message, additional, innerError));
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(PlatformError).call(this, message, additional, innerError));
     _this.domain = "Platform";
     return _this;
   }
@@ -7735,7 +7856,10 @@ exports.PlatformError = PlatformError;
   !*** ../core/dist/factories/factoryBase.js ***!
   \*********************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -7844,6 +7968,9 @@ exports.FactoryBase = FactoryBase;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -7852,9 +7979,15 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -7878,7 +8011,7 @@ function (_factoryBase_1$Factor) {
   function NetworkClientFactory() {
     _classCallCheck(this, NetworkClientFactory);
 
-    return _possibleConstructorReturn(this, (NetworkClientFactory.__proto__ || Object.getPrototypeOf(NetworkClientFactory)).call(this));
+    return _possibleConstructorReturn(this, _getPrototypeOf(NetworkClientFactory).call(this));
   }
   /**
    * Get the instance of the factory.
@@ -7918,6 +8051,9 @@ exports.NetworkClientFactory = NetworkClientFactory;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -7926,9 +8062,15 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -7952,7 +8094,7 @@ function (_factoryBase_1$Factor) {
   function PlatformCryptoFactory() {
     _classCallCheck(this, PlatformCryptoFactory);
 
-    return _possibleConstructorReturn(this, (PlatformCryptoFactory.__proto__ || Object.getPrototypeOf(PlatformCryptoFactory)).call(this));
+    return _possibleConstructorReturn(this, _getPrototypeOf(PlatformCryptoFactory).call(this));
   }
   /**
    * Get the instance of the factory.
@@ -7992,6 +8134,9 @@ exports.PlatformCryptoFactory = PlatformCryptoFactory;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -8000,9 +8145,15 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -8026,7 +8177,7 @@ function (_factoryBase_1$Factor) {
   function RngServiceFactory() {
     _classCallCheck(this, RngServiceFactory);
 
-    return _possibleConstructorReturn(this, (RngServiceFactory.__proto__ || Object.getPrototypeOf(RngServiceFactory)).call(this));
+    return _possibleConstructorReturn(this, _getPrototypeOf(RngServiceFactory).call(this));
   }
   /**
    * Get the instance of the factory.
@@ -8065,6 +8216,9 @@ exports.RngServiceFactory = RngServiceFactory;
   \*******************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -8140,6 +8294,9 @@ exports.ArrayHelper = ArrayHelper;
   \*******************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -8235,7 +8392,10 @@ exports.ErrorHelper = ErrorHelper;
   !*** ../core/dist/helpers/jsonHelper.js ***!
   \******************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
@@ -8302,7 +8462,10 @@ exports.JsonHelper = JsonHelper;
   !*** ../core/dist/helpers/numberHelper.js ***!
   \********************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -8382,7 +8545,10 @@ exports.NumberHelper = NumberHelper;
   !*** ../core/dist/helpers/objectHelper.js ***!
   \********************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
@@ -8474,7 +8640,10 @@ exports.ObjectHelper = ObjectHelper;
   !*** ../core/dist/helpers/stringHelper.js ***!
   \********************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -8571,6 +8740,9 @@ exports.StringHelper = StringHelper;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function __export(m) {
   for (var p in m) {
     if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -8628,6 +8800,9 @@ __export(__webpack_require__(/*! ./services/timeService */ "../core/dist/service
   \*********************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -8852,7 +9027,10 @@ exports.ConsoleLogger = ConsoleLogger;
   !*** ../core/dist/loggers/nullLogger.js ***!
   \******************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -8935,6 +9113,9 @@ exports.NullLogger = NullLogger;
   \***********************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -9065,7 +9246,12 @@ exports.NetworkEndPoint = NetworkEndPoint;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var _regeneratorRuntime = __webpack_require__(/*! @babel/runtime/regenerator */ "../core/node_modules/@babel/runtime/regenerator/index.js");
+"use strict";
+
+
+var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ "../core/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } } function _next(value) { step("next", value); } function _throw(err) { step("throw", err); } _next(); }); }; }
 
@@ -9101,8 +9287,8 @@ function () {
     value: function () {
       var _create = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee(task, delay) {
-        return _regeneratorRuntime.wrap(function _callee$(_context) {
+      _regenerator.default.mark(function _callee(task, delay) {
+        return _regenerator.default.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
@@ -9142,7 +9328,10 @@ exports.BackgroundTaskService = BackgroundTaskService;
   !*** ../core/dist/services/timeService.js ***!
   \********************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -9183,22 +9372,22 @@ exports.TimeService = TimeService;
 
 /***/ }),
 
-/***/ "../core/node_modules/@babel/runtime/regenerator/index.js":
-/*!****************************************************************!*\
-  !*** ../core/node_modules/@babel/runtime/regenerator/index.js ***!
-  \****************************************************************/
+/***/ "../core/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js":
+/*!******************************************************************************************************************************!*\
+  !*** ../core/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js ***!
+  \******************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! regenerator-runtime */ "../core/node_modules/regenerator-runtime/runtime-module.js");
+module.exports = __webpack_require__(/*! regenerator-runtime */ "../core/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js");
 
 
 /***/ }),
 
-/***/ "../core/node_modules/regenerator-runtime/runtime-module.js":
-/*!******************************************************************!*\
-  !*** ../core/node_modules/regenerator-runtime/runtime-module.js ***!
-  \******************************************************************/
+/***/ "../core/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js":
+/*!******************************************************************************************************************************!*\
+  !*** ../core/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js ***!
+  \******************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -9224,7 +9413,7 @@ var oldRuntime = hadRuntime && g.regeneratorRuntime;
 // Force reevalutation of runtime.js.
 g.regeneratorRuntime = undefined;
 
-module.exports = __webpack_require__(/*! ./runtime */ "../core/node_modules/regenerator-runtime/runtime.js");
+module.exports = __webpack_require__(/*! ./runtime */ "../core/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js");
 
 if (hadRuntime) {
   // Restore the original runtime.
@@ -9241,10 +9430,10 @@ if (hadRuntime) {
 
 /***/ }),
 
-/***/ "../core/node_modules/regenerator-runtime/runtime.js":
-/*!***********************************************************!*\
-  !*** ../core/node_modules/regenerator-runtime/runtime.js ***!
-  \***********************************************************/
+/***/ "../core/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js":
+/*!***********************************************************************************************************************!*\
+  !*** ../core/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js ***!
+  \***********************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -9986,6 +10175,9 @@ if (hadRuntime) {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -10354,13 +10546,22 @@ exports.Sha3 = Sha3;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -10388,7 +10589,7 @@ function (_coreError_1$CoreErro) {
 
     _classCallCheck(this, CryptoError);
 
-    _this = _possibleConstructorReturn(this, (CryptoError.__proto__ || Object.getPrototypeOf(CryptoError)).call(this, message, additional, innerError));
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(CryptoError).call(this, message, additional, innerError));
     _this.domain = "Crypto";
     return _this;
   }
@@ -10407,6 +10608,9 @@ exports.CryptoError = CryptoError;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -10415,9 +10619,15 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -10441,7 +10651,7 @@ function (_factoryBase_1$Factor) {
   function ProofOfWorkFactory() {
     _classCallCheck(this, ProofOfWorkFactory);
 
-    return _possibleConstructorReturn(this, (ProofOfWorkFactory.__proto__ || Object.getPrototypeOf(ProofOfWorkFactory)).call(this));
+    return _possibleConstructorReturn(this, _getPrototypeOf(ProofOfWorkFactory).call(this));
   }
   /**
    * Get the instance of the factory.
@@ -10481,7 +10691,14 @@ exports.ProofOfWorkFactory = ProofOfWorkFactory;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+
+function _construct(Parent, args, Class) { if (isNativeReflectConstruct()) { _construct = Reflect.construct; } else { _construct = function _construct(Parent, args, Class) { var a = [null]; a.push.apply(a, args); var Constructor = Function.bind.apply(Parent, a); var instance = new Constructor(); if (Class) _setPrototypeOf(instance, Class.prototype); return instance; }; } return _construct.apply(null, arguments); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -10489,9 +10706,15 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -10519,7 +10742,7 @@ function (_factoryBase_1$Factor) {
   function SpongeFactory() {
     _classCallCheck(this, SpongeFactory);
 
-    return _possibleConstructorReturn(this, (SpongeFactory.__proto__ || Object.getPrototypeOf(SpongeFactory)).call(this));
+    return _possibleConstructorReturn(this, _getPrototypeOf(SpongeFactory).call(this));
   }
   /**
    * Get the instance of the factory.
@@ -10545,7 +10768,7 @@ function (_factoryBase_1$Factor) {
             args[_key] = arguments[_key];
           }
 
-          return new (Function.prototype.bind.apply(curl_1.Curl, [null].concat(args)))();
+          return _construct(curl_1.Curl, args);
         });
 
         SpongeFactory._instance.register("curl81", function () {
@@ -10578,6 +10801,9 @@ exports.SpongeFactory = SpongeFactory;
   \**********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -11119,13 +11345,16 @@ exports.ISS = ISS;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-var __importDefault = this && this.__importDefault || function (mod) {
+var __importDefault = void 0 && (void 0).__importDefault || function (mod) {
   return mod && mod.__esModule ? mod : {
     "default": mod
   };
@@ -11137,8 +11366,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var numberHelper_1 = __webpack_require__(/*! @iota-pico/core/dist/helpers/numberHelper */ "../core/dist/helpers/numberHelper.js");
 
-var objectHelper_1 = __webpack_require__(/*! @iota-pico/core/dist/helpers/objectHelper */ "../core/dist/helpers/objectHelper.js"); // tslint:disable-next-line:import-name
-
+var objectHelper_1 = __webpack_require__(/*! @iota-pico/core/dist/helpers/objectHelper */ "../core/dist/helpers/objectHelper.js");
 
 var big_integer_1 = __importDefault(__webpack_require__(/*! big-integer */ "big-integer"));
 
@@ -11419,6 +11647,9 @@ exports.BigIntegerHelper = BigIntegerHelper;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -11490,6 +11721,9 @@ exports.TransactionHelper = TransactionHelper;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function __export(m) {
   for (var p in m) {
     if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -11532,7 +11766,12 @@ __export(__webpack_require__(/*! ./sponges/kerl */ "../crypto/dist/sponges/kerl.
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var _regeneratorRuntime = __webpack_require__(/*! @babel/runtime/regenerator */ "../crypto/node_modules/@babel/runtime/regenerator/index.js");
+"use strict";
+
+
+var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ "../crypto/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } } function _next(value) { step("next", value); } function _throw(err) { step("throw", err); } _next(); }); }; }
 
@@ -11596,8 +11835,8 @@ function () {
     value: function () {
       var _initialize = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee() {
-        return _regeneratorRuntime.wrap(function _callee$(_context) {
+      _regenerator.default.mark(function _callee() {
+        return _regenerator.default.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
@@ -11629,9 +11868,9 @@ function () {
     value: function () {
       var _pow = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee2(trunkTransaction, branchTransaction, trytes, minWeightMagnitude) {
+      _regenerator.default.mark(function _callee2(trunkTransaction, branchTransaction, trytes, minWeightMagnitude) {
         var finalTrytes, previousTransactionHash, i, transaction, newTrytes, singleTrytes, returnTransaction;
-        return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+        return _regenerator.default.wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
@@ -11764,6 +12003,9 @@ exports.ProofOfWorkBase = ProofOfWorkBase;
   \**************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -11982,6 +12224,9 @@ exports.Curl = Curl;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -12192,22 +12437,22 @@ exports.Kerl = Kerl;
 
 /***/ }),
 
-/***/ "../crypto/node_modules/@babel/runtime/regenerator/index.js":
-/*!******************************************************************!*\
-  !*** ../crypto/node_modules/@babel/runtime/regenerator/index.js ***!
-  \******************************************************************/
+/***/ "../crypto/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js":
+/*!********************************************************************************************************************************!*\
+  !*** ../crypto/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js ***!
+  \********************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! regenerator-runtime */ "../crypto/node_modules/regenerator-runtime/runtime-module.js");
+module.exports = __webpack_require__(/*! regenerator-runtime */ "../crypto/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js");
 
 
 /***/ }),
 
-/***/ "../crypto/node_modules/regenerator-runtime/runtime-module.js":
-/*!********************************************************************!*\
-  !*** ../crypto/node_modules/regenerator-runtime/runtime-module.js ***!
-  \********************************************************************/
+/***/ "../crypto/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js":
+/*!********************************************************************************************************************************!*\
+  !*** ../crypto/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js ***!
+  \********************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12233,7 +12478,7 @@ var oldRuntime = hadRuntime && g.regeneratorRuntime;
 // Force reevalutation of runtime.js.
 g.regeneratorRuntime = undefined;
 
-module.exports = __webpack_require__(/*! ./runtime */ "../crypto/node_modules/regenerator-runtime/runtime.js");
+module.exports = __webpack_require__(/*! ./runtime */ "../crypto/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js");
 
 if (hadRuntime) {
   // Restore the original runtime.
@@ -12250,10 +12495,10 @@ if (hadRuntime) {
 
 /***/ }),
 
-/***/ "../crypto/node_modules/regenerator-runtime/runtime.js":
-/*!*************************************************************!*\
-  !*** ../crypto/node_modules/regenerator-runtime/runtime.js ***!
-  \*************************************************************/
+/***/ "../crypto/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js":
+/*!*************************************************************************************************************************!*\
+  !*** ../crypto/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js ***!
+  \*************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -12995,6 +13240,9 @@ if (hadRuntime) {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -13078,9 +13326,8 @@ function () {
       var ascii = "";
 
       for (var i = 0; i < trytesString.length; i += 2) {
-        var trytesPair = trytesString[i] + trytesString[i + 1];
-        var firstValue = trytes_1.Trytes.ALPHABET.indexOf(trytesPair[0]);
-        var secondValue = trytes_1.Trytes.ALPHABET.indexOf(trytesPair[1]);
+        var firstValue = trytes_1.Trytes.ALPHABET.indexOf(trytesString[i]);
+        var secondValue = trytes_1.Trytes.ALPHABET.indexOf(trytesString[i + 1]);
         var decimalValue = firstValue + secondValue * 27;
         ascii += String.fromCharCode(decimalValue);
       }
@@ -13102,6 +13349,9 @@ exports.AsciiTrytesConverter = AsciiTrytesConverter;
   \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -13146,10 +13396,6 @@ function () {
      * @returns The trytes representation of the object.
      */
     value: function to(value) {
-      if (objectHelper_1.ObjectHelper.isEmpty(value)) {
-        throw new dataError_1.DataError("The value can not be empty");
-      }
-
       var json;
 
       try {
@@ -13158,9 +13404,12 @@ function () {
         throw new dataError_1.DataError("There was a problem converting the object to JSON", {
           err: err
         });
-      }
+      } // Encode any non ascii chars
 
-      return new asciiTrytesConverter_1.AsciiTrytesConverter().to(stringHelper_1.StringHelper.encodeNonASCII(json));
+
+      var encoded = stringHelper_1.StringHelper.encodeNonASCII(json); // Convert to ascii trytes
+
+      return new asciiTrytesConverter_1.AsciiTrytesConverter().to(encoded);
     }
     /**
      * Convert trytes into a string value.
@@ -13175,19 +13424,9 @@ function () {
         throw new dataError_1.DataError("The trytes parameter is empty or not the correct type");
       }
 
-      var ascii = new asciiTrytesConverter_1.AsciiTrytesConverter().from(trytes); // Must have a a start and closing pairs
+      var ascii = new asciiTrytesConverter_1.AsciiTrytesConverter().from(trytes); // trim any trailing nulls (9s in trytes)
 
-      if (ascii.length < 2) {
-        throw new dataError_1.DataError("The trytes do not represent an object");
-      } // The start and end must be either {}, [] or "" to represent a JSON object
-
-
-      if (!(ascii[0] === "{" && ascii[ascii.length - 1] === "}" || ascii[0] === "[" && ascii[ascii.length - 1] === "]" || ascii[0] === "\"" && ascii[ascii.length - 1] === "\"")) {
-        throw new dataError_1.DataError("The trytes do not represent an object", {
-          ascii: ascii
-        });
-      }
-
+      ascii = ascii.replace(/\0+$/, "");
       var decoded = stringHelper_1.StringHelper.decodeNonASCII(ascii);
       var obj;
 
@@ -13216,6 +13455,9 @@ exports.ObjectTrytesConverter = ObjectTrytesConverter;
   \************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -13350,7 +13592,10 @@ exports.Address = Address;
   !*** ../data/dist/data/addressSecurity.js ***!
   \********************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -13375,6 +13620,9 @@ var AddressSecurity;
   \***********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -13469,6 +13717,9 @@ exports.Bundle = Bundle;
   \*********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -13569,6 +13820,9 @@ exports.Hash = Hash;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -13651,6 +13905,9 @@ exports.Input = Input;
   \*****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -13750,6 +14007,9 @@ exports.SignatureMessageFragment = SignatureMessageFragment;
   \********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -13853,6 +14113,9 @@ exports.Tag = Tag;
   \****************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -14103,6 +14366,9 @@ exports.Transaction = Transaction;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -14187,6 +14453,9 @@ exports.Transfer = Transfer;
   \**********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -14509,6 +14778,9 @@ exports.Trits = Trits;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -14684,6 +14956,9 @@ exports.TryteNumber = TryteNumber;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -14822,13 +15097,22 @@ exports.Trytes = Trytes;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -14856,7 +15140,7 @@ function (_coreError_1$CoreErro) {
 
     _classCallCheck(this, DataError);
 
-    _this = _possibleConstructorReturn(this, (DataError.__proto__ || Object.getPrototypeOf(DataError)).call(this, message, additional, innerError));
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(DataError).call(this, message, additional, innerError));
     _this.domain = "Data";
     return _this;
   }
@@ -14874,6 +15158,9 @@ exports.DataError = DataError;
   \*****************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function __export(m) {
   for (var p in m) {
@@ -14927,13 +15214,16 @@ __export(__webpack_require__(/*! ./error/dataError */ "../data/dist/error/dataEr
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(Buffer) {function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+"use strict";
+/* WEBPACK VAR INJECTION */(function(Buffer) {
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-var __importStar = this && this.__importStar || function (mod) {
+var __importStar = void 0 && (void 0).__importStar || function (mod) {
   if (mod && mod.__esModule) return mod;
   var result = {};
   if (mod != null) for (var k in mod) {
@@ -14953,7 +15243,7 @@ var objectHelper_1 = __webpack_require__(/*! @iota-pico/core/dist/helpers/object
 
 var stringHelper_1 = __webpack_require__(/*! @iota-pico/core/dist/helpers/stringHelper */ "../core/dist/helpers/stringHelper.js");
 
-var crypto = __importStar(__webpack_require__(/*! crypto */ "./node_modules/crypto-browserify/index.js"));
+var crypto = __importStar(__webpack_require__(/*! crypto */ "./node_modules/.registry.npmjs.org/crypto-browserify/3.12.0/node_modules/crypto-browserify/index.js"));
 /**
  * Implementation of a platform crypto for use in NodeJS.
  */
@@ -15114,7 +15404,7 @@ function () {
 }();
 
 exports.PlatformCrypto = PlatformCrypto;
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../lib-browser/node_modules/buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../lib-browser/node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer))
 
 /***/ }),
 
@@ -15124,6 +15414,9 @@ exports.PlatformCrypto = PlatformCrypto;
   \************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function __export(m) {
   for (var p in m) {
@@ -15155,7 +15448,12 @@ __export(__webpack_require__(/*! ./services/rngService */ "../pal-browser/dist/s
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var _regeneratorRuntime = __webpack_require__(/*! @babel/runtime/regenerator */ "../pal-browser/node_modules/@babel/runtime/regenerator/index.js");
+"use strict";
+
+
+var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ "../pal-browser/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } } function _next(value) { step("next", value); } function _throw(err) { step("throw", err); } _next(); }); }; }
 
@@ -15226,9 +15524,9 @@ function () {
     value: function () {
       var _get = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee(additionalPath, additionalHeaders) {
+      _regenerator.default.mark(function _callee(additionalPath, additionalHeaders) {
         var resp;
-        return _regeneratorRuntime.wrap(function _callee$(_context) {
+        return _regenerator.default.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
@@ -15269,9 +15567,9 @@ function () {
     value: function () {
       var _post = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee2(data, additionalPath, additionalHeaders) {
+      _regenerator.default.mark(function _callee2(data, additionalPath, additionalHeaders) {
         var resp;
-        return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+        return _regenerator.default.wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
@@ -15312,10 +15610,10 @@ function () {
     value: function () {
       var _getJson = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee3(additionalPath, additionalHeaders) {
+      _regenerator.default.mark(function _callee3(additionalPath, additionalHeaders) {
         var _this = this;
 
-        return _regeneratorRuntime.wrap(function _callee3$(_context3) {
+        return _regenerator.default.wrap(function _callee3$(_context3) {
           while (1) {
             switch (_context3.prev = _context3.next) {
               case 0:
@@ -15365,11 +15663,11 @@ function () {
     value: function () {
       var _postJson = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee4(data, additionalPath, additionalHeaders) {
+      _regenerator.default.mark(function _callee4(data, additionalPath, additionalHeaders) {
         var _this2 = this;
 
         var headers;
-        return _regeneratorRuntime.wrap(function _callee4$(_context4) {
+        return _regenerator.default.wrap(function _callee4$(_context4) {
           while (1) {
             switch (_context4.prev = _context4.next) {
               case 0:
@@ -15420,10 +15718,10 @@ function () {
     value: function () {
       var _doRequest = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee5(method, data, additionalPath, additionalHeaders) {
+      _regenerator.default.mark(function _callee5(method, data, additionalPath, additionalHeaders) {
         var _this3 = this;
 
-        return _regeneratorRuntime.wrap(function _callee5$(_context5) {
+        return _regenerator.default.wrap(function _callee5$(_context5) {
           while (1) {
             switch (_context5.prev = _context5.next) {
               case 0:
@@ -15521,7 +15819,12 @@ exports.NetworkClient = NetworkClient;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var _regeneratorRuntime = __webpack_require__(/*! @babel/runtime/regenerator */ "../pal-browser/node_modules/@babel/runtime/regenerator/index.js");
+"use strict";
+
+
+var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ "../pal-browser/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } } function _next(value) { step("next", value); } function _throw(err) { step("throw", err); } _next(); }); }; }
 
@@ -15568,8 +15871,8 @@ function () {
     value: function () {
       var _initialize = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee() {
-        return _regeneratorRuntime.wrap(function _callee$(_context) {
+      _regenerator.default.mark(function _callee() {
+        return _regenerator.default.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
@@ -15617,7 +15920,10 @@ exports.PAL = PAL;
   !*** ../pal-browser/dist/services/rngService.js ***!
   \**************************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -15666,22 +15972,22 @@ exports.RngService = RngService;
 
 /***/ }),
 
-/***/ "../pal-browser/node_modules/@babel/runtime/regenerator/index.js":
-/*!***********************************************************************!*\
-  !*** ../pal-browser/node_modules/@babel/runtime/regenerator/index.js ***!
-  \***********************************************************************/
+/***/ "../pal-browser/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js":
+/*!*************************************************************************************************************************************!*\
+  !*** ../pal-browser/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js ***!
+  \*************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! regenerator-runtime */ "../pal-browser/node_modules/regenerator-runtime/runtime-module.js");
+module.exports = __webpack_require__(/*! regenerator-runtime */ "../pal-browser/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js");
 
 
 /***/ }),
 
-/***/ "../pal-browser/node_modules/regenerator-runtime/runtime-module.js":
-/*!*************************************************************************!*\
-  !*** ../pal-browser/node_modules/regenerator-runtime/runtime-module.js ***!
-  \*************************************************************************/
+/***/ "../pal-browser/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js":
+/*!*************************************************************************************************************************************!*\
+  !*** ../pal-browser/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js ***!
+  \*************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15707,7 +16013,7 @@ var oldRuntime = hadRuntime && g.regeneratorRuntime;
 // Force reevalutation of runtime.js.
 g.regeneratorRuntime = undefined;
 
-module.exports = __webpack_require__(/*! ./runtime */ "../pal-browser/node_modules/regenerator-runtime/runtime.js");
+module.exports = __webpack_require__(/*! ./runtime */ "../pal-browser/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js");
 
 if (hadRuntime) {
   // Restore the original runtime.
@@ -15724,10 +16030,10 @@ if (hadRuntime) {
 
 /***/ }),
 
-/***/ "../pal-browser/node_modules/regenerator-runtime/runtime.js":
-/*!******************************************************************!*\
-  !*** ../pal-browser/node_modules/regenerator-runtime/runtime.js ***!
-  \******************************************************************/
+/***/ "../pal-browser/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js":
+/*!******************************************************************************************************************************!*\
+  !*** ../pal-browser/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js ***!
+  \******************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16469,6 +16775,9 @@ if (hadRuntime) {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function __export(m) {
   for (var p in m) {
     if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -16493,7 +16802,12 @@ __export(__webpack_require__(/*! ./proofOfWorkBox */ "../pow-box/dist/proofOfWor
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var _regeneratorRuntime = __webpack_require__(/*! @babel/runtime/regenerator */ "../pow-box/node_modules/@babel/runtime/regenerator/index.js");
+"use strict";
+
+
+var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ "../pow-box/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } } function _next(value) { step("next", value); } function _throw(err) { step("throw", err); } _next(); }); }; }
 
@@ -16567,8 +16881,8 @@ function () {
     value: function () {
       var _initialize = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee() {
-        return _regeneratorRuntime.wrap(function _callee$(_context) {
+      _regenerator.default.mark(function _callee() {
+        return _regenerator.default.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
@@ -16600,9 +16914,9 @@ function () {
     value: function () {
       var _pow = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee2(trunkTransaction, branchTransaction, trytes, minWeightMagnitude) {
+      _regenerator.default.mark(function _callee2(trunkTransaction, branchTransaction, trytes, minWeightMagnitude) {
         var attachToTangleRequest, additionalHeaders, attachToTangleResponse;
-        return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+        return _regenerator.default.wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
@@ -16685,10 +16999,10 @@ function () {
     value: function () {
       var _waitForJobCompletion = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee4(jobId, sourceTrytes) {
+      _regenerator.default.mark(function _callee4(jobId, sourceTrytes) {
         var _this = this;
 
-        return _regeneratorRuntime.wrap(function _callee4$(_context4) {
+        return _regenerator.default.wrap(function _callee4$(_context4) {
           while (1) {
             switch (_context4.prev = _context4.next) {
               case 0:
@@ -16697,9 +17011,9 @@ function () {
                   /*#__PURE__*/
                   _asyncToGenerator(
                   /*#__PURE__*/
-                  _regeneratorRuntime.mark(function _callee3() {
+                  _regenerator.default.mark(function _callee3() {
                     var jobResponse;
-                    return _regeneratorRuntime.wrap(function _callee3$(_context3) {
+                    return _regenerator.default.wrap(function _callee3$(_context3) {
                       while (1) {
                         switch (_context3.prev = _context3.next) {
                           case 0:
@@ -16764,22 +17078,22 @@ exports.ProofOfWorkBox = ProofOfWorkBox;
 
 /***/ }),
 
-/***/ "../pow-box/node_modules/@babel/runtime/regenerator/index.js":
-/*!*******************************************************************!*\
-  !*** ../pow-box/node_modules/@babel/runtime/regenerator/index.js ***!
-  \*******************************************************************/
+/***/ "../pow-box/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js":
+/*!*********************************************************************************************************************************!*\
+  !*** ../pow-box/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js ***!
+  \*********************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! regenerator-runtime */ "../pow-box/node_modules/regenerator-runtime/runtime-module.js");
+module.exports = __webpack_require__(/*! regenerator-runtime */ "../pow-box/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js");
 
 
 /***/ }),
 
-/***/ "../pow-box/node_modules/regenerator-runtime/runtime-module.js":
-/*!*********************************************************************!*\
-  !*** ../pow-box/node_modules/regenerator-runtime/runtime-module.js ***!
-  \*********************************************************************/
+/***/ "../pow-box/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js":
+/*!*********************************************************************************************************************************!*\
+  !*** ../pow-box/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js ***!
+  \*********************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -16805,7 +17119,7 @@ var oldRuntime = hadRuntime && g.regeneratorRuntime;
 // Force reevalutation of runtime.js.
 g.regeneratorRuntime = undefined;
 
-module.exports = __webpack_require__(/*! ./runtime */ "../pow-box/node_modules/regenerator-runtime/runtime.js");
+module.exports = __webpack_require__(/*! ./runtime */ "../pow-box/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js");
 
 if (hadRuntime) {
   // Restore the original runtime.
@@ -16822,10 +17136,10 @@ if (hadRuntime) {
 
 /***/ }),
 
-/***/ "../pow-box/node_modules/regenerator-runtime/runtime.js":
-/*!**************************************************************!*\
-  !*** ../pow-box/node_modules/regenerator-runtime/runtime.js ***!
-  \**************************************************************/
+/***/ "../pow-box/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js":
+/*!**************************************************************************************************************************!*\
+  !*** ../pow-box/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js ***!
+  \**************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17567,6 +17881,9 @@ if (hadRuntime) {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function __export(m) {
   for (var p in m) {
     if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -17591,13 +17908,16 @@ __export(__webpack_require__(/*! ./proofOfWorkJs */ "../pow-js/dist/proofOfWorkJ
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-var __importDefault = this && this.__importDefault || function (mod) {
+var __importDefault = void 0 && (void 0).__importDefault || function (mod) {
   return mod && mod.__esModule ? mod : {
     "default": mod
   };
@@ -17609,8 +17929,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var spongeFactory_1 = __webpack_require__(/*! @iota-pico/crypto/dist/factories/spongeFactory */ "../crypto/dist/factories/spongeFactory.js");
 
-var trits_1 = __webpack_require__(/*! @iota-pico/data/dist/data/trits */ "../data/dist/data/trits.js"); // tslint:disable-next-line:import-name
-
+var trits_1 = __webpack_require__(/*! @iota-pico/data/dist/data/trits */ "../data/dist/data/trits.js");
 
 var big_integer_1 = __importDefault(__webpack_require__(/*! big-integer */ "big-integer"));
 /**
@@ -17835,7 +18154,12 @@ exports.PearlDiver = PearlDiver;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var _regeneratorRuntime = __webpack_require__(/*! @babel/runtime/regenerator */ "../pow-js/node_modules/@babel/runtime/regenerator/index.js");
+"use strict";
+
+
+var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ "../pow-js/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
@@ -17847,9 +18171,15 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -17883,7 +18213,7 @@ function (_proofOfWorkBase_1$Pr) {
   function ProofOfWorkJs(timeService) {
     _classCallCheck(this, ProofOfWorkJs);
 
-    return _possibleConstructorReturn(this, (ProofOfWorkJs.__proto__ || Object.getPrototypeOf(ProofOfWorkJs)).call(this, timeService));
+    return _possibleConstructorReturn(this, _getPrototypeOf(ProofOfWorkJs).call(this, timeService));
   }
   /**
    * Perform a proof of work on a single item.
@@ -17898,9 +18228,9 @@ function (_proofOfWorkBase_1$Pr) {
     value: function () {
       var _singlePow = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee(trytes, minWeightMagnitude) {
+      _regenerator.default.mark(function _callee(trytes, minWeightMagnitude) {
         var nonce, nonceString, trytesString;
-        return _regeneratorRuntime.wrap(function _callee$(_context) {
+        return _regenerator.default.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
@@ -17946,22 +18276,22 @@ exports.ProofOfWorkJs = ProofOfWorkJs;
 
 /***/ }),
 
-/***/ "../pow-js/node_modules/@babel/runtime/regenerator/index.js":
-/*!******************************************************************!*\
-  !*** ../pow-js/node_modules/@babel/runtime/regenerator/index.js ***!
-  \******************************************************************/
+/***/ "../pow-js/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js":
+/*!********************************************************************************************************************************!*\
+  !*** ../pow-js/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js ***!
+  \********************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! regenerator-runtime */ "../pow-js/node_modules/regenerator-runtime/runtime-module.js");
+module.exports = __webpack_require__(/*! regenerator-runtime */ "../pow-js/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js");
 
 
 /***/ }),
 
-/***/ "../pow-js/node_modules/regenerator-runtime/runtime-module.js":
-/*!********************************************************************!*\
-  !*** ../pow-js/node_modules/regenerator-runtime/runtime-module.js ***!
-  \********************************************************************/
+/***/ "../pow-js/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js":
+/*!********************************************************************************************************************************!*\
+  !*** ../pow-js/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js ***!
+  \********************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -17987,7 +18317,7 @@ var oldRuntime = hadRuntime && g.regeneratorRuntime;
 // Force reevalutation of runtime.js.
 g.regeneratorRuntime = undefined;
 
-module.exports = __webpack_require__(/*! ./runtime */ "../pow-js/node_modules/regenerator-runtime/runtime.js");
+module.exports = __webpack_require__(/*! ./runtime */ "../pow-js/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js");
 
 if (hadRuntime) {
   // Restore the original runtime.
@@ -18004,10 +18334,10 @@ if (hadRuntime) {
 
 /***/ }),
 
-/***/ "../pow-js/node_modules/regenerator-runtime/runtime.js":
-/*!*************************************************************!*\
-  !*** ../pow-js/node_modules/regenerator-runtime/runtime.js ***!
-  \*************************************************************/
+/***/ "../pow-js/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js":
+/*!*************************************************************************************************************************!*\
+  !*** ../pow-js/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js ***!
+  \*************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -18749,6 +19079,9 @@ if (hadRuntime) {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function __export(m) {
   for (var p in m) {
     if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -18773,7 +19106,12 @@ __export(__webpack_require__(/*! ./proofOfWorkWasm */ "../pow-wasm/dist/proofOfW
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var _regeneratorRuntime = __webpack_require__(/*! @babel/runtime/regenerator */ "../pow-wasm/node_modules/@babel/runtime/regenerator/index.js");
+"use strict";
+
+
+var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ "../pow-wasm/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } } function _next(value) { step("next", value); } function _throw(err) { step("throw", err); } _next(); }); }; }
 
@@ -18785,13 +19123,21 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return _get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } }
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _get(target, property, receiver) { if (typeof Reflect !== "undefined" && Reflect.get) { _get = Reflect.get; } else { _get = function _get(target, property, receiver) { var base = _superPropBase(target, property); if (!base) return; var desc = Object.getOwnPropertyDescriptor(base, property); if (desc.get) { return desc.get.call(receiver); } return desc.value; }; } return _get(target, property, receiver || target); }
 
-var __importDefault = this && this.__importDefault || function (mod) {
+function _superPropBase(object, property) { while (!Object.prototype.hasOwnProperty.call(object, property)) { object = _getPrototypeOf(object); if (object === null) break; } return object; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+var __importDefault = void 0 && (void 0).__importDefault || function (mod) {
   return mod && mod.__esModule ? mod : {
     "default": mod
   };
@@ -18833,7 +19179,7 @@ function (_proofOfWorkBase_1$Pr) {
 
     _classCallCheck(this, ProofOfWorkWasm);
 
-    _this = _possibleConstructorReturn(this, (ProofOfWorkWasm.__proto__ || Object.getPrototypeOf(ProofOfWorkWasm)).call(this, timeService));
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(ProofOfWorkWasm).call(this, timeService));
 
     if (objectHelper_1.ObjectHelper.isEmpty(webPlatform)) {
       _this._webPlatform = {
@@ -18858,15 +19204,15 @@ function (_proofOfWorkBase_1$Pr) {
     value: function () {
       var _initialize = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee2() {
+      _regenerator.default.mark(function _callee2() {
         var _this2 = this;
 
-        return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+        return _regenerator.default.wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
                 _context2.next = 2;
-                return _get(ProofOfWorkWasm.prototype.__proto__ || Object.getPrototypeOf(ProofOfWorkWasm.prototype), "initialize", this).call(this);
+                return _get(_getPrototypeOf(ProofOfWorkWasm.prototype), "initialize", this).call(this);
 
               case 2:
                 return _context2.abrupt("return", new Promise(
@@ -18874,9 +19220,9 @@ function (_proofOfWorkBase_1$Pr) {
                 function () {
                   var _ref = _asyncToGenerator(
                   /*#__PURE__*/
-                  _regeneratorRuntime.mark(function _callee(resolve, reject) {
+                  _regenerator.default.mark(function _callee(resolve, reject) {
                     var module;
-                    return _regeneratorRuntime.wrap(function _callee$(_context) {
+                    return _regenerator.default.wrap(function _callee$(_context) {
                       while (1) {
                         switch (_context.prev = _context.next) {
                           case 0:
@@ -18934,10 +19280,10 @@ function (_proofOfWorkBase_1$Pr) {
     value: function () {
       var _singlePow = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee3(trytes, minWeightMagnitude) {
+      _regenerator.default.mark(function _callee3(trytes, minWeightMagnitude) {
         var _this3 = this;
 
-        return _regeneratorRuntime.wrap(function _callee3$(_context3) {
+        return _regenerator.default.wrap(function _callee3$(_context3) {
           while (1) {
             switch (_context3.prev = _context3.next) {
               case 0:
@@ -18984,22 +19330,22 @@ exports.ProofOfWorkWasm = ProofOfWorkWasm;
 
 /***/ }),
 
-/***/ "../pow-wasm/node_modules/@babel/runtime/regenerator/index.js":
-/*!********************************************************************!*\
-  !*** ../pow-wasm/node_modules/@babel/runtime/regenerator/index.js ***!
-  \********************************************************************/
+/***/ "../pow-wasm/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js":
+/*!**********************************************************************************************************************************!*\
+  !*** ../pow-wasm/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js ***!
+  \**********************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! regenerator-runtime */ "../pow-wasm/node_modules/regenerator-runtime/runtime-module.js");
+module.exports = __webpack_require__(/*! regenerator-runtime */ "../pow-wasm/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js");
 
 
 /***/ }),
 
-/***/ "../pow-wasm/node_modules/regenerator-runtime/runtime-module.js":
-/*!**********************************************************************!*\
-  !*** ../pow-wasm/node_modules/regenerator-runtime/runtime-module.js ***!
-  \**********************************************************************/
+/***/ "../pow-wasm/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js":
+/*!**********************************************************************************************************************************!*\
+  !*** ../pow-wasm/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js ***!
+  \**********************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19025,7 +19371,7 @@ var oldRuntime = hadRuntime && g.regeneratorRuntime;
 // Force reevalutation of runtime.js.
 g.regeneratorRuntime = undefined;
 
-module.exports = __webpack_require__(/*! ./runtime */ "../pow-wasm/node_modules/regenerator-runtime/runtime.js");
+module.exports = __webpack_require__(/*! ./runtime */ "../pow-wasm/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js");
 
 if (hadRuntime) {
   // Restore the original runtime.
@@ -19042,10 +19388,10 @@ if (hadRuntime) {
 
 /***/ }),
 
-/***/ "../pow-wasm/node_modules/regenerator-runtime/runtime.js":
-/*!***************************************************************!*\
-  !*** ../pow-wasm/node_modules/regenerator-runtime/runtime.js ***!
-  \***************************************************************/
+/***/ "../pow-wasm/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js":
+/*!***************************************************************************************************************************!*\
+  !*** ../pow-wasm/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js ***!
+  \***************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -19787,7 +20133,10 @@ if (hadRuntime) {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(process, Buffer, module) {var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+"use strict";
+/* WEBPACK VAR INJECTION */(function(process, Buffer, module) {var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 var Module = function Module(_Module) {
   _Module = _Module || {}; // The Module object: Our interface to the outside world. We import
@@ -19872,8 +20221,8 @@ var Module = function Module(_Module) {
       ret = tryParseAsDataURI(filename);
 
       if (!ret) {
-        if (!nodeFS) nodeFS = __webpack_require__(/*! fs */ "./node_modules/node-libs-browser/mock/empty.js");
-        if (!nodePath) nodePath = __webpack_require__(/*! path */ "./node_modules/node-libs-browser/mock/empty.js");
+        if (!nodeFS) nodeFS = __webpack_require__(/*! fs */ "./node_modules/.registry.npmjs.org/node-libs-browser/2.1.0/node_modules/node-libs-browser/mock/empty.js");
+        if (!nodePath) nodePath = __webpack_require__(/*! path */ "./node_modules/.registry.npmjs.org/node-libs-browser/2.1.0/node_modules/node-libs-browser/mock/empty.js");
         filename = nodePath['normalize'](filename);
         ret = nodeFS['readFileSync'](filename);
       }
@@ -23162,7 +23511,7 @@ if (( false ? undefined : _typeof(exports)) === 'object' && ( false ? undefined 
   return Module;
 }).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));else {}
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../lib-browser/node_modules/process/browser.js */ "./node_modules/process/browser.js"), __webpack_require__(/*! ./../../lib-browser/node_modules/buffer/index.js */ "./node_modules/buffer/index.js").Buffer, __webpack_require__(/*! ./../../lib-browser/node_modules/webpack/buildin/module.js */ "./node_modules/webpack/buildin/module.js")(module)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../lib-browser/node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js"), __webpack_require__(/*! ./../../lib-browser/node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer, __webpack_require__(/*! ./../../lib-browser/node_modules/.registry.npmjs.org/webpack/4.12.0/node_modules/webpack/buildin/module.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.0/node_modules/webpack/buildin/module.js")(module)))
 
 /***/ }),
 
@@ -23172,6 +23521,9 @@ if (( false ? undefined : _typeof(exports)) === 'object' && ( false ? undefined 
   \**********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function __export(m) {
   for (var p in m) {
@@ -23197,7 +23549,12 @@ __export(__webpack_require__(/*! ./proofOfWorkWebGl */ "../pow-webgl/dist/proofO
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var _regeneratorRuntime = __webpack_require__(/*! @babel/runtime/regenerator */ "../pow-webgl/node_modules/@babel/runtime/regenerator/index.js");
+"use strict";
+
+
+var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ "../pow-webgl/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } } function _next(value) { step("next", value); } function _throw(err) { step("throw", err); } _next(); }); }; }
 
@@ -23207,7 +23564,7 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-var __importDefault = this && this.__importDefault || function (mod) {
+var __importDefault = void 0 && (void 0).__importDefault || function (mod) {
   return mod && mod.__esModule ? mod : {
     "default": mod
   };
@@ -23303,9 +23660,9 @@ function () {
     value: function () {
       var _searchWithTrytes = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee(trytes, minWeightMagnitude) {
+      _regenerator.default.mark(function _callee(trytes, minWeightMagnitude) {
         var searchStates;
-        return _regeneratorRuntime.wrap(function _callee$(_context) {
+        return _regenerator.default.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
@@ -23346,10 +23703,10 @@ function () {
     value: function () {
       var _search = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee2(states, minWeight) {
+      _regenerator.default.mark(function _callee2(states, minWeight) {
         var _this = this;
 
-        return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+        return _regenerator.default.wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
@@ -23583,7 +23940,10 @@ exports.PearlDiver = PearlDiver;
   !*** ../pow-webgl/dist/pearlDiver/pearlDiverState.js ***!
   \*******************************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -23609,7 +23969,12 @@ var PearlDiverState;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var _regeneratorRuntime = __webpack_require__(/*! @babel/runtime/regenerator */ "../pow-webgl/node_modules/@babel/runtime/regenerator/index.js");
+"use strict";
+
+
+var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ "../pow-webgl/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
@@ -23621,11 +23986,19 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return _get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } }
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _get(target, property, receiver) { if (typeof Reflect !== "undefined" && Reflect.get) { _get = Reflect.get; } else { _get = function _get(target, property, receiver) { var base = _superPropBase(target, property); if (!base) return; var desc = Object.getOwnPropertyDescriptor(base, property); if (desc.get) { return desc.get.call(receiver); } return desc.value; }; } return _get(target, property, receiver || target); }
+
+function _superPropBase(object, property) { while (!Object.prototype.hasOwnProperty.call(object, property)) { object = _getPrototypeOf(object); if (object === null) break; } return object; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -23662,7 +24035,7 @@ function (_proofOfWorkBase_1$Pr) {
 
     _classCallCheck(this, ProofOfWorkWebGl);
 
-    _this = _possibleConstructorReturn(this, (ProofOfWorkWebGl.__proto__ || Object.getPrototypeOf(ProofOfWorkWebGl)).call(this, timeService));
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(ProofOfWorkWebGl).call(this, timeService));
 
     if (objectHelper_1.ObjectHelper.isEmpty(webGLPlatform)) {
       _this._webGLPlatform = {
@@ -23702,15 +24075,15 @@ function (_proofOfWorkBase_1$Pr) {
     value: function () {
       var _initialize = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee() {
+      _regenerator.default.mark(function _callee() {
         var _this2 = this;
 
-        return _regeneratorRuntime.wrap(function _callee$(_context) {
+        return _regenerator.default.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
                 _context.next = 2;
-                return _get(ProofOfWorkWebGl.prototype.__proto__ || Object.getPrototypeOf(ProofOfWorkWebGl.prototype), "initialize", this).call(this);
+                return _get(_getPrototypeOf(ProofOfWorkWebGl.prototype), "initialize", this).call(this);
 
               case 2:
                 return _context.abrupt("return", new Promise(function (resolve, reject) {
@@ -23747,9 +24120,9 @@ function (_proofOfWorkBase_1$Pr) {
     value: function () {
       var _singlePow = _asyncToGenerator(
       /*#__PURE__*/
-      _regeneratorRuntime.mark(function _callee2(trytes, minWeightMagnitude) {
+      _regenerator.default.mark(function _callee2(trytes, minWeightMagnitude) {
         var nonce, trytesString, nonceString;
-        return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+        return _regenerator.default.wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
@@ -23812,7 +24185,10 @@ exports.ProofOfWorkWebGl = ProofOfWorkWebGl;
   !*** ../pow-webgl/dist/shaders/add.js ***!
   \****************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -23830,7 +24206,10 @@ exports.default = "\nint sum (int a, int b) {\n  int my_sum = a + b;\n  return m
   !*** ../pow-webgl/dist/shaders/checkCol.js ***!
   \*********************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -23848,7 +24227,10 @@ exports.default = "\nvoid main() {\n  init();\n  ivec4 my_vec = read();\n  int i
   !*** ../pow-webgl/dist/shaders/checkDo.js ***!
   \********************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -23866,7 +24248,10 @@ exports.default = "\nint check(int row, int min_weight_magnitude) {\n  int nonce
   !*** ../pow-webgl/dist/shaders/checkK.js ***!
   \*******************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -23884,7 +24269,10 @@ exports.default = "\nuniform int minWeightMagnitude;\nvoid main() {\n  init();\n
   !*** ../pow-webgl/dist/shaders/finalize.js ***!
   \*********************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -23902,7 +24290,10 @@ exports.default = "\nvoid main() {\n  init();\n  ivec4 my_vec = read();\n  if(my
   !*** ../pow-webgl/dist/shaders/headers.js ***!
   \********************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -23920,7 +24311,10 @@ exports.default = "\n#define HASH_LENGTH 243\n#define NUMBER_OF_ROUNDS 81\n#defi
   !*** ../pow-webgl/dist/shaders/increment.js ***!
   \**********************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -23938,7 +24332,10 @@ exports.default = "\nvoid main() {\n  init();\n  ivec4 my_vec = read();\n  if(my
   !*** ../pow-webgl/dist/shaders/init.js ***!
   \*****************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -23956,7 +24353,10 @@ exports.default = "\nuniform int gr_offset;\nivec4 offset() {\n  if(my_coord.x >
   !*** ../pow-webgl/dist/shaders/transform.js ***!
   \**********************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -23974,7 +24374,10 @@ exports.default = "\nivec2 twist() {\n  int alpha, beta, gamma, delta;\n  ivec4 
   !*** ../pow-webgl/dist/webGL/stdlib.js ***!
   \*****************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -23992,7 +24395,10 @@ exports.default = "#version 300 es\nprecision highp float;\nprecision highp int;
   !*** ../pow-webgl/dist/webGL/vertexShaderCode.js ***!
   \***************************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -24011,6 +24417,9 @@ exports.default = "#version 300 es\nlayout(location = 0) in vec2 position;\nlayo
   \**********************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -24149,13 +24558,16 @@ exports.WebGLHelper = WebGLHelper;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-var __importDefault = this && this.__importDefault || function (mod) {
+var __importDefault = void 0 && (void 0).__importDefault || function (mod) {
   return mod && mod.__esModule ? mod : {
     "default": mod
   };
@@ -24464,22 +24876,22 @@ exports.WebGLWorker = WebGLWorker;
 
 /***/ }),
 
-/***/ "../pow-webgl/node_modules/@babel/runtime/regenerator/index.js":
-/*!*********************************************************************!*\
-  !*** ../pow-webgl/node_modules/@babel/runtime/regenerator/index.js ***!
-  \*********************************************************************/
+/***/ "../pow-webgl/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js":
+/*!***********************************************************************************************************************************!*\
+  !*** ../pow-webgl/node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js ***!
+  \***********************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! regenerator-runtime */ "../pow-webgl/node_modules/regenerator-runtime/runtime-module.js");
+module.exports = __webpack_require__(/*! regenerator-runtime */ "../pow-webgl/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js");
 
 
 /***/ }),
 
-/***/ "../pow-webgl/node_modules/regenerator-runtime/runtime-module.js":
-/*!***********************************************************************!*\
-  !*** ../pow-webgl/node_modules/regenerator-runtime/runtime-module.js ***!
-  \***********************************************************************/
+/***/ "../pow-webgl/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js":
+/*!***********************************************************************************************************************************!*\
+  !*** ../pow-webgl/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js ***!
+  \***********************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -24505,7 +24917,7 @@ var oldRuntime = hadRuntime && g.regeneratorRuntime;
 // Force reevalutation of runtime.js.
 g.regeneratorRuntime = undefined;
 
-module.exports = __webpack_require__(/*! ./runtime */ "../pow-webgl/node_modules/regenerator-runtime/runtime.js");
+module.exports = __webpack_require__(/*! ./runtime */ "../pow-webgl/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js");
 
 if (hadRuntime) {
   // Restore the original runtime.
@@ -24522,10 +24934,10 @@ if (hadRuntime) {
 
 /***/ }),
 
-/***/ "../pow-webgl/node_modules/regenerator-runtime/runtime.js":
-/*!****************************************************************!*\
-  !*** ../pow-webgl/node_modules/regenerator-runtime/runtime.js ***!
-  \****************************************************************/
+/***/ "../pow-webgl/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js":
+/*!****************************************************************************************************************************!*\
+  !*** ../pow-webgl/node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js ***!
+  \****************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -25267,7 +25679,12 @@ if (hadRuntime) {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var _regeneratorRuntime = __webpack_require__(/*! @babel/runtime/regenerator */ "./node_modules/@babel/runtime/regenerator/index.js");
+"use strict";
+
+
+var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ "./node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } } function _next(value) { step("next", value); } function _throw(err) { step("throw", err); } _next(); }); }; }
 
@@ -25318,8 +25735,8 @@ var pow_wasm_1 = __webpack_require__(/*! @iota-pico/pow-wasm */ "../pow-wasm/dis
 
 _asyncToGenerator(
 /*#__PURE__*/
-_regeneratorRuntime.mark(function _callee() {
-  return _regeneratorRuntime.wrap(function _callee$(_context) {
+_regenerator.default.mark(function _callee() {
+  return _regenerator.default.wrap(function _callee$(_context) {
     while (1) {
       switch (_context.prev = _context.next) {
         case 0:
@@ -25350,47 +25767,47 @@ _regeneratorRuntime.mark(function _callee() {
 
 /***/ }),
 
-/***/ "./node_modules/@babel/runtime/regenerator/index.js":
-/*!**********************************************************!*\
-  !*** ./node_modules/@babel/runtime/regenerator/index.js ***!
-  \**********************************************************/
+/***/ "./node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js":
+/*!************************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/@babel/runtime/7.0.0-beta.49/node_modules/@babel/runtime/regenerator/index.js ***!
+  \************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! regenerator-runtime */ "./node_modules/regenerator-runtime/runtime-module.js");
+module.exports = __webpack_require__(/*! regenerator-runtime */ "./node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js");
 
 
 /***/ }),
 
-/***/ "./node_modules/asn1.js/lib/asn1.js":
-/*!******************************************!*\
-  !*** ./node_modules/asn1.js/lib/asn1.js ***!
-  \******************************************/
+/***/ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1.js":
+/*!******************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1.js ***!
+  \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 var asn1 = exports;
 
-asn1.bignum = __webpack_require__(/*! bn.js */ "./node_modules/bn.js/lib/bn.js");
+asn1.bignum = __webpack_require__(/*! bn.js */ "./node_modules/.registry.npmjs.org/bn.js/4.11.8/node_modules/bn.js/lib/bn.js");
 
-asn1.define = __webpack_require__(/*! ./asn1/api */ "./node_modules/asn1.js/lib/asn1/api.js").define;
-asn1.base = __webpack_require__(/*! ./asn1/base */ "./node_modules/asn1.js/lib/asn1/base/index.js");
-asn1.constants = __webpack_require__(/*! ./asn1/constants */ "./node_modules/asn1.js/lib/asn1/constants/index.js");
-asn1.decoders = __webpack_require__(/*! ./asn1/decoders */ "./node_modules/asn1.js/lib/asn1/decoders/index.js");
-asn1.encoders = __webpack_require__(/*! ./asn1/encoders */ "./node_modules/asn1.js/lib/asn1/encoders/index.js");
+asn1.define = __webpack_require__(/*! ./asn1/api */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/api.js").define;
+asn1.base = __webpack_require__(/*! ./asn1/base */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/base/index.js");
+asn1.constants = __webpack_require__(/*! ./asn1/constants */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/constants/index.js");
+asn1.decoders = __webpack_require__(/*! ./asn1/decoders */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/decoders/index.js");
+asn1.encoders = __webpack_require__(/*! ./asn1/encoders */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/encoders/index.js");
 
 
 /***/ }),
 
-/***/ "./node_modules/asn1.js/lib/asn1/api.js":
-/*!**********************************************!*\
-  !*** ./node_modules/asn1.js/lib/asn1/api.js ***!
-  \**********************************************/
+/***/ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/api.js":
+/*!**********************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/api.js ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var asn1 = __webpack_require__(/*! ../asn1 */ "./node_modules/asn1.js/lib/asn1.js");
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js");
+var asn1 = __webpack_require__(/*! ../asn1 */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1.js");
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js");
 
 var api = exports;
 
@@ -25409,7 +25826,7 @@ function Entity(name, body) {
 Entity.prototype._createNamed = function createNamed(base) {
   var named;
   try {
-    named = __webpack_require__(/*! vm */ "./node_modules/vm-browserify/index.js").runInThisContext(
+    named = __webpack_require__(/*! vm */ "./node_modules/.registry.npmjs.org/vm-browserify/0.0.4/node_modules/vm-browserify/index.js").runInThisContext(
       '(function ' + this.name + '(entity) {\n' +
       '  this._initNamed(entity);\n' +
       '})'
@@ -25454,16 +25871,16 @@ Entity.prototype.encode = function encode(data, enc, /* internal */ reporter) {
 
 /***/ }),
 
-/***/ "./node_modules/asn1.js/lib/asn1/base/buffer.js":
-/*!******************************************************!*\
-  !*** ./node_modules/asn1.js/lib/asn1/base/buffer.js ***!
-  \******************************************************/
+/***/ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/base/buffer.js":
+/*!******************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/base/buffer.js ***!
+  \******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js");
-var Reporter = __webpack_require__(/*! ../base */ "./node_modules/asn1.js/lib/asn1/base/index.js").Reporter;
-var Buffer = __webpack_require__(/*! buffer */ "./node_modules/buffer/index.js").Buffer;
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js");
+var Reporter = __webpack_require__(/*! ../base */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/base/index.js").Reporter;
+var Buffer = __webpack_require__(/*! buffer */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer;
 
 function DecoderBuffer(base, options) {
   Reporter.call(this, options);
@@ -25581,34 +25998,34 @@ EncoderBuffer.prototype.join = function join(out, offset) {
 
 /***/ }),
 
-/***/ "./node_modules/asn1.js/lib/asn1/base/index.js":
-/*!*****************************************************!*\
-  !*** ./node_modules/asn1.js/lib/asn1/base/index.js ***!
-  \*****************************************************/
+/***/ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/base/index.js":
+/*!*****************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/base/index.js ***!
+  \*****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 var base = exports;
 
-base.Reporter = __webpack_require__(/*! ./reporter */ "./node_modules/asn1.js/lib/asn1/base/reporter.js").Reporter;
-base.DecoderBuffer = __webpack_require__(/*! ./buffer */ "./node_modules/asn1.js/lib/asn1/base/buffer.js").DecoderBuffer;
-base.EncoderBuffer = __webpack_require__(/*! ./buffer */ "./node_modules/asn1.js/lib/asn1/base/buffer.js").EncoderBuffer;
-base.Node = __webpack_require__(/*! ./node */ "./node_modules/asn1.js/lib/asn1/base/node.js");
+base.Reporter = __webpack_require__(/*! ./reporter */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/base/reporter.js").Reporter;
+base.DecoderBuffer = __webpack_require__(/*! ./buffer */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/base/buffer.js").DecoderBuffer;
+base.EncoderBuffer = __webpack_require__(/*! ./buffer */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/base/buffer.js").EncoderBuffer;
+base.Node = __webpack_require__(/*! ./node */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/base/node.js");
 
 
 /***/ }),
 
-/***/ "./node_modules/asn1.js/lib/asn1/base/node.js":
-/*!****************************************************!*\
-  !*** ./node_modules/asn1.js/lib/asn1/base/node.js ***!
-  \****************************************************/
+/***/ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/base/node.js":
+/*!****************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/base/node.js ***!
+  \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Reporter = __webpack_require__(/*! ../base */ "./node_modules/asn1.js/lib/asn1/base/index.js").Reporter;
-var EncoderBuffer = __webpack_require__(/*! ../base */ "./node_modules/asn1.js/lib/asn1/base/index.js").EncoderBuffer;
-var DecoderBuffer = __webpack_require__(/*! ../base */ "./node_modules/asn1.js/lib/asn1/base/index.js").DecoderBuffer;
-var assert = __webpack_require__(/*! minimalistic-assert */ "./node_modules/minimalistic-assert/index.js");
+var Reporter = __webpack_require__(/*! ../base */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/base/index.js").Reporter;
+var EncoderBuffer = __webpack_require__(/*! ../base */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/base/index.js").EncoderBuffer;
+var DecoderBuffer = __webpack_require__(/*! ../base */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/base/index.js").DecoderBuffer;
+var assert = __webpack_require__(/*! minimalistic-assert */ "./node_modules/.registry.npmjs.org/minimalistic-assert/1.0.1/node_modules/minimalistic-assert/index.js");
 
 // Supported tags
 var tags = [
@@ -26243,14 +26660,14 @@ Node.prototype._isPrintstr = function isPrintstr(str) {
 
 /***/ }),
 
-/***/ "./node_modules/asn1.js/lib/asn1/base/reporter.js":
-/*!********************************************************!*\
-  !*** ./node_modules/asn1.js/lib/asn1/base/reporter.js ***!
-  \********************************************************/
+/***/ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/base/reporter.js":
+/*!********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/base/reporter.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js");
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js");
 
 function Reporter(options) {
   this._reporterState = {
@@ -26375,14 +26792,14 @@ ReporterError.prototype.rethrow = function rethrow(msg) {
 
 /***/ }),
 
-/***/ "./node_modules/asn1.js/lib/asn1/constants/der.js":
-/*!********************************************************!*\
-  !*** ./node_modules/asn1.js/lib/asn1/constants/der.js ***!
-  \********************************************************/
+/***/ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/constants/der.js":
+/*!********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/constants/der.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var constants = __webpack_require__(/*! ../constants */ "./node_modules/asn1.js/lib/asn1/constants/index.js");
+var constants = __webpack_require__(/*! ../constants */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/constants/index.js");
 
 exports.tagClass = {
   0: 'universal',
@@ -26428,10 +26845,10 @@ exports.tagByName = constants._reverse(exports.tag);
 
 /***/ }),
 
-/***/ "./node_modules/asn1.js/lib/asn1/constants/index.js":
-/*!**********************************************************!*\
-  !*** ./node_modules/asn1.js/lib/asn1/constants/index.js ***!
-  \**********************************************************/
+/***/ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/constants/index.js":
+/*!**********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/constants/index.js ***!
+  \**********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -26453,21 +26870,21 @@ constants._reverse = function reverse(map) {
   return res;
 };
 
-constants.der = __webpack_require__(/*! ./der */ "./node_modules/asn1.js/lib/asn1/constants/der.js");
+constants.der = __webpack_require__(/*! ./der */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/constants/der.js");
 
 
 /***/ }),
 
-/***/ "./node_modules/asn1.js/lib/asn1/decoders/der.js":
-/*!*******************************************************!*\
-  !*** ./node_modules/asn1.js/lib/asn1/decoders/der.js ***!
-  \*******************************************************/
+/***/ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/decoders/der.js":
+/*!*******************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/decoders/der.js ***!
+  \*******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js");
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js");
 
-var asn1 = __webpack_require__(/*! ../../asn1 */ "./node_modules/asn1.js/lib/asn1.js");
+var asn1 = __webpack_require__(/*! ../../asn1 */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1.js");
 var base = asn1.base;
 var bignum = asn1.bignum;
 
@@ -26793,32 +27210,32 @@ function derDecodeLen(buf, primitive, fail) {
 
 /***/ }),
 
-/***/ "./node_modules/asn1.js/lib/asn1/decoders/index.js":
-/*!*********************************************************!*\
-  !*** ./node_modules/asn1.js/lib/asn1/decoders/index.js ***!
-  \*********************************************************/
+/***/ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/decoders/index.js":
+/*!*********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/decoders/index.js ***!
+  \*********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 var decoders = exports;
 
-decoders.der = __webpack_require__(/*! ./der */ "./node_modules/asn1.js/lib/asn1/decoders/der.js");
-decoders.pem = __webpack_require__(/*! ./pem */ "./node_modules/asn1.js/lib/asn1/decoders/pem.js");
+decoders.der = __webpack_require__(/*! ./der */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/decoders/der.js");
+decoders.pem = __webpack_require__(/*! ./pem */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/decoders/pem.js");
 
 
 /***/ }),
 
-/***/ "./node_modules/asn1.js/lib/asn1/decoders/pem.js":
-/*!*******************************************************!*\
-  !*** ./node_modules/asn1.js/lib/asn1/decoders/pem.js ***!
-  \*******************************************************/
+/***/ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/decoders/pem.js":
+/*!*******************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/decoders/pem.js ***!
+  \*******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js");
-var Buffer = __webpack_require__(/*! buffer */ "./node_modules/buffer/index.js").Buffer;
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js");
+var Buffer = __webpack_require__(/*! buffer */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer;
 
-var DERDecoder = __webpack_require__(/*! ./der */ "./node_modules/asn1.js/lib/asn1/decoders/der.js");
+var DERDecoder = __webpack_require__(/*! ./der */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/decoders/der.js");
 
 function PEMDecoder(entity) {
   DERDecoder.call(this, entity);
@@ -26868,17 +27285,17 @@ PEMDecoder.prototype.decode = function decode(data, options) {
 
 /***/ }),
 
-/***/ "./node_modules/asn1.js/lib/asn1/encoders/der.js":
-/*!*******************************************************!*\
-  !*** ./node_modules/asn1.js/lib/asn1/encoders/der.js ***!
-  \*******************************************************/
+/***/ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/encoders/der.js":
+/*!*******************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/encoders/der.js ***!
+  \*******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js");
-var Buffer = __webpack_require__(/*! buffer */ "./node_modules/buffer/index.js").Buffer;
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js");
+var Buffer = __webpack_require__(/*! buffer */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer;
 
-var asn1 = __webpack_require__(/*! ../../asn1 */ "./node_modules/asn1.js/lib/asn1.js");
+var asn1 = __webpack_require__(/*! ../../asn1 */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1.js");
 var base = asn1.base;
 
 // Import DER constants
@@ -27174,31 +27591,31 @@ function encodeTag(tag, primitive, cls, reporter) {
 
 /***/ }),
 
-/***/ "./node_modules/asn1.js/lib/asn1/encoders/index.js":
-/*!*********************************************************!*\
-  !*** ./node_modules/asn1.js/lib/asn1/encoders/index.js ***!
-  \*********************************************************/
+/***/ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/encoders/index.js":
+/*!*********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/encoders/index.js ***!
+  \*********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 var encoders = exports;
 
-encoders.der = __webpack_require__(/*! ./der */ "./node_modules/asn1.js/lib/asn1/encoders/der.js");
-encoders.pem = __webpack_require__(/*! ./pem */ "./node_modules/asn1.js/lib/asn1/encoders/pem.js");
+encoders.der = __webpack_require__(/*! ./der */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/encoders/der.js");
+encoders.pem = __webpack_require__(/*! ./pem */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/encoders/pem.js");
 
 
 /***/ }),
 
-/***/ "./node_modules/asn1.js/lib/asn1/encoders/pem.js":
-/*!*******************************************************!*\
-  !*** ./node_modules/asn1.js/lib/asn1/encoders/pem.js ***!
-  \*******************************************************/
+/***/ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/encoders/pem.js":
+/*!*******************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/encoders/pem.js ***!
+  \*******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js");
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js");
 
-var DEREncoder = __webpack_require__(/*! ./der */ "./node_modules/asn1.js/lib/asn1/encoders/der.js");
+var DEREncoder = __webpack_require__(/*! ./der */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1/encoders/der.js");
 
 function PEMEncoder(entity) {
   DEREncoder.call(this, entity);
@@ -27221,10 +27638,10 @@ PEMEncoder.prototype.encode = function encode(data, options) {
 
 /***/ }),
 
-/***/ "./node_modules/base64-js/index.js":
-/*!*****************************************!*\
-  !*** ./node_modules/base64-js/index.js ***!
-  \*****************************************/
+/***/ "./node_modules/.registry.npmjs.org/base64-js/1.3.0/node_modules/base64-js/index.js":
+/*!******************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/base64-js/1.3.0/node_modules/base64-js/index.js ***!
+  \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -27384,10 +27801,10 @@ function fromByteArray (uint8) {
 
 /***/ }),
 
-/***/ "./node_modules/bn.js/lib/bn.js":
-/*!**************************************!*\
-  !*** ./node_modules/bn.js/lib/bn.js ***!
-  \**************************************/
+/***/ "./node_modules/.registry.npmjs.org/bn.js/4.11.8/node_modules/bn.js/lib/bn.js":
+/*!************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/bn.js/4.11.8/node_modules/bn.js/lib/bn.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -30819,14 +31236,14 @@ function fromByteArray (uint8) {
   };
 })(typeof module === 'undefined' || module, this);
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../webpack/buildin/module.js */ "./node_modules/webpack/buildin/module.js")(module)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../webpack/4.12.0/node_modules/webpack/buildin/module.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.0/node_modules/webpack/buildin/module.js")(module)))
 
 /***/ }),
 
-/***/ "./node_modules/brorand/index.js":
-/*!***************************************!*\
-  !*** ./node_modules/brorand/index.js ***!
-  \***************************************/
+/***/ "./node_modules/.registry.npmjs.org/brorand/1.1.0/node_modules/brorand/index.js":
+/*!**************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/brorand/1.1.0/node_modules/brorand/index.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -30899,10 +31316,10 @@ if (typeof self === 'object') {
 
 /***/ }),
 
-/***/ "./node_modules/browserify-aes/aes.js":
-/*!********************************************!*\
-  !*** ./node_modules/browserify-aes/aes.js ***!
-  \********************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/aes.js":
+/*!**************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/aes.js ***!
+  \**************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -30911,7 +31328,7 @@ if (typeof self === 'object') {
 // which is in turn based on the one from crypto-js
 // https://code.google.com/p/crypto-js/
 
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
 
 function asUInt32Array (buf) {
   if (!Buffer.isBuffer(buf)) buf = Buffer.from(buf)
@@ -31138,20 +31555,20 @@ module.exports.AES = AES
 
 /***/ }),
 
-/***/ "./node_modules/browserify-aes/authCipher.js":
-/*!***************************************************!*\
-  !*** ./node_modules/browserify-aes/authCipher.js ***!
-  \***************************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/authCipher.js":
+/*!*********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/authCipher.js ***!
+  \*********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var aes = __webpack_require__(/*! ./aes */ "./node_modules/browserify-aes/aes.js")
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
-var Transform = __webpack_require__(/*! cipher-base */ "./node_modules/cipher-base/index.js")
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js")
-var GHASH = __webpack_require__(/*! ./ghash */ "./node_modules/browserify-aes/ghash.js")
-var xor = __webpack_require__(/*! buffer-xor */ "./node_modules/buffer-xor/index.js")
-var incr32 = __webpack_require__(/*! ./incr32 */ "./node_modules/browserify-aes/incr32.js")
+var aes = __webpack_require__(/*! ./aes */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/aes.js")
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
+var Transform = __webpack_require__(/*! cipher-base */ "./node_modules/.registry.npmjs.org/cipher-base/1.0.4/node_modules/cipher-base/index.js")
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js")
+var GHASH = __webpack_require__(/*! ./ghash */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/ghash.js")
+var xor = __webpack_require__(/*! buffer-xor */ "./node_modules/.registry.npmjs.org/buffer-xor/1.0.3/node_modules/buffer-xor/index.js")
+var incr32 = __webpack_require__(/*! ./incr32 */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/incr32.js")
 
 function xorTest (a, b) {
   var out = 0
@@ -31266,16 +31683,16 @@ module.exports = StreamCipher
 
 /***/ }),
 
-/***/ "./node_modules/browserify-aes/browser.js":
-/*!************************************************!*\
-  !*** ./node_modules/browserify-aes/browser.js ***!
-  \************************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/browser.js":
+/*!******************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/browser.js ***!
+  \******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var ciphers = __webpack_require__(/*! ./encrypter */ "./node_modules/browserify-aes/encrypter.js")
-var deciphers = __webpack_require__(/*! ./decrypter */ "./node_modules/browserify-aes/decrypter.js")
-var modes = __webpack_require__(/*! ./modes/list.json */ "./node_modules/browserify-aes/modes/list.json")
+var ciphers = __webpack_require__(/*! ./encrypter */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/encrypter.js")
+var deciphers = __webpack_require__(/*! ./decrypter */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/decrypter.js")
+var modes = __webpack_require__(/*! ./modes/list.json */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/list.json")
 
 function getCiphers () {
   return Object.keys(modes)
@@ -31290,21 +31707,21 @@ exports.listCiphers = exports.getCiphers = getCiphers
 
 /***/ }),
 
-/***/ "./node_modules/browserify-aes/decrypter.js":
-/*!**************************************************!*\
-  !*** ./node_modules/browserify-aes/decrypter.js ***!
-  \**************************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/decrypter.js":
+/*!********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/decrypter.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var AuthCipher = __webpack_require__(/*! ./authCipher */ "./node_modules/browserify-aes/authCipher.js")
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
-var MODES = __webpack_require__(/*! ./modes */ "./node_modules/browserify-aes/modes/index.js")
-var StreamCipher = __webpack_require__(/*! ./streamCipher */ "./node_modules/browserify-aes/streamCipher.js")
-var Transform = __webpack_require__(/*! cipher-base */ "./node_modules/cipher-base/index.js")
-var aes = __webpack_require__(/*! ./aes */ "./node_modules/browserify-aes/aes.js")
-var ebtk = __webpack_require__(/*! evp_bytestokey */ "./node_modules/evp_bytestokey/index.js")
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js")
+var AuthCipher = __webpack_require__(/*! ./authCipher */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/authCipher.js")
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
+var MODES = __webpack_require__(/*! ./modes */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/index.js")
+var StreamCipher = __webpack_require__(/*! ./streamCipher */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/streamCipher.js")
+var Transform = __webpack_require__(/*! cipher-base */ "./node_modules/.registry.npmjs.org/cipher-base/1.0.4/node_modules/cipher-base/index.js")
+var aes = __webpack_require__(/*! ./aes */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/aes.js")
+var ebtk = __webpack_require__(/*! evp_bytestokey */ "./node_modules/.registry.npmjs.org/evp_bytestokey/1.0.3/node_modules/evp_bytestokey/index.js")
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js")
 
 function Decipher (mode, key, iv) {
   Transform.call(this)
@@ -31425,21 +31842,21 @@ exports.createDecipheriv = createDecipheriv
 
 /***/ }),
 
-/***/ "./node_modules/browserify-aes/encrypter.js":
-/*!**************************************************!*\
-  !*** ./node_modules/browserify-aes/encrypter.js ***!
-  \**************************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/encrypter.js":
+/*!********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/encrypter.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var MODES = __webpack_require__(/*! ./modes */ "./node_modules/browserify-aes/modes/index.js")
-var AuthCipher = __webpack_require__(/*! ./authCipher */ "./node_modules/browserify-aes/authCipher.js")
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
-var StreamCipher = __webpack_require__(/*! ./streamCipher */ "./node_modules/browserify-aes/streamCipher.js")
-var Transform = __webpack_require__(/*! cipher-base */ "./node_modules/cipher-base/index.js")
-var aes = __webpack_require__(/*! ./aes */ "./node_modules/browserify-aes/aes.js")
-var ebtk = __webpack_require__(/*! evp_bytestokey */ "./node_modules/evp_bytestokey/index.js")
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js")
+var MODES = __webpack_require__(/*! ./modes */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/index.js")
+var AuthCipher = __webpack_require__(/*! ./authCipher */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/authCipher.js")
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
+var StreamCipher = __webpack_require__(/*! ./streamCipher */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/streamCipher.js")
+var Transform = __webpack_require__(/*! cipher-base */ "./node_modules/.registry.npmjs.org/cipher-base/1.0.4/node_modules/cipher-base/index.js")
+var aes = __webpack_require__(/*! ./aes */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/aes.js")
+var ebtk = __webpack_require__(/*! evp_bytestokey */ "./node_modules/.registry.npmjs.org/evp_bytestokey/1.0.3/node_modules/evp_bytestokey/index.js")
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js")
 
 function Cipher (mode, key, iv) {
   Transform.call(this)
@@ -31550,14 +31967,14 @@ exports.createCipher = createCipher
 
 /***/ }),
 
-/***/ "./node_modules/browserify-aes/ghash.js":
-/*!**********************************************!*\
-  !*** ./node_modules/browserify-aes/ghash.js ***!
-  \**********************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/ghash.js":
+/*!****************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/ghash.js ***!
+  \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
 var ZEROES = Buffer.alloc(16, 0)
 
 function toArray (buf) {
@@ -31650,10 +32067,10 @@ module.exports = GHASH
 
 /***/ }),
 
-/***/ "./node_modules/browserify-aes/incr32.js":
-/*!***********************************************!*\
-  !*** ./node_modules/browserify-aes/incr32.js ***!
-  \***********************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/incr32.js":
+/*!*****************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/incr32.js ***!
+  \*****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -31676,14 +32093,14 @@ module.exports = incr32
 
 /***/ }),
 
-/***/ "./node_modules/browserify-aes/modes/cbc.js":
-/*!**************************************************!*\
-  !*** ./node_modules/browserify-aes/modes/cbc.js ***!
-  \**************************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/cbc.js":
+/*!********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/cbc.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var xor = __webpack_require__(/*! buffer-xor */ "./node_modules/buffer-xor/index.js")
+var xor = __webpack_require__(/*! buffer-xor */ "./node_modules/.registry.npmjs.org/buffer-xor/1.0.3/node_modules/buffer-xor/index.js")
 
 exports.encrypt = function (self, block) {
   var data = xor(block, self._prev)
@@ -31704,15 +32121,15 @@ exports.decrypt = function (self, block) {
 
 /***/ }),
 
-/***/ "./node_modules/browserify-aes/modes/cfb.js":
-/*!**************************************************!*\
-  !*** ./node_modules/browserify-aes/modes/cfb.js ***!
-  \**************************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/cfb.js":
+/*!********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/cfb.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
-var xor = __webpack_require__(/*! buffer-xor */ "./node_modules/buffer-xor/index.js")
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
+var xor = __webpack_require__(/*! buffer-xor */ "./node_modules/.registry.npmjs.org/buffer-xor/1.0.3/node_modules/buffer-xor/index.js")
 
 function encryptStart (self, data, decrypt) {
   var len = data.length
@@ -31748,14 +32165,14 @@ exports.encrypt = function (self, data, decrypt) {
 
 /***/ }),
 
-/***/ "./node_modules/browserify-aes/modes/cfb1.js":
-/*!***************************************************!*\
-  !*** ./node_modules/browserify-aes/modes/cfb1.js ***!
-  \***************************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/cfb1.js":
+/*!*********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/cfb1.js ***!
+  \*********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
 
 function encryptByte (self, byteParam, decrypt) {
   var pad
@@ -31801,14 +32218,14 @@ exports.encrypt = function (self, chunk, decrypt) {
 
 /***/ }),
 
-/***/ "./node_modules/browserify-aes/modes/cfb8.js":
-/*!***************************************************!*\
-  !*** ./node_modules/browserify-aes/modes/cfb8.js ***!
-  \***************************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/cfb8.js":
+/*!*********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/cfb8.js ***!
+  \*********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
 
 function encryptByte (self, byteParam, decrypt) {
   var pad = self._cipher.encryptBlock(self._prev)
@@ -31837,16 +32254,16 @@ exports.encrypt = function (self, chunk, decrypt) {
 
 /***/ }),
 
-/***/ "./node_modules/browserify-aes/modes/ctr.js":
-/*!**************************************************!*\
-  !*** ./node_modules/browserify-aes/modes/ctr.js ***!
-  \**************************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/ctr.js":
+/*!********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/ctr.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var xor = __webpack_require__(/*! buffer-xor */ "./node_modules/buffer-xor/index.js")
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
-var incr32 = __webpack_require__(/*! ../incr32 */ "./node_modules/browserify-aes/incr32.js")
+var xor = __webpack_require__(/*! buffer-xor */ "./node_modules/.registry.npmjs.org/buffer-xor/1.0.3/node_modules/buffer-xor/index.js")
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
+var incr32 = __webpack_require__(/*! ../incr32 */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/incr32.js")
 
 function getBlock (self) {
   var out = self._cipher.encryptBlockRaw(self._prev)
@@ -31878,10 +32295,10 @@ exports.encrypt = function (self, chunk) {
 
 /***/ }),
 
-/***/ "./node_modules/browserify-aes/modes/ecb.js":
-/*!**************************************************!*\
-  !*** ./node_modules/browserify-aes/modes/ecb.js ***!
-  \**************************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/ecb.js":
+/*!********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/ecb.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -31896,25 +32313,25 @@ exports.decrypt = function (self, block) {
 
 /***/ }),
 
-/***/ "./node_modules/browserify-aes/modes/index.js":
-/*!****************************************************!*\
-  !*** ./node_modules/browserify-aes/modes/index.js ***!
-  \****************************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/index.js":
+/*!**********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/index.js ***!
+  \**********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 var modeModules = {
-  ECB: __webpack_require__(/*! ./ecb */ "./node_modules/browserify-aes/modes/ecb.js"),
-  CBC: __webpack_require__(/*! ./cbc */ "./node_modules/browserify-aes/modes/cbc.js"),
-  CFB: __webpack_require__(/*! ./cfb */ "./node_modules/browserify-aes/modes/cfb.js"),
-  CFB8: __webpack_require__(/*! ./cfb8 */ "./node_modules/browserify-aes/modes/cfb8.js"),
-  CFB1: __webpack_require__(/*! ./cfb1 */ "./node_modules/browserify-aes/modes/cfb1.js"),
-  OFB: __webpack_require__(/*! ./ofb */ "./node_modules/browserify-aes/modes/ofb.js"),
-  CTR: __webpack_require__(/*! ./ctr */ "./node_modules/browserify-aes/modes/ctr.js"),
-  GCM: __webpack_require__(/*! ./ctr */ "./node_modules/browserify-aes/modes/ctr.js")
+  ECB: __webpack_require__(/*! ./ecb */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/ecb.js"),
+  CBC: __webpack_require__(/*! ./cbc */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/cbc.js"),
+  CFB: __webpack_require__(/*! ./cfb */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/cfb.js"),
+  CFB8: __webpack_require__(/*! ./cfb8 */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/cfb8.js"),
+  CFB1: __webpack_require__(/*! ./cfb1 */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/cfb1.js"),
+  OFB: __webpack_require__(/*! ./ofb */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/ofb.js"),
+  CTR: __webpack_require__(/*! ./ctr */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/ctr.js"),
+  GCM: __webpack_require__(/*! ./ctr */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/ctr.js")
 }
 
-var modes = __webpack_require__(/*! ./list.json */ "./node_modules/browserify-aes/modes/list.json")
+var modes = __webpack_require__(/*! ./list.json */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/list.json")
 
 for (var key in modes) {
   modes[key].module = modeModules[modes[key].mode]
@@ -31925,10 +32342,10 @@ module.exports = modes
 
 /***/ }),
 
-/***/ "./node_modules/browserify-aes/modes/list.json":
-/*!*****************************************************!*\
-  !*** ./node_modules/browserify-aes/modes/list.json ***!
-  \*****************************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/list.json":
+/*!***********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/list.json ***!
+  \***********************************************************************************************************/
 /*! exports provided: aes-128-ecb, aes-192-ecb, aes-256-ecb, aes-128-cbc, aes-192-cbc, aes-256-cbc, aes128, aes192, aes256, aes-128-cfb, aes-192-cfb, aes-256-cfb, aes-128-cfb8, aes-192-cfb8, aes-256-cfb8, aes-128-cfb1, aes-192-cfb1, aes-256-cfb1, aes-128-ofb, aes-192-ofb, aes-256-ofb, aes-128-ctr, aes-192-ctr, aes-256-ctr, aes-128-gcm, aes-192-gcm, aes-256-gcm, default */
 /***/ (function(module) {
 
@@ -31936,14 +32353,14 @@ module.exports = {"aes-128-ecb":{"cipher":"AES","key":128,"iv":0,"mode":"ECB","t
 
 /***/ }),
 
-/***/ "./node_modules/browserify-aes/modes/ofb.js":
-/*!**************************************************!*\
-  !*** ./node_modules/browserify-aes/modes/ofb.js ***!
-  \**************************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/ofb.js":
+/*!********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/ofb.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(Buffer) {var xor = __webpack_require__(/*! buffer-xor */ "./node_modules/buffer-xor/index.js")
+/* WEBPACK VAR INJECTION */(function(Buffer) {var xor = __webpack_require__(/*! buffer-xor */ "./node_modules/.registry.npmjs.org/buffer-xor/1.0.3/node_modules/buffer-xor/index.js")
 
 function getBlock (self) {
   self._prev = self._cipher.encryptBlock(self._prev)
@@ -31960,21 +32377,21 @@ exports.encrypt = function (self, chunk) {
   return xor(chunk, pad)
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer))
 
 /***/ }),
 
-/***/ "./node_modules/browserify-aes/streamCipher.js":
-/*!*****************************************************!*\
-  !*** ./node_modules/browserify-aes/streamCipher.js ***!
-  \*****************************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/streamCipher.js":
+/*!***********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/streamCipher.js ***!
+  \***********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var aes = __webpack_require__(/*! ./aes */ "./node_modules/browserify-aes/aes.js")
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
-var Transform = __webpack_require__(/*! cipher-base */ "./node_modules/cipher-base/index.js")
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js")
+var aes = __webpack_require__(/*! ./aes */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/aes.js")
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
+var Transform = __webpack_require__(/*! cipher-base */ "./node_modules/.registry.npmjs.org/cipher-base/1.0.4/node_modules/cipher-base/index.js")
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js")
 
 function StreamCipher (mode, key, iv, decrypt) {
   Transform.call(this)
@@ -32002,18 +32419,18 @@ module.exports = StreamCipher
 
 /***/ }),
 
-/***/ "./node_modules/browserify-cipher/browser.js":
-/*!***************************************************!*\
-  !*** ./node_modules/browserify-cipher/browser.js ***!
-  \***************************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-cipher/1.0.1/node_modules/browserify-cipher/browser.js":
+/*!************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-cipher/1.0.1/node_modules/browserify-cipher/browser.js ***!
+  \************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var DES = __webpack_require__(/*! browserify-des */ "./node_modules/browserify-des/index.js")
-var aes = __webpack_require__(/*! browserify-aes/browser */ "./node_modules/browserify-aes/browser.js")
-var aesModes = __webpack_require__(/*! browserify-aes/modes */ "./node_modules/browserify-aes/modes/index.js")
-var desModes = __webpack_require__(/*! browserify-des/modes */ "./node_modules/browserify-des/modes.js")
-var ebtk = __webpack_require__(/*! evp_bytestokey */ "./node_modules/evp_bytestokey/index.js")
+var DES = __webpack_require__(/*! browserify-des */ "./node_modules/.registry.npmjs.org/browserify-des/1.0.1/node_modules/browserify-des/index.js")
+var aes = __webpack_require__(/*! browserify-aes/browser */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/browser.js")
+var aesModes = __webpack_require__(/*! browserify-aes/modes */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/modes/index.js")
+var desModes = __webpack_require__(/*! browserify-des/modes */ "./node_modules/.registry.npmjs.org/browserify-des/1.0.1/node_modules/browserify-des/modes.js")
+var ebtk = __webpack_require__(/*! evp_bytestokey */ "./node_modules/.registry.npmjs.org/evp_bytestokey/1.0.3/node_modules/evp_bytestokey/index.js")
 
 function createCipher (suite, password) {
   suite = suite.toLowerCase()
@@ -32080,16 +32497,16 @@ exports.listCiphers = exports.getCiphers = getCiphers
 
 /***/ }),
 
-/***/ "./node_modules/browserify-des/index.js":
-/*!**********************************************!*\
-  !*** ./node_modules/browserify-des/index.js ***!
-  \**********************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-des/1.0.1/node_modules/browserify-des/index.js":
+/*!****************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-des/1.0.1/node_modules/browserify-des/index.js ***!
+  \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(Buffer) {var CipherBase = __webpack_require__(/*! cipher-base */ "./node_modules/cipher-base/index.js")
-var des = __webpack_require__(/*! des.js */ "./node_modules/des.js/lib/des.js")
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js")
+/* WEBPACK VAR INJECTION */(function(Buffer) {var CipherBase = __webpack_require__(/*! cipher-base */ "./node_modules/.registry.npmjs.org/cipher-base/1.0.4/node_modules/cipher-base/index.js")
+var des = __webpack_require__(/*! des.js */ "./node_modules/.registry.npmjs.org/des.js/1.0.0/node_modules/des.js/lib/des.js")
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js")
 
 var modes = {
   'des-ede3-cbc': des.CBC.instantiate(des.EDE),
@@ -32131,14 +32548,14 @@ DES.prototype._final = function () {
   return new Buffer(this._des.final())
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer))
 
 /***/ }),
 
-/***/ "./node_modules/browserify-des/modes.js":
-/*!**********************************************!*\
-  !*** ./node_modules/browserify-des/modes.js ***!
-  \**********************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-des/1.0.1/node_modules/browserify-des/modes.js":
+/*!****************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-des/1.0.1/node_modules/browserify-des/modes.js ***!
+  \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -32170,15 +32587,15 @@ exports['des-ede'] = {
 
 /***/ }),
 
-/***/ "./node_modules/browserify-rsa/index.js":
-/*!**********************************************!*\
-  !*** ./node_modules/browserify-rsa/index.js ***!
-  \**********************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-rsa/4.0.1/node_modules/browserify-rsa/index.js":
+/*!****************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-rsa/4.0.1/node_modules/browserify-rsa/index.js ***!
+  \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(Buffer) {var bn = __webpack_require__(/*! bn.js */ "./node_modules/bn.js/lib/bn.js");
-var randomBytes = __webpack_require__(/*! randombytes */ "./node_modules/randombytes/browser.js");
+/* WEBPACK VAR INJECTION */(function(Buffer) {var bn = __webpack_require__(/*! bn.js */ "./node_modules/.registry.npmjs.org/bn.js/4.11.8/node_modules/bn.js/lib/bn.js");
+var randomBytes = __webpack_require__(/*! randombytes */ "./node_modules/.registry.npmjs.org/randombytes/2.0.6/node_modules/randombytes/browser.js");
 module.exports = crt;
 function blind(priv) {
   var r = getr(priv);
@@ -32218,26 +32635,26 @@ function getr(priv) {
   return r;
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer))
 
 /***/ }),
 
-/***/ "./node_modules/browserify-sign/algos.js":
-/*!***********************************************!*\
-  !*** ./node_modules/browserify-sign/algos.js ***!
-  \***********************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-sign/4.0.4/node_modules/browserify-sign/algos.js":
+/*!******************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-sign/4.0.4/node_modules/browserify-sign/algos.js ***!
+  \******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! ./browser/algorithms.json */ "./node_modules/browserify-sign/browser/algorithms.json")
+module.exports = __webpack_require__(/*! ./browser/algorithms.json */ "./node_modules/.registry.npmjs.org/browserify-sign/4.0.4/node_modules/browserify-sign/browser/algorithms.json")
 
 
 /***/ }),
 
-/***/ "./node_modules/browserify-sign/browser/algorithms.json":
-/*!**************************************************************!*\
-  !*** ./node_modules/browserify-sign/browser/algorithms.json ***!
-  \**************************************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-sign/4.0.4/node_modules/browserify-sign/browser/algorithms.json":
+/*!*********************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-sign/4.0.4/node_modules/browserify-sign/browser/algorithms.json ***!
+  \*********************************************************************************************************************/
 /*! exports provided: sha224WithRSAEncryption, RSA-SHA224, sha256WithRSAEncryption, RSA-SHA256, sha384WithRSAEncryption, RSA-SHA384, sha512WithRSAEncryption, RSA-SHA512, RSA-SHA1, ecdsa-with-SHA1, sha256, sha224, sha384, sha512, DSA-SHA, DSA-SHA1, DSA, DSA-WITH-SHA224, DSA-SHA224, DSA-WITH-SHA256, DSA-SHA256, DSA-WITH-SHA384, DSA-SHA384, DSA-WITH-SHA512, DSA-SHA512, DSA-RIPEMD160, ripemd160WithRSA, RSA-RIPEMD160, md5WithRSAEncryption, RSA-MD5, default */
 /***/ (function(module) {
 
@@ -32245,10 +32662,10 @@ module.exports = {"sha224WithRSAEncryption":{"sign":"rsa","hash":"sha224","id":"
 
 /***/ }),
 
-/***/ "./node_modules/browserify-sign/browser/curves.json":
-/*!**********************************************************!*\
-  !*** ./node_modules/browserify-sign/browser/curves.json ***!
-  \**********************************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-sign/4.0.4/node_modules/browserify-sign/browser/curves.json":
+/*!*****************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-sign/4.0.4/node_modules/browserify-sign/browser/curves.json ***!
+  \*****************************************************************************************************************/
 /*! exports provided: 1.3.132.0.10, 1.3.132.0.33, 1.2.840.10045.3.1.1, 1.2.840.10045.3.1.7, 1.3.132.0.34, 1.3.132.0.35, default */
 /***/ (function(module) {
 
@@ -32256,20 +32673,20 @@ module.exports = {"1.3.132.0.10":"secp256k1","1.3.132.0.33":"p224","1.2.840.1004
 
 /***/ }),
 
-/***/ "./node_modules/browserify-sign/browser/index.js":
-/*!*******************************************************!*\
-  !*** ./node_modules/browserify-sign/browser/index.js ***!
-  \*******************************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-sign/4.0.4/node_modules/browserify-sign/browser/index.js":
+/*!**************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-sign/4.0.4/node_modules/browserify-sign/browser/index.js ***!
+  \**************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(Buffer) {var createHash = __webpack_require__(/*! create-hash */ "./node_modules/create-hash/browser.js")
-var stream = __webpack_require__(/*! stream */ "./node_modules/stream-browserify/index.js")
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js")
-var sign = __webpack_require__(/*! ./sign */ "./node_modules/browserify-sign/browser/sign.js")
-var verify = __webpack_require__(/*! ./verify */ "./node_modules/browserify-sign/browser/verify.js")
+/* WEBPACK VAR INJECTION */(function(Buffer) {var createHash = __webpack_require__(/*! create-hash */ "./node_modules/.registry.npmjs.org/create-hash/1.2.0/node_modules/create-hash/browser.js")
+var stream = __webpack_require__(/*! stream */ "./node_modules/.registry.npmjs.org/stream-browserify/2.0.1/node_modules/stream-browserify/index.js")
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js")
+var sign = __webpack_require__(/*! ./sign */ "./node_modules/.registry.npmjs.org/browserify-sign/4.0.4/node_modules/browserify-sign/browser/sign.js")
+var verify = __webpack_require__(/*! ./verify */ "./node_modules/.registry.npmjs.org/browserify-sign/4.0.4/node_modules/browserify-sign/browser/verify.js")
 
-var algorithms = __webpack_require__(/*! ./algorithms.json */ "./node_modules/browserify-sign/browser/algorithms.json")
+var algorithms = __webpack_require__(/*! ./algorithms.json */ "./node_modules/.registry.npmjs.org/browserify-sign/4.0.4/node_modules/browserify-sign/browser/algorithms.json")
 Object.keys(algorithms).forEach(function (key) {
   algorithms[key].id = new Buffer(algorithms[key].id, 'hex')
   algorithms[key.toLowerCase()] = algorithms[key]
@@ -32355,24 +32772,24 @@ module.exports = {
   createVerify: createVerify
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer))
 
 /***/ }),
 
-/***/ "./node_modules/browserify-sign/browser/sign.js":
-/*!******************************************************!*\
-  !*** ./node_modules/browserify-sign/browser/sign.js ***!
-  \******************************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-sign/4.0.4/node_modules/browserify-sign/browser/sign.js":
+/*!*************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-sign/4.0.4/node_modules/browserify-sign/browser/sign.js ***!
+  \*************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(Buffer) {// much of this based on https://github.com/indutny/self-signed/blob/gh-pages/lib/rsa.js
-var createHmac = __webpack_require__(/*! create-hmac */ "./node_modules/create-hmac/browser.js")
-var crt = __webpack_require__(/*! browserify-rsa */ "./node_modules/browserify-rsa/index.js")
-var EC = __webpack_require__(/*! elliptic */ "./node_modules/elliptic/lib/elliptic.js").ec
-var BN = __webpack_require__(/*! bn.js */ "./node_modules/bn.js/lib/bn.js")
-var parseKeys = __webpack_require__(/*! parse-asn1 */ "./node_modules/parse-asn1/index.js")
-var curves = __webpack_require__(/*! ./curves.json */ "./node_modules/browserify-sign/browser/curves.json")
+var createHmac = __webpack_require__(/*! create-hmac */ "./node_modules/.registry.npmjs.org/create-hmac/1.1.7/node_modules/create-hmac/browser.js")
+var crt = __webpack_require__(/*! browserify-rsa */ "./node_modules/.registry.npmjs.org/browserify-rsa/4.0.1/node_modules/browserify-rsa/index.js")
+var EC = __webpack_require__(/*! elliptic */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic.js").ec
+var BN = __webpack_require__(/*! bn.js */ "./node_modules/.registry.npmjs.org/bn.js/4.11.8/node_modules/bn.js/lib/bn.js")
+var parseKeys = __webpack_require__(/*! parse-asn1 */ "./node_modules/.registry.npmjs.org/parse-asn1/5.1.1/node_modules/parse-asn1/index.js")
+var curves = __webpack_require__(/*! ./curves.json */ "./node_modules/.registry.npmjs.org/browserify-sign/4.0.4/node_modules/browserify-sign/browser/curves.json")
 
 function sign (hash, key, hashType, signType, tag) {
   var priv = parseKeys(key)
@@ -32512,22 +32929,22 @@ module.exports = sign
 module.exports.getKey = getKey
 module.exports.makeKey = makeKey
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer))
 
 /***/ }),
 
-/***/ "./node_modules/browserify-sign/browser/verify.js":
-/*!********************************************************!*\
-  !*** ./node_modules/browserify-sign/browser/verify.js ***!
-  \********************************************************/
+/***/ "./node_modules/.registry.npmjs.org/browserify-sign/4.0.4/node_modules/browserify-sign/browser/verify.js":
+/*!***************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/browserify-sign/4.0.4/node_modules/browserify-sign/browser/verify.js ***!
+  \***************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(Buffer) {// much of this based on https://github.com/indutny/self-signed/blob/gh-pages/lib/rsa.js
-var BN = __webpack_require__(/*! bn.js */ "./node_modules/bn.js/lib/bn.js")
-var EC = __webpack_require__(/*! elliptic */ "./node_modules/elliptic/lib/elliptic.js").ec
-var parseKeys = __webpack_require__(/*! parse-asn1 */ "./node_modules/parse-asn1/index.js")
-var curves = __webpack_require__(/*! ./curves.json */ "./node_modules/browserify-sign/browser/curves.json")
+var BN = __webpack_require__(/*! bn.js */ "./node_modules/.registry.npmjs.org/bn.js/4.11.8/node_modules/bn.js/lib/bn.js")
+var EC = __webpack_require__(/*! elliptic */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic.js").ec
+var parseKeys = __webpack_require__(/*! parse-asn1 */ "./node_modules/.registry.npmjs.org/parse-asn1/5.1.1/node_modules/parse-asn1/index.js")
+var curves = __webpack_require__(/*! ./curves.json */ "./node_modules/.registry.npmjs.org/browserify-sign/4.0.4/node_modules/browserify-sign/browser/curves.json")
 
 function verify (sig, hash, key, signType, tag) {
   var pub = parseKeys(key)
@@ -32607,14 +33024,14 @@ function checkValue (b, q) {
 
 module.exports = verify
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer))
 
 /***/ }),
 
-/***/ "./node_modules/buffer-xor/index.js":
-/*!******************************************!*\
-  !*** ./node_modules/buffer-xor/index.js ***!
-  \******************************************/
+/***/ "./node_modules/.registry.npmjs.org/buffer-xor/1.0.3/node_modules/buffer-xor/index.js":
+/*!********************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/buffer-xor/1.0.3/node_modules/buffer-xor/index.js ***!
+  \********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -32629,14 +33046,14 @@ module.exports = verify
   return buffer
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer))
 
 /***/ }),
 
-/***/ "./node_modules/buffer/index.js":
-/*!**************************************!*\
-  !*** ./node_modules/buffer/index.js ***!
-  \**************************************/
+/***/ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js":
+/*!************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -32651,9 +33068,9 @@ module.exports = verify
 
 
 
-var base64 = __webpack_require__(/*! base64-js */ "./node_modules/base64-js/index.js")
-var ieee754 = __webpack_require__(/*! ieee754 */ "./node_modules/ieee754/index.js")
-var isArray = __webpack_require__(/*! isarray */ "./node_modules/isarray/index.js")
+var base64 = __webpack_require__(/*! base64-js */ "./node_modules/.registry.npmjs.org/base64-js/1.3.0/node_modules/base64-js/index.js")
+var ieee754 = __webpack_require__(/*! ieee754 */ "./node_modules/.registry.npmjs.org/ieee754/1.1.12/node_modules/ieee754/index.js")
+var isArray = __webpack_require__(/*! isarray */ "./node_modules/.registry.npmjs.org/isarray/1.0.0/node_modules/isarray/index.js")
 
 exports.Buffer = Buffer
 exports.SlowBuffer = SlowBuffer
@@ -34431,21 +34848,21 @@ function isnan (val) {
   return val !== val // eslint-disable-line no-self-compare
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../webpack/4.12.0/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.0/node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
-/***/ "./node_modules/cipher-base/index.js":
-/*!*******************************************!*\
-  !*** ./node_modules/cipher-base/index.js ***!
-  \*******************************************/
+/***/ "./node_modules/.registry.npmjs.org/cipher-base/1.0.4/node_modules/cipher-base/index.js":
+/*!**********************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/cipher-base/1.0.4/node_modules/cipher-base/index.js ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
-var Transform = __webpack_require__(/*! stream */ "./node_modules/stream-browserify/index.js").Transform
-var StringDecoder = __webpack_require__(/*! string_decoder */ "./node_modules/string_decoder/lib/string_decoder.js").StringDecoder
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js")
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
+var Transform = __webpack_require__(/*! stream */ "./node_modules/.registry.npmjs.org/stream-browserify/2.0.1/node_modules/stream-browserify/index.js").Transform
+var StringDecoder = __webpack_require__(/*! string_decoder */ "./node_modules/.registry.npmjs.org/string_decoder/1.1.1/node_modules/string_decoder/lib/string_decoder.js").StringDecoder
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js")
 
 function CipherBase (hashMode) {
   Transform.call(this)
@@ -34545,10 +34962,10 @@ module.exports = CipherBase
 
 /***/ }),
 
-/***/ "./node_modules/core-util-is/lib/util.js":
-/*!***********************************************!*\
-  !*** ./node_modules/core-util-is/lib/util.js ***!
-  \***********************************************/
+/***/ "./node_modules/.registry.npmjs.org/core-util-is/1.0.2/node_modules/core-util-is/lib/util.js":
+/*!***************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/core-util-is/1.0.2/node_modules/core-util-is/lib/util.js ***!
+  \***************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -34660,19 +35077,19 @@ function objectToString(o) {
   return Object.prototype.toString.call(o);
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer))
 
 /***/ }),
 
-/***/ "./node_modules/create-ecdh/browser.js":
-/*!*********************************************!*\
-  !*** ./node_modules/create-ecdh/browser.js ***!
-  \*********************************************/
+/***/ "./node_modules/.registry.npmjs.org/create-ecdh/4.0.3/node_modules/create-ecdh/browser.js":
+/*!************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/create-ecdh/4.0.3/node_modules/create-ecdh/browser.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(Buffer) {var elliptic = __webpack_require__(/*! elliptic */ "./node_modules/elliptic/lib/elliptic.js")
-var BN = __webpack_require__(/*! bn.js */ "./node_modules/bn.js/lib/bn.js")
+/* WEBPACK VAR INJECTION */(function(Buffer) {var elliptic = __webpack_require__(/*! elliptic */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic.js")
+var BN = __webpack_require__(/*! bn.js */ "./node_modules/.registry.npmjs.org/bn.js/4.11.8/node_modules/bn.js/lib/bn.js")
 
 module.exports = function createECDH (curve) {
   return new ECDH(curve)
@@ -34796,24 +35213,24 @@ function formatReturnValue (bn, enc, len) {
   }
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer))
 
 /***/ }),
 
-/***/ "./node_modules/create-hash/browser.js":
-/*!*********************************************!*\
-  !*** ./node_modules/create-hash/browser.js ***!
-  \*********************************************/
+/***/ "./node_modules/.registry.npmjs.org/create-hash/1.2.0/node_modules/create-hash/browser.js":
+/*!************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/create-hash/1.2.0/node_modules/create-hash/browser.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js")
-var MD5 = __webpack_require__(/*! md5.js */ "./node_modules/md5.js/index.js")
-var RIPEMD160 = __webpack_require__(/*! ripemd160 */ "./node_modules/ripemd160/index.js")
-var sha = __webpack_require__(/*! sha.js */ "./node_modules/sha.js/index.js")
-var Base = __webpack_require__(/*! cipher-base */ "./node_modules/cipher-base/index.js")
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js")
+var MD5 = __webpack_require__(/*! md5.js */ "./node_modules/.registry.npmjs.org/md5.js/1.3.4/node_modules/md5.js/index.js")
+var RIPEMD160 = __webpack_require__(/*! ripemd160 */ "./node_modules/.registry.npmjs.org/ripemd160/2.0.2/node_modules/ripemd160/index.js")
+var sha = __webpack_require__(/*! sha.js */ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/index.js")
+var Base = __webpack_require__(/*! cipher-base */ "./node_modules/.registry.npmjs.org/cipher-base/1.0.4/node_modules/cipher-base/index.js")
 
 function Hash (hash) {
   Base.call(this, 'digest')
@@ -34842,14 +35259,14 @@ module.exports = function createHash (alg) {
 
 /***/ }),
 
-/***/ "./node_modules/create-hash/md5.js":
-/*!*****************************************!*\
-  !*** ./node_modules/create-hash/md5.js ***!
-  \*****************************************/
+/***/ "./node_modules/.registry.npmjs.org/create-hash/1.2.0/node_modules/create-hash/md5.js":
+/*!********************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/create-hash/1.2.0/node_modules/create-hash/md5.js ***!
+  \********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var MD5 = __webpack_require__(/*! md5.js */ "./node_modules/md5.js/index.js")
+var MD5 = __webpack_require__(/*! md5.js */ "./node_modules/.registry.npmjs.org/md5.js/1.3.4/node_modules/md5.js/index.js")
 
 module.exports = function (buffer) {
   return new MD5().update(buffer).digest()
@@ -34858,23 +35275,23 @@ module.exports = function (buffer) {
 
 /***/ }),
 
-/***/ "./node_modules/create-hmac/browser.js":
-/*!*********************************************!*\
-  !*** ./node_modules/create-hmac/browser.js ***!
-  \*********************************************/
+/***/ "./node_modules/.registry.npmjs.org/create-hmac/1.1.7/node_modules/create-hmac/browser.js":
+/*!************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/create-hmac/1.1.7/node_modules/create-hmac/browser.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js")
-var Legacy = __webpack_require__(/*! ./legacy */ "./node_modules/create-hmac/legacy.js")
-var Base = __webpack_require__(/*! cipher-base */ "./node_modules/cipher-base/index.js")
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
-var md5 = __webpack_require__(/*! create-hash/md5 */ "./node_modules/create-hash/md5.js")
-var RIPEMD160 = __webpack_require__(/*! ripemd160 */ "./node_modules/ripemd160/index.js")
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js")
+var Legacy = __webpack_require__(/*! ./legacy */ "./node_modules/.registry.npmjs.org/create-hmac/1.1.7/node_modules/create-hmac/legacy.js")
+var Base = __webpack_require__(/*! cipher-base */ "./node_modules/.registry.npmjs.org/cipher-base/1.0.4/node_modules/cipher-base/index.js")
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
+var md5 = __webpack_require__(/*! create-hash/md5 */ "./node_modules/.registry.npmjs.org/create-hash/1.2.0/node_modules/create-hash/md5.js")
+var RIPEMD160 = __webpack_require__(/*! ripemd160 */ "./node_modules/.registry.npmjs.org/ripemd160/2.0.2/node_modules/ripemd160/index.js")
 
-var sha = __webpack_require__(/*! sha.js */ "./node_modules/sha.js/index.js")
+var sha = __webpack_require__(/*! sha.js */ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/index.js")
 
 var ZEROS = Buffer.alloc(128)
 
@@ -34932,19 +35349,19 @@ module.exports = function createHmac (alg, key) {
 
 /***/ }),
 
-/***/ "./node_modules/create-hmac/legacy.js":
-/*!********************************************!*\
-  !*** ./node_modules/create-hmac/legacy.js ***!
-  \********************************************/
+/***/ "./node_modules/.registry.npmjs.org/create-hmac/1.1.7/node_modules/create-hmac/legacy.js":
+/*!***********************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/create-hmac/1.1.7/node_modules/create-hmac/legacy.js ***!
+  \***********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js")
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js")
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
 
-var Base = __webpack_require__(/*! cipher-base */ "./node_modules/cipher-base/index.js")
+var Base = __webpack_require__(/*! cipher-base */ "./node_modules/.registry.npmjs.org/cipher-base/1.0.4/node_modules/cipher-base/index.js")
 
 var ZEROS = Buffer.alloc(128)
 var blocksize = 64
@@ -34990,32 +35407,32 @@ module.exports = Hmac
 
 /***/ }),
 
-/***/ "./node_modules/crypto-browserify/index.js":
-/*!*************************************************!*\
-  !*** ./node_modules/crypto-browserify/index.js ***!
-  \*************************************************/
+/***/ "./node_modules/.registry.npmjs.org/crypto-browserify/3.12.0/node_modules/crypto-browserify/index.js":
+/*!***********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/crypto-browserify/3.12.0/node_modules/crypto-browserify/index.js ***!
+  \***********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-exports.randomBytes = exports.rng = exports.pseudoRandomBytes = exports.prng = __webpack_require__(/*! randombytes */ "./node_modules/randombytes/browser.js")
-exports.createHash = exports.Hash = __webpack_require__(/*! create-hash */ "./node_modules/create-hash/browser.js")
-exports.createHmac = exports.Hmac = __webpack_require__(/*! create-hmac */ "./node_modules/create-hmac/browser.js")
+exports.randomBytes = exports.rng = exports.pseudoRandomBytes = exports.prng = __webpack_require__(/*! randombytes */ "./node_modules/.registry.npmjs.org/randombytes/2.0.6/node_modules/randombytes/browser.js")
+exports.createHash = exports.Hash = __webpack_require__(/*! create-hash */ "./node_modules/.registry.npmjs.org/create-hash/1.2.0/node_modules/create-hash/browser.js")
+exports.createHmac = exports.Hmac = __webpack_require__(/*! create-hmac */ "./node_modules/.registry.npmjs.org/create-hmac/1.1.7/node_modules/create-hmac/browser.js")
 
-var algos = __webpack_require__(/*! browserify-sign/algos */ "./node_modules/browserify-sign/algos.js")
+var algos = __webpack_require__(/*! browserify-sign/algos */ "./node_modules/.registry.npmjs.org/browserify-sign/4.0.4/node_modules/browserify-sign/algos.js")
 var algoKeys = Object.keys(algos)
 var hashes = ['sha1', 'sha224', 'sha256', 'sha384', 'sha512', 'md5', 'rmd160'].concat(algoKeys)
 exports.getHashes = function () {
   return hashes
 }
 
-var p = __webpack_require__(/*! pbkdf2 */ "./node_modules/pbkdf2/browser.js")
+var p = __webpack_require__(/*! pbkdf2 */ "./node_modules/.registry.npmjs.org/pbkdf2/3.0.16/node_modules/pbkdf2/browser.js")
 exports.pbkdf2 = p.pbkdf2
 exports.pbkdf2Sync = p.pbkdf2Sync
 
-var aes = __webpack_require__(/*! browserify-cipher */ "./node_modules/browserify-cipher/browser.js")
+var aes = __webpack_require__(/*! browserify-cipher */ "./node_modules/.registry.npmjs.org/browserify-cipher/1.0.1/node_modules/browserify-cipher/browser.js")
 
 exports.Cipher = aes.Cipher
 exports.createCipher = aes.createCipher
@@ -35028,7 +35445,7 @@ exports.createDecipheriv = aes.createDecipheriv
 exports.getCiphers = aes.getCiphers
 exports.listCiphers = aes.listCiphers
 
-var dh = __webpack_require__(/*! diffie-hellman */ "./node_modules/diffie-hellman/browser.js")
+var dh = __webpack_require__(/*! diffie-hellman */ "./node_modules/.registry.npmjs.org/diffie-hellman/5.0.3/node_modules/diffie-hellman/browser.js")
 
 exports.DiffieHellmanGroup = dh.DiffieHellmanGroup
 exports.createDiffieHellmanGroup = dh.createDiffieHellmanGroup
@@ -35036,16 +35453,16 @@ exports.getDiffieHellman = dh.getDiffieHellman
 exports.createDiffieHellman = dh.createDiffieHellman
 exports.DiffieHellman = dh.DiffieHellman
 
-var sign = __webpack_require__(/*! browserify-sign */ "./node_modules/browserify-sign/browser/index.js")
+var sign = __webpack_require__(/*! browserify-sign */ "./node_modules/.registry.npmjs.org/browserify-sign/4.0.4/node_modules/browserify-sign/browser/index.js")
 
 exports.createSign = sign.createSign
 exports.Sign = sign.Sign
 exports.createVerify = sign.createVerify
 exports.Verify = sign.Verify
 
-exports.createECDH = __webpack_require__(/*! create-ecdh */ "./node_modules/create-ecdh/browser.js")
+exports.createECDH = __webpack_require__(/*! create-ecdh */ "./node_modules/.registry.npmjs.org/create-ecdh/4.0.3/node_modules/create-ecdh/browser.js")
 
-var publicEncrypt = __webpack_require__(/*! public-encrypt */ "./node_modules/public-encrypt/browser.js")
+var publicEncrypt = __webpack_require__(/*! public-encrypt */ "./node_modules/.registry.npmjs.org/public-encrypt/4.0.2/node_modules/public-encrypt/browser.js")
 
 exports.publicEncrypt = publicEncrypt.publicEncrypt
 exports.privateEncrypt = publicEncrypt.privateEncrypt
@@ -35065,7 +35482,7 @@ exports.privateDecrypt = publicEncrypt.privateDecrypt
 //   }
 // })
 
-var rf = __webpack_require__(/*! randomfill */ "./node_modules/randomfill/browser.js")
+var rf = __webpack_require__(/*! randomfill */ "./node_modules/.registry.npmjs.org/randomfill/1.0.4/node_modules/randomfill/browser.js")
 
 exports.randomFill = rf.randomFill
 exports.randomFillSync = rf.randomFillSync
@@ -35099,37 +35516,37 @@ exports.constants = {
 
 /***/ }),
 
-/***/ "./node_modules/des.js/lib/des.js":
-/*!****************************************!*\
-  !*** ./node_modules/des.js/lib/des.js ***!
-  \****************************************/
+/***/ "./node_modules/.registry.npmjs.org/des.js/1.0.0/node_modules/des.js/lib/des.js":
+/*!**************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/des.js/1.0.0/node_modules/des.js/lib/des.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-exports.utils = __webpack_require__(/*! ./des/utils */ "./node_modules/des.js/lib/des/utils.js");
-exports.Cipher = __webpack_require__(/*! ./des/cipher */ "./node_modules/des.js/lib/des/cipher.js");
-exports.DES = __webpack_require__(/*! ./des/des */ "./node_modules/des.js/lib/des/des.js");
-exports.CBC = __webpack_require__(/*! ./des/cbc */ "./node_modules/des.js/lib/des/cbc.js");
-exports.EDE = __webpack_require__(/*! ./des/ede */ "./node_modules/des.js/lib/des/ede.js");
+exports.utils = __webpack_require__(/*! ./des/utils */ "./node_modules/.registry.npmjs.org/des.js/1.0.0/node_modules/des.js/lib/des/utils.js");
+exports.Cipher = __webpack_require__(/*! ./des/cipher */ "./node_modules/.registry.npmjs.org/des.js/1.0.0/node_modules/des.js/lib/des/cipher.js");
+exports.DES = __webpack_require__(/*! ./des/des */ "./node_modules/.registry.npmjs.org/des.js/1.0.0/node_modules/des.js/lib/des/des.js");
+exports.CBC = __webpack_require__(/*! ./des/cbc */ "./node_modules/.registry.npmjs.org/des.js/1.0.0/node_modules/des.js/lib/des/cbc.js");
+exports.EDE = __webpack_require__(/*! ./des/ede */ "./node_modules/.registry.npmjs.org/des.js/1.0.0/node_modules/des.js/lib/des/ede.js");
 
 
 /***/ }),
 
-/***/ "./node_modules/des.js/lib/des/cbc.js":
-/*!********************************************!*\
-  !*** ./node_modules/des.js/lib/des/cbc.js ***!
-  \********************************************/
+/***/ "./node_modules/.registry.npmjs.org/des.js/1.0.0/node_modules/des.js/lib/des/cbc.js":
+/*!******************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/des.js/1.0.0/node_modules/des.js/lib/des/cbc.js ***!
+  \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var assert = __webpack_require__(/*! minimalistic-assert */ "./node_modules/minimalistic-assert/index.js");
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js");
+var assert = __webpack_require__(/*! minimalistic-assert */ "./node_modules/.registry.npmjs.org/minimalistic-assert/1.0.1/node_modules/minimalistic-assert/index.js");
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js");
 
 var proto = {};
 
@@ -35195,17 +35612,17 @@ proto._update = function _update(inp, inOff, out, outOff) {
 
 /***/ }),
 
-/***/ "./node_modules/des.js/lib/des/cipher.js":
-/*!***********************************************!*\
-  !*** ./node_modules/des.js/lib/des/cipher.js ***!
-  \***********************************************/
+/***/ "./node_modules/.registry.npmjs.org/des.js/1.0.0/node_modules/des.js/lib/des/cipher.js":
+/*!*********************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/des.js/1.0.0/node_modules/des.js/lib/des/cipher.js ***!
+  \*********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var assert = __webpack_require__(/*! minimalistic-assert */ "./node_modules/minimalistic-assert/index.js");
+var assert = __webpack_require__(/*! minimalistic-assert */ "./node_modules/.registry.npmjs.org/minimalistic-assert/1.0.1/node_modules/minimalistic-assert/index.js");
 
 function Cipher(options) {
   this.options = options;
@@ -35348,20 +35765,20 @@ Cipher.prototype._finalDecrypt = function _finalDecrypt() {
 
 /***/ }),
 
-/***/ "./node_modules/des.js/lib/des/des.js":
-/*!********************************************!*\
-  !*** ./node_modules/des.js/lib/des/des.js ***!
-  \********************************************/
+/***/ "./node_modules/.registry.npmjs.org/des.js/1.0.0/node_modules/des.js/lib/des/des.js":
+/*!******************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/des.js/1.0.0/node_modules/des.js/lib/des/des.js ***!
+  \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var assert = __webpack_require__(/*! minimalistic-assert */ "./node_modules/minimalistic-assert/index.js");
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js");
+var assert = __webpack_require__(/*! minimalistic-assert */ "./node_modules/.registry.npmjs.org/minimalistic-assert/1.0.1/node_modules/minimalistic-assert/index.js");
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js");
 
-var des = __webpack_require__(/*! ../des */ "./node_modules/des.js/lib/des.js");
+var des = __webpack_require__(/*! ../des */ "./node_modules/.registry.npmjs.org/des.js/1.0.0/node_modules/des.js/lib/des.js");
 var utils = des.utils;
 var Cipher = des.Cipher;
 
@@ -35503,20 +35920,20 @@ DES.prototype._decrypt = function _decrypt(state, lStart, rStart, out, off) {
 
 /***/ }),
 
-/***/ "./node_modules/des.js/lib/des/ede.js":
-/*!********************************************!*\
-  !*** ./node_modules/des.js/lib/des/ede.js ***!
-  \********************************************/
+/***/ "./node_modules/.registry.npmjs.org/des.js/1.0.0/node_modules/des.js/lib/des/ede.js":
+/*!******************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/des.js/1.0.0/node_modules/des.js/lib/des/ede.js ***!
+  \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var assert = __webpack_require__(/*! minimalistic-assert */ "./node_modules/minimalistic-assert/index.js");
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js");
+var assert = __webpack_require__(/*! minimalistic-assert */ "./node_modules/.registry.npmjs.org/minimalistic-assert/1.0.1/node_modules/minimalistic-assert/index.js");
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js");
 
-var des = __webpack_require__(/*! ../des */ "./node_modules/des.js/lib/des.js");
+var des = __webpack_require__(/*! ../des */ "./node_modules/.registry.npmjs.org/des.js/1.0.0/node_modules/des.js/lib/des.js");
 var Cipher = des.Cipher;
 var DES = des.DES;
 
@@ -35570,10 +35987,10 @@ EDE.prototype._unpad = DES.prototype._unpad;
 
 /***/ }),
 
-/***/ "./node_modules/des.js/lib/des/utils.js":
-/*!**********************************************!*\
-  !*** ./node_modules/des.js/lib/des/utils.js ***!
-  \**********************************************/
+/***/ "./node_modules/.registry.npmjs.org/des.js/1.0.0/node_modules/des.js/lib/des/utils.js":
+/*!********************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/des.js/1.0.0/node_modules/des.js/lib/des/utils.js ***!
+  \********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -35838,17 +36255,17 @@ exports.padSplit = function padSplit(num, size, group) {
 
 /***/ }),
 
-/***/ "./node_modules/diffie-hellman/browser.js":
-/*!************************************************!*\
-  !*** ./node_modules/diffie-hellman/browser.js ***!
-  \************************************************/
+/***/ "./node_modules/.registry.npmjs.org/diffie-hellman/5.0.3/node_modules/diffie-hellman/browser.js":
+/*!******************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/diffie-hellman/5.0.3/node_modules/diffie-hellman/browser.js ***!
+  \******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(Buffer) {var generatePrime = __webpack_require__(/*! ./lib/generatePrime */ "./node_modules/diffie-hellman/lib/generatePrime.js")
-var primes = __webpack_require__(/*! ./lib/primes.json */ "./node_modules/diffie-hellman/lib/primes.json")
+/* WEBPACK VAR INJECTION */(function(Buffer) {var generatePrime = __webpack_require__(/*! ./lib/generatePrime */ "./node_modules/.registry.npmjs.org/diffie-hellman/5.0.3/node_modules/diffie-hellman/lib/generatePrime.js")
+var primes = __webpack_require__(/*! ./lib/primes.json */ "./node_modules/.registry.npmjs.org/diffie-hellman/5.0.3/node_modules/diffie-hellman/lib/primes.json")
 
-var DH = __webpack_require__(/*! ./lib/dh */ "./node_modules/diffie-hellman/lib/dh.js")
+var DH = __webpack_require__(/*! ./lib/dh */ "./node_modules/.registry.npmjs.org/diffie-hellman/5.0.3/node_modules/diffie-hellman/lib/dh.js")
 
 function getDiffieHellman (mod) {
   var prime = new Buffer(primes[mod].prime, 'hex')
@@ -35888,27 +36305,27 @@ function createDiffieHellman (prime, enc, generator, genc) {
 exports.DiffieHellmanGroup = exports.createDiffieHellmanGroup = exports.getDiffieHellman = getDiffieHellman
 exports.createDiffieHellman = exports.DiffieHellman = createDiffieHellman
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer))
 
 /***/ }),
 
-/***/ "./node_modules/diffie-hellman/lib/dh.js":
-/*!***********************************************!*\
-  !*** ./node_modules/diffie-hellman/lib/dh.js ***!
-  \***********************************************/
+/***/ "./node_modules/.registry.npmjs.org/diffie-hellman/5.0.3/node_modules/diffie-hellman/lib/dh.js":
+/*!*****************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/diffie-hellman/5.0.3/node_modules/diffie-hellman/lib/dh.js ***!
+  \*****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(Buffer) {var BN = __webpack_require__(/*! bn.js */ "./node_modules/bn.js/lib/bn.js");
-var MillerRabin = __webpack_require__(/*! miller-rabin */ "./node_modules/miller-rabin/lib/mr.js");
+/* WEBPACK VAR INJECTION */(function(Buffer) {var BN = __webpack_require__(/*! bn.js */ "./node_modules/.registry.npmjs.org/bn.js/4.11.8/node_modules/bn.js/lib/bn.js");
+var MillerRabin = __webpack_require__(/*! miller-rabin */ "./node_modules/.registry.npmjs.org/miller-rabin/4.0.1/node_modules/miller-rabin/lib/mr.js");
 var millerRabin = new MillerRabin();
 var TWENTYFOUR = new BN(24);
 var ELEVEN = new BN(11);
 var TEN = new BN(10);
 var THREE = new BN(3);
 var SEVEN = new BN(7);
-var primes = __webpack_require__(/*! ./generatePrime */ "./node_modules/diffie-hellman/lib/generatePrime.js");
-var randomBytes = __webpack_require__(/*! randombytes */ "./node_modules/randombytes/browser.js");
+var primes = __webpack_require__(/*! ./generatePrime */ "./node_modules/.registry.npmjs.org/diffie-hellman/5.0.3/node_modules/diffie-hellman/lib/generatePrime.js");
+var randomBytes = __webpack_require__(/*! randombytes */ "./node_modules/.registry.npmjs.org/randombytes/2.0.6/node_modules/randombytes/browser.js");
 module.exports = DH;
 
 function setPublicKey(pub, enc) {
@@ -36064,24 +36481,24 @@ function formatReturnValue(bn, enc) {
   }
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer))
 
 /***/ }),
 
-/***/ "./node_modules/diffie-hellman/lib/generatePrime.js":
-/*!**********************************************************!*\
-  !*** ./node_modules/diffie-hellman/lib/generatePrime.js ***!
-  \**********************************************************/
+/***/ "./node_modules/.registry.npmjs.org/diffie-hellman/5.0.3/node_modules/diffie-hellman/lib/generatePrime.js":
+/*!****************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/diffie-hellman/5.0.3/node_modules/diffie-hellman/lib/generatePrime.js ***!
+  \****************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var randomBytes = __webpack_require__(/*! randombytes */ "./node_modules/randombytes/browser.js");
+var randomBytes = __webpack_require__(/*! randombytes */ "./node_modules/.registry.npmjs.org/randombytes/2.0.6/node_modules/randombytes/browser.js");
 module.exports = findPrime;
 findPrime.simpleSieve = simpleSieve;
 findPrime.fermatTest = fermatTest;
-var BN = __webpack_require__(/*! bn.js */ "./node_modules/bn.js/lib/bn.js");
+var BN = __webpack_require__(/*! bn.js */ "./node_modules/.registry.npmjs.org/bn.js/4.11.8/node_modules/bn.js/lib/bn.js");
 var TWENTYFOUR = new BN(24);
-var MillerRabin = __webpack_require__(/*! miller-rabin */ "./node_modules/miller-rabin/lib/mr.js");
+var MillerRabin = __webpack_require__(/*! miller-rabin */ "./node_modules/.registry.npmjs.org/miller-rabin/4.0.1/node_modules/miller-rabin/lib/mr.js");
 var millerRabin = new MillerRabin();
 var ONE = new BN(1);
 var TWO = new BN(2);
@@ -36184,10 +36601,10 @@ function findPrime(bits, gen) {
 
 /***/ }),
 
-/***/ "./node_modules/diffie-hellman/lib/primes.json":
-/*!*****************************************************!*\
-  !*** ./node_modules/diffie-hellman/lib/primes.json ***!
-  \*****************************************************/
+/***/ "./node_modules/.registry.npmjs.org/diffie-hellman/5.0.3/node_modules/diffie-hellman/lib/primes.json":
+/*!***********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/diffie-hellman/5.0.3/node_modules/diffie-hellman/lib/primes.json ***!
+  \***********************************************************************************************************/
 /*! exports provided: modp1, modp2, modp5, modp14, modp15, modp16, modp17, modp18, default */
 /***/ (function(module) {
 
@@ -36195,10 +36612,10 @@ module.exports = {"modp1":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c
 
 /***/ }),
 
-/***/ "./node_modules/elliptic/lib/elliptic.js":
-/*!***********************************************!*\
-  !*** ./node_modules/elliptic/lib/elliptic.js ***!
-  \***********************************************/
+/***/ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic.js":
+/*!***********************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic.js ***!
+  \***********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36207,31 +36624,31 @@ module.exports = {"modp1":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c
 
 var elliptic = exports;
 
-elliptic.version = __webpack_require__(/*! ../package.json */ "./node_modules/elliptic/package.json").version;
-elliptic.utils = __webpack_require__(/*! ./elliptic/utils */ "./node_modules/elliptic/lib/elliptic/utils.js");
-elliptic.rand = __webpack_require__(/*! brorand */ "./node_modules/brorand/index.js");
-elliptic.curve = __webpack_require__(/*! ./elliptic/curve */ "./node_modules/elliptic/lib/elliptic/curve/index.js");
-elliptic.curves = __webpack_require__(/*! ./elliptic/curves */ "./node_modules/elliptic/lib/elliptic/curves.js");
+elliptic.version = __webpack_require__(/*! ../package.json */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/package.json").version;
+elliptic.utils = __webpack_require__(/*! ./elliptic/utils */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/utils.js");
+elliptic.rand = __webpack_require__(/*! brorand */ "./node_modules/.registry.npmjs.org/brorand/1.1.0/node_modules/brorand/index.js");
+elliptic.curve = __webpack_require__(/*! ./elliptic/curve */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/curve/index.js");
+elliptic.curves = __webpack_require__(/*! ./elliptic/curves */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/curves.js");
 
 // Protocols
-elliptic.ec = __webpack_require__(/*! ./elliptic/ec */ "./node_modules/elliptic/lib/elliptic/ec/index.js");
-elliptic.eddsa = __webpack_require__(/*! ./elliptic/eddsa */ "./node_modules/elliptic/lib/elliptic/eddsa/index.js");
+elliptic.ec = __webpack_require__(/*! ./elliptic/ec */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/ec/index.js");
+elliptic.eddsa = __webpack_require__(/*! ./elliptic/eddsa */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/eddsa/index.js");
 
 
 /***/ }),
 
-/***/ "./node_modules/elliptic/lib/elliptic/curve/base.js":
-/*!**********************************************************!*\
-  !*** ./node_modules/elliptic/lib/elliptic/curve/base.js ***!
-  \**********************************************************/
+/***/ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/curve/base.js":
+/*!**********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/curve/base.js ***!
+  \**********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var BN = __webpack_require__(/*! bn.js */ "./node_modules/bn.js/lib/bn.js");
-var elliptic = __webpack_require__(/*! ../../elliptic */ "./node_modules/elliptic/lib/elliptic.js");
+var BN = __webpack_require__(/*! bn.js */ "./node_modules/.registry.npmjs.org/bn.js/4.11.8/node_modules/bn.js/lib/bn.js");
+var elliptic = __webpack_require__(/*! ../../elliptic */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic.js");
 var utils = elliptic.utils;
 var getNAF = utils.getNAF;
 var getJSF = utils.getJSF;
@@ -36607,20 +37024,20 @@ BasePoint.prototype.dblp = function dblp(k) {
 
 /***/ }),
 
-/***/ "./node_modules/elliptic/lib/elliptic/curve/edwards.js":
-/*!*************************************************************!*\
-  !*** ./node_modules/elliptic/lib/elliptic/curve/edwards.js ***!
-  \*************************************************************/
+/***/ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/curve/edwards.js":
+/*!*************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/curve/edwards.js ***!
+  \*************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var curve = __webpack_require__(/*! ../curve */ "./node_modules/elliptic/lib/elliptic/curve/index.js");
-var elliptic = __webpack_require__(/*! ../../elliptic */ "./node_modules/elliptic/lib/elliptic.js");
-var BN = __webpack_require__(/*! bn.js */ "./node_modules/bn.js/lib/bn.js");
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js");
+var curve = __webpack_require__(/*! ../curve */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/curve/index.js");
+var elliptic = __webpack_require__(/*! ../../elliptic */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic.js");
+var BN = __webpack_require__(/*! bn.js */ "./node_modules/.registry.npmjs.org/bn.js/4.11.8/node_modules/bn.js/lib/bn.js");
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js");
 var Base = curve.base;
 
 var assert = elliptic.utils.assert;
@@ -37052,10 +37469,10 @@ Point.prototype.mixedAdd = Point.prototype.add;
 
 /***/ }),
 
-/***/ "./node_modules/elliptic/lib/elliptic/curve/index.js":
-/*!***********************************************************!*\
-  !*** ./node_modules/elliptic/lib/elliptic/curve/index.js ***!
-  \***********************************************************/
+/***/ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/curve/index.js":
+/*!***********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/curve/index.js ***!
+  \***********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -37064,30 +37481,30 @@ Point.prototype.mixedAdd = Point.prototype.add;
 
 var curve = exports;
 
-curve.base = __webpack_require__(/*! ./base */ "./node_modules/elliptic/lib/elliptic/curve/base.js");
-curve.short = __webpack_require__(/*! ./short */ "./node_modules/elliptic/lib/elliptic/curve/short.js");
-curve.mont = __webpack_require__(/*! ./mont */ "./node_modules/elliptic/lib/elliptic/curve/mont.js");
-curve.edwards = __webpack_require__(/*! ./edwards */ "./node_modules/elliptic/lib/elliptic/curve/edwards.js");
+curve.base = __webpack_require__(/*! ./base */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/curve/base.js");
+curve.short = __webpack_require__(/*! ./short */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/curve/short.js");
+curve.mont = __webpack_require__(/*! ./mont */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/curve/mont.js");
+curve.edwards = __webpack_require__(/*! ./edwards */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/curve/edwards.js");
 
 
 /***/ }),
 
-/***/ "./node_modules/elliptic/lib/elliptic/curve/mont.js":
-/*!**********************************************************!*\
-  !*** ./node_modules/elliptic/lib/elliptic/curve/mont.js ***!
-  \**********************************************************/
+/***/ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/curve/mont.js":
+/*!**********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/curve/mont.js ***!
+  \**********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var curve = __webpack_require__(/*! ../curve */ "./node_modules/elliptic/lib/elliptic/curve/index.js");
-var BN = __webpack_require__(/*! bn.js */ "./node_modules/bn.js/lib/bn.js");
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js");
+var curve = __webpack_require__(/*! ../curve */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/curve/index.js");
+var BN = __webpack_require__(/*! bn.js */ "./node_modules/.registry.npmjs.org/bn.js/4.11.8/node_modules/bn.js/lib/bn.js");
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js");
 var Base = curve.base;
 
-var elliptic = __webpack_require__(/*! ../../elliptic */ "./node_modules/elliptic/lib/elliptic.js");
+var elliptic = __webpack_require__(/*! ../../elliptic */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic.js");
 var utils = elliptic.utils;
 
 function MontCurve(conf) {
@@ -37264,20 +37681,20 @@ Point.prototype.getX = function getX() {
 
 /***/ }),
 
-/***/ "./node_modules/elliptic/lib/elliptic/curve/short.js":
-/*!***********************************************************!*\
-  !*** ./node_modules/elliptic/lib/elliptic/curve/short.js ***!
-  \***********************************************************/
+/***/ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/curve/short.js":
+/*!***********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/curve/short.js ***!
+  \***********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var curve = __webpack_require__(/*! ../curve */ "./node_modules/elliptic/lib/elliptic/curve/index.js");
-var elliptic = __webpack_require__(/*! ../../elliptic */ "./node_modules/elliptic/lib/elliptic.js");
-var BN = __webpack_require__(/*! bn.js */ "./node_modules/bn.js/lib/bn.js");
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js");
+var curve = __webpack_require__(/*! ../curve */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/curve/index.js");
+var elliptic = __webpack_require__(/*! ../../elliptic */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic.js");
+var BN = __webpack_require__(/*! bn.js */ "./node_modules/.registry.npmjs.org/bn.js/4.11.8/node_modules/bn.js/lib/bn.js");
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js");
 var Base = curve.base;
 
 var assert = elliptic.utils.assert;
@@ -38214,10 +38631,10 @@ JPoint.prototype.isInfinity = function isInfinity() {
 
 /***/ }),
 
-/***/ "./node_modules/elliptic/lib/elliptic/curves.js":
-/*!******************************************************!*\
-  !*** ./node_modules/elliptic/lib/elliptic/curves.js ***!
-  \******************************************************/
+/***/ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/curves.js":
+/*!******************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/curves.js ***!
+  \******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -38226,8 +38643,8 @@ JPoint.prototype.isInfinity = function isInfinity() {
 
 var curves = exports;
 
-var hash = __webpack_require__(/*! hash.js */ "./node_modules/hash.js/lib/hash.js");
-var elliptic = __webpack_require__(/*! ../elliptic */ "./node_modules/elliptic/lib/elliptic.js");
+var hash = __webpack_require__(/*! hash.js */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash.js");
+var elliptic = __webpack_require__(/*! ../elliptic */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic.js");
 
 var assert = elliptic.utils.assert;
 
@@ -38391,7 +38808,7 @@ defineCurve('ed25519', {
 
 var pre;
 try {
-  pre = __webpack_require__(/*! ./precomputed/secp256k1 */ "./node_modules/elliptic/lib/elliptic/precomputed/secp256k1.js");
+  pre = __webpack_require__(/*! ./precomputed/secp256k1 */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/precomputed/secp256k1.js");
 } catch (e) {
   pre = undefined;
 }
@@ -38431,24 +38848,24 @@ defineCurve('secp256k1', {
 
 /***/ }),
 
-/***/ "./node_modules/elliptic/lib/elliptic/ec/index.js":
-/*!********************************************************!*\
-  !*** ./node_modules/elliptic/lib/elliptic/ec/index.js ***!
-  \********************************************************/
+/***/ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/ec/index.js":
+/*!********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/ec/index.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var BN = __webpack_require__(/*! bn.js */ "./node_modules/bn.js/lib/bn.js");
-var HmacDRBG = __webpack_require__(/*! hmac-drbg */ "./node_modules/hmac-drbg/lib/hmac-drbg.js");
-var elliptic = __webpack_require__(/*! ../../elliptic */ "./node_modules/elliptic/lib/elliptic.js");
+var BN = __webpack_require__(/*! bn.js */ "./node_modules/.registry.npmjs.org/bn.js/4.11.8/node_modules/bn.js/lib/bn.js");
+var HmacDRBG = __webpack_require__(/*! hmac-drbg */ "./node_modules/.registry.npmjs.org/hmac-drbg/1.0.1/node_modules/hmac-drbg/lib/hmac-drbg.js");
+var elliptic = __webpack_require__(/*! ../../elliptic */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic.js");
 var utils = elliptic.utils;
 var assert = utils.assert;
 
-var KeyPair = __webpack_require__(/*! ./key */ "./node_modules/elliptic/lib/elliptic/ec/key.js");
-var Signature = __webpack_require__(/*! ./signature */ "./node_modules/elliptic/lib/elliptic/ec/signature.js");
+var KeyPair = __webpack_require__(/*! ./key */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/ec/key.js");
+var Signature = __webpack_require__(/*! ./signature */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/ec/signature.js");
 
 function EC(options) {
   if (!(this instanceof EC))
@@ -38683,18 +39100,18 @@ EC.prototype.getKeyRecoveryParam = function(e, signature, Q, enc) {
 
 /***/ }),
 
-/***/ "./node_modules/elliptic/lib/elliptic/ec/key.js":
-/*!******************************************************!*\
-  !*** ./node_modules/elliptic/lib/elliptic/ec/key.js ***!
-  \******************************************************/
+/***/ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/ec/key.js":
+/*!******************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/ec/key.js ***!
+  \******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var BN = __webpack_require__(/*! bn.js */ "./node_modules/bn.js/lib/bn.js");
-var elliptic = __webpack_require__(/*! ../../elliptic */ "./node_modules/elliptic/lib/elliptic.js");
+var BN = __webpack_require__(/*! bn.js */ "./node_modules/.registry.npmjs.org/bn.js/4.11.8/node_modules/bn.js/lib/bn.js");
+var elliptic = __webpack_require__(/*! ../../elliptic */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic.js");
 var utils = elliptic.utils;
 var assert = utils.assert;
 
@@ -38814,19 +39231,19 @@ KeyPair.prototype.inspect = function inspect() {
 
 /***/ }),
 
-/***/ "./node_modules/elliptic/lib/elliptic/ec/signature.js":
-/*!************************************************************!*\
-  !*** ./node_modules/elliptic/lib/elliptic/ec/signature.js ***!
-  \************************************************************/
+/***/ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/ec/signature.js":
+/*!************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/ec/signature.js ***!
+  \************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var BN = __webpack_require__(/*! bn.js */ "./node_modules/bn.js/lib/bn.js");
+var BN = __webpack_require__(/*! bn.js */ "./node_modules/.registry.npmjs.org/bn.js/4.11.8/node_modules/bn.js/lib/bn.js");
 
-var elliptic = __webpack_require__(/*! ../../elliptic */ "./node_modules/elliptic/lib/elliptic.js");
+var elliptic = __webpack_require__(/*! ../../elliptic */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic.js");
 var utils = elliptic.utils;
 var assert = utils.assert;
 
@@ -38961,23 +39378,23 @@ Signature.prototype.toDER = function toDER(enc) {
 
 /***/ }),
 
-/***/ "./node_modules/elliptic/lib/elliptic/eddsa/index.js":
-/*!***********************************************************!*\
-  !*** ./node_modules/elliptic/lib/elliptic/eddsa/index.js ***!
-  \***********************************************************/
+/***/ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/eddsa/index.js":
+/*!***********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/eddsa/index.js ***!
+  \***********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var hash = __webpack_require__(/*! hash.js */ "./node_modules/hash.js/lib/hash.js");
-var elliptic = __webpack_require__(/*! ../../elliptic */ "./node_modules/elliptic/lib/elliptic.js");
+var hash = __webpack_require__(/*! hash.js */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash.js");
+var elliptic = __webpack_require__(/*! ../../elliptic */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic.js");
 var utils = elliptic.utils;
 var assert = utils.assert;
 var parseBytes = utils.parseBytes;
-var KeyPair = __webpack_require__(/*! ./key */ "./node_modules/elliptic/lib/elliptic/eddsa/key.js");
-var Signature = __webpack_require__(/*! ./signature */ "./node_modules/elliptic/lib/elliptic/eddsa/signature.js");
+var KeyPair = __webpack_require__(/*! ./key */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/eddsa/key.js");
+var Signature = __webpack_require__(/*! ./signature */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/eddsa/signature.js");
 
 function EDDSA(curve) {
   assert(curve === 'ed25519', 'only tested with ed25519 so far');
@@ -39091,17 +39508,17 @@ EDDSA.prototype.isPoint = function isPoint(val) {
 
 /***/ }),
 
-/***/ "./node_modules/elliptic/lib/elliptic/eddsa/key.js":
-/*!*********************************************************!*\
-  !*** ./node_modules/elliptic/lib/elliptic/eddsa/key.js ***!
-  \*********************************************************/
+/***/ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/eddsa/key.js":
+/*!*********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/eddsa/key.js ***!
+  \*********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var elliptic = __webpack_require__(/*! ../../elliptic */ "./node_modules/elliptic/lib/elliptic.js");
+var elliptic = __webpack_require__(/*! ../../elliptic */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic.js");
 var utils = elliptic.utils;
 var assert = utils.assert;
 var parseBytes = utils.parseBytes;
@@ -39199,18 +39616,18 @@ module.exports = KeyPair;
 
 /***/ }),
 
-/***/ "./node_modules/elliptic/lib/elliptic/eddsa/signature.js":
-/*!***************************************************************!*\
-  !*** ./node_modules/elliptic/lib/elliptic/eddsa/signature.js ***!
-  \***************************************************************/
+/***/ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/eddsa/signature.js":
+/*!***************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/eddsa/signature.js ***!
+  \***************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var BN = __webpack_require__(/*! bn.js */ "./node_modules/bn.js/lib/bn.js");
-var elliptic = __webpack_require__(/*! ../../elliptic */ "./node_modules/elliptic/lib/elliptic.js");
+var BN = __webpack_require__(/*! bn.js */ "./node_modules/.registry.npmjs.org/bn.js/4.11.8/node_modules/bn.js/lib/bn.js");
+var elliptic = __webpack_require__(/*! ../../elliptic */ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic.js");
 var utils = elliptic.utils;
 var assert = utils.assert;
 var cachedProperty = utils.cachedProperty;
@@ -39277,10 +39694,10 @@ module.exports = Signature;
 
 /***/ }),
 
-/***/ "./node_modules/elliptic/lib/elliptic/precomputed/secp256k1.js":
-/*!*********************************************************************!*\
-  !*** ./node_modules/elliptic/lib/elliptic/precomputed/secp256k1.js ***!
-  \*********************************************************************/
+/***/ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/precomputed/secp256k1.js":
+/*!*********************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/precomputed/secp256k1.js ***!
+  \*********************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -40068,10 +40485,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./node_modules/elliptic/lib/elliptic/utils.js":
-/*!*****************************************************!*\
-  !*** ./node_modules/elliptic/lib/elliptic/utils.js ***!
-  \*****************************************************/
+/***/ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/utils.js":
+/*!*****************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/lib/elliptic/utils.js ***!
+  \*****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40079,9 +40496,9 @@ module.exports = {
 
 
 var utils = exports;
-var BN = __webpack_require__(/*! bn.js */ "./node_modules/bn.js/lib/bn.js");
-var minAssert = __webpack_require__(/*! minimalistic-assert */ "./node_modules/minimalistic-assert/index.js");
-var minUtils = __webpack_require__(/*! minimalistic-crypto-utils */ "./node_modules/minimalistic-crypto-utils/lib/utils.js");
+var BN = __webpack_require__(/*! bn.js */ "./node_modules/.registry.npmjs.org/bn.js/4.11.8/node_modules/bn.js/lib/bn.js");
+var minAssert = __webpack_require__(/*! minimalistic-assert */ "./node_modules/.registry.npmjs.org/minimalistic-assert/1.0.1/node_modules/minimalistic-assert/index.js");
+var minUtils = __webpack_require__(/*! minimalistic-crypto-utils */ "./node_modules/.registry.npmjs.org/minimalistic-crypto-utils/1.0.1/node_modules/minimalistic-crypto-utils/lib/utils.js");
 
 utils.assert = minAssert;
 utils.toArray = minUtils.toArray;
@@ -40200,21 +40617,21 @@ utils.intFromLE = intFromLE;
 
 /***/ }),
 
-/***/ "./node_modules/elliptic/package.json":
-/*!********************************************!*\
-  !*** ./node_modules/elliptic/package.json ***!
-  \********************************************/
-/*! exports provided: _from, _id, _inBundle, _integrity, _location, _phantomChildren, _requested, _requiredBy, _resolved, _shasum, _spec, _where, author, bugs, bundleDependencies, dependencies, deprecated, description, devDependencies, files, homepage, keywords, license, main, name, repository, scripts, version, default */
+/***/ "./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/package.json":
+/*!********************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/elliptic/6.4.0/node_modules/elliptic/package.json ***!
+  \********************************************************************************************/
+/*! exports provided: name, version, description, main, files, scripts, repository, keywords, author, license, bugs, homepage, devDependencies, dependencies, default */
 /***/ (function(module) {
 
-module.exports = {"_from":"elliptic@^6.0.0","_id":"elliptic@6.4.0","_inBundle":false,"_integrity":"sha1-ysmvh2LIWDYYcAPI3+GT5eLq5d8=","_location":"/elliptic","_phantomChildren":{},"_requested":{"type":"range","registry":true,"raw":"elliptic@^6.0.0","name":"elliptic","escapedName":"elliptic","rawSpec":"^6.0.0","saveSpec":null,"fetchSpec":"^6.0.0"},"_requiredBy":["/browserify-sign","/create-ecdh"],"_resolved":"https://registry.npmjs.org/elliptic/-/elliptic-6.4.0.tgz","_shasum":"cac9af8762c85836187003c8dfe193e5e2eae5df","_spec":"elliptic@^6.0.0","_where":"D:\\Workarea\\iotaeco\\iota-pico-lib-browser\\node_modules\\browserify-sign","author":{"name":"Fedor Indutny","email":"fedor@indutny.com"},"bugs":{"url":"https://github.com/indutny/elliptic/issues"},"bundleDependencies":false,"dependencies":{"bn.js":"^4.4.0","brorand":"^1.0.1","hash.js":"^1.0.0","hmac-drbg":"^1.0.0","inherits":"^2.0.1","minimalistic-assert":"^1.0.0","minimalistic-crypto-utils":"^1.0.0"},"deprecated":false,"description":"EC cryptography","devDependencies":{"brfs":"^1.4.3","coveralls":"^2.11.3","grunt":"^0.4.5","grunt-browserify":"^5.0.0","grunt-cli":"^1.2.0","grunt-contrib-connect":"^1.0.0","grunt-contrib-copy":"^1.0.0","grunt-contrib-uglify":"^1.0.1","grunt-mocha-istanbul":"^3.0.1","grunt-saucelabs":"^8.6.2","istanbul":"^0.4.2","jscs":"^2.9.0","jshint":"^2.6.0","mocha":"^2.1.0"},"files":["lib"],"homepage":"https://github.com/indutny/elliptic","keywords":["EC","Elliptic","curve","Cryptography"],"license":"MIT","main":"lib/elliptic.js","name":"elliptic","repository":{"type":"git","url":"git+ssh://git@github.com/indutny/elliptic.git"},"scripts":{"jscs":"jscs benchmarks/*.js lib/*.js lib/**/*.js lib/**/**/*.js test/index.js","jshint":"jscs benchmarks/*.js lib/*.js lib/**/*.js lib/**/**/*.js test/index.js","lint":"npm run jscs && npm run jshint","test":"npm run lint && npm run unit","unit":"istanbul test _mocha --reporter=spec test/index.js","version":"grunt dist && git add dist/"},"version":"6.4.0"};
+module.exports = {"name":"elliptic","version":"6.4.0","description":"EC cryptography","main":"lib/elliptic.js","files":["lib"],"scripts":{"jscs":"jscs benchmarks/*.js lib/*.js lib/**/*.js lib/**/**/*.js test/index.js","jshint":"jscs benchmarks/*.js lib/*.js lib/**/*.js lib/**/**/*.js test/index.js","lint":"npm run jscs && npm run jshint","unit":"istanbul test _mocha --reporter=spec test/index.js","test":"npm run lint && npm run unit","version":"grunt dist && git add dist/"},"repository":{"type":"git","url":"git@github.com:indutny/elliptic"},"keywords":["EC","Elliptic","curve","Cryptography"],"author":"Fedor Indutny <fedor@indutny.com>","license":"MIT","bugs":{"url":"https://github.com/indutny/elliptic/issues"},"homepage":"https://github.com/indutny/elliptic","devDependencies":{"brfs":"^1.4.3","coveralls":"^2.11.3","grunt":"^0.4.5","grunt-browserify":"^5.0.0","grunt-cli":"^1.2.0","grunt-contrib-connect":"^1.0.0","grunt-contrib-copy":"^1.0.0","grunt-contrib-uglify":"^1.0.1","grunt-mocha-istanbul":"^3.0.1","grunt-saucelabs":"^8.6.2","istanbul":"^0.4.2","jscs":"^2.9.0","jshint":"^2.6.0","mocha":"^2.1.0"},"dependencies":{"bn.js":"^4.4.0","brorand":"^1.0.1","hash.js":"^1.0.0","hmac-drbg":"^1.0.0","inherits":"^2.0.1","minimalistic-assert":"^1.0.0","minimalistic-crypto-utils":"^1.0.0"}};
 
 /***/ }),
 
-/***/ "./node_modules/events/events.js":
-/*!***************************************!*\
-  !*** ./node_modules/events/events.js ***!
-  \***************************************/
+/***/ "./node_modules/.registry.npmjs.org/events/1.1.1/node_modules/events/events.js":
+/*!*************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/events/1.1.1/node_modules/events/events.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -40524,15 +40941,15 @@ function isUndefined(arg) {
 
 /***/ }),
 
-/***/ "./node_modules/evp_bytestokey/index.js":
-/*!**********************************************!*\
-  !*** ./node_modules/evp_bytestokey/index.js ***!
-  \**********************************************/
+/***/ "./node_modules/.registry.npmjs.org/evp_bytestokey/1.0.3/node_modules/evp_bytestokey/index.js":
+/*!****************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/evp_bytestokey/1.0.3/node_modules/evp_bytestokey/index.js ***!
+  \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
-var MD5 = __webpack_require__(/*! md5.js */ "./node_modules/md5.js/index.js")
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
+var MD5 = __webpack_require__(/*! md5.js */ "./node_modules/.registry.npmjs.org/md5.js/1.3.4/node_modules/md5.js/index.js")
 
 /* eslint-disable camelcase */
 function EVP_BytesToKey (password, salt, keyBits, ivLen) {
@@ -40580,18 +40997,18 @@ module.exports = EVP_BytesToKey
 
 /***/ }),
 
-/***/ "./node_modules/hash-base/index.js":
-/*!*****************************************!*\
-  !*** ./node_modules/hash-base/index.js ***!
-  \*****************************************/
+/***/ "./node_modules/.registry.npmjs.org/hash-base/3.0.4/node_modules/hash-base/index.js":
+/*!******************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/hash-base/3.0.4/node_modules/hash-base/index.js ***!
+  \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
-var Transform = __webpack_require__(/*! stream */ "./node_modules/stream-browserify/index.js").Transform
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js")
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
+var Transform = __webpack_require__(/*! stream */ "./node_modules/.registry.npmjs.org/stream-browserify/2.0.1/node_modules/stream-browserify/index.js").Transform
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js")
 
 function throwIfNotStringOrBuffer (val, prefix) {
   if (!Buffer.isBuffer(val) && typeof val !== 'string') {
@@ -40687,20 +41104,20 @@ module.exports = HashBase
 
 /***/ }),
 
-/***/ "./node_modules/hash.js/lib/hash.js":
-/*!******************************************!*\
-  !*** ./node_modules/hash.js/lib/hash.js ***!
-  \******************************************/
+/***/ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash.js":
+/*!*****************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 var hash = exports;
 
-hash.utils = __webpack_require__(/*! ./hash/utils */ "./node_modules/hash.js/lib/hash/utils.js");
-hash.common = __webpack_require__(/*! ./hash/common */ "./node_modules/hash.js/lib/hash/common.js");
-hash.sha = __webpack_require__(/*! ./hash/sha */ "./node_modules/hash.js/lib/hash/sha.js");
-hash.ripemd = __webpack_require__(/*! ./hash/ripemd */ "./node_modules/hash.js/lib/hash/ripemd.js");
-hash.hmac = __webpack_require__(/*! ./hash/hmac */ "./node_modules/hash.js/lib/hash/hmac.js");
+hash.utils = __webpack_require__(/*! ./hash/utils */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/utils.js");
+hash.common = __webpack_require__(/*! ./hash/common */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/common.js");
+hash.sha = __webpack_require__(/*! ./hash/sha */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/sha.js");
+hash.ripemd = __webpack_require__(/*! ./hash/ripemd */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/ripemd.js");
+hash.hmac = __webpack_require__(/*! ./hash/hmac */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/hmac.js");
 
 // Proxy hash functions to the main object
 hash.sha1 = hash.sha.sha1;
@@ -40713,18 +41130,18 @@ hash.ripemd160 = hash.ripemd.ripemd160;
 
 /***/ }),
 
-/***/ "./node_modules/hash.js/lib/hash/common.js":
-/*!*************************************************!*\
-  !*** ./node_modules/hash.js/lib/hash/common.js ***!
-  \*************************************************/
+/***/ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/common.js":
+/*!************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/common.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var utils = __webpack_require__(/*! ./utils */ "./node_modules/hash.js/lib/hash/utils.js");
-var assert = __webpack_require__(/*! minimalistic-assert */ "./node_modules/minimalistic-assert/index.js");
+var utils = __webpack_require__(/*! ./utils */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/utils.js");
+var assert = __webpack_require__(/*! minimalistic-assert */ "./node_modules/.registry.npmjs.org/minimalistic-assert/1.0.1/node_modules/minimalistic-assert/index.js");
 
 function BlockHash() {
   this.pending = null;
@@ -40817,18 +41234,18 @@ BlockHash.prototype._pad = function pad() {
 
 /***/ }),
 
-/***/ "./node_modules/hash.js/lib/hash/hmac.js":
-/*!***********************************************!*\
-  !*** ./node_modules/hash.js/lib/hash/hmac.js ***!
-  \***********************************************/
+/***/ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/hmac.js":
+/*!**********************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/hmac.js ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var utils = __webpack_require__(/*! ./utils */ "./node_modules/hash.js/lib/hash/utils.js");
-var assert = __webpack_require__(/*! minimalistic-assert */ "./node_modules/minimalistic-assert/index.js");
+var utils = __webpack_require__(/*! ./utils */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/utils.js");
+var assert = __webpack_require__(/*! minimalistic-assert */ "./node_modules/.registry.npmjs.org/minimalistic-assert/1.0.1/node_modules/minimalistic-assert/index.js");
 
 function Hmac(hash, key, enc) {
   if (!(this instanceof Hmac))
@@ -40876,18 +41293,18 @@ Hmac.prototype.digest = function digest(enc) {
 
 /***/ }),
 
-/***/ "./node_modules/hash.js/lib/hash/ripemd.js":
-/*!*************************************************!*\
-  !*** ./node_modules/hash.js/lib/hash/ripemd.js ***!
-  \*************************************************/
+/***/ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/ripemd.js":
+/*!************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/ripemd.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var utils = __webpack_require__(/*! ./utils */ "./node_modules/hash.js/lib/hash/utils.js");
-var common = __webpack_require__(/*! ./common */ "./node_modules/hash.js/lib/hash/common.js");
+var utils = __webpack_require__(/*! ./utils */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/utils.js");
+var common = __webpack_require__(/*! ./common */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/common.js");
 
 var rotl32 = utils.rotl32;
 var sum32 = utils.sum32;
@@ -41034,38 +41451,38 @@ var sh = [
 
 /***/ }),
 
-/***/ "./node_modules/hash.js/lib/hash/sha.js":
-/*!**********************************************!*\
-  !*** ./node_modules/hash.js/lib/hash/sha.js ***!
-  \**********************************************/
+/***/ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/sha.js":
+/*!*********************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/sha.js ***!
+  \*********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-exports.sha1 = __webpack_require__(/*! ./sha/1 */ "./node_modules/hash.js/lib/hash/sha/1.js");
-exports.sha224 = __webpack_require__(/*! ./sha/224 */ "./node_modules/hash.js/lib/hash/sha/224.js");
-exports.sha256 = __webpack_require__(/*! ./sha/256 */ "./node_modules/hash.js/lib/hash/sha/256.js");
-exports.sha384 = __webpack_require__(/*! ./sha/384 */ "./node_modules/hash.js/lib/hash/sha/384.js");
-exports.sha512 = __webpack_require__(/*! ./sha/512 */ "./node_modules/hash.js/lib/hash/sha/512.js");
+exports.sha1 = __webpack_require__(/*! ./sha/1 */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/sha/1.js");
+exports.sha224 = __webpack_require__(/*! ./sha/224 */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/sha/224.js");
+exports.sha256 = __webpack_require__(/*! ./sha/256 */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/sha/256.js");
+exports.sha384 = __webpack_require__(/*! ./sha/384 */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/sha/384.js");
+exports.sha512 = __webpack_require__(/*! ./sha/512 */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/sha/512.js");
 
 
 /***/ }),
 
-/***/ "./node_modules/hash.js/lib/hash/sha/1.js":
-/*!************************************************!*\
-  !*** ./node_modules/hash.js/lib/hash/sha/1.js ***!
-  \************************************************/
+/***/ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/sha/1.js":
+/*!***********************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/sha/1.js ***!
+  \***********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var utils = __webpack_require__(/*! ../utils */ "./node_modules/hash.js/lib/hash/utils.js");
-var common = __webpack_require__(/*! ../common */ "./node_modules/hash.js/lib/hash/common.js");
-var shaCommon = __webpack_require__(/*! ./common */ "./node_modules/hash.js/lib/hash/sha/common.js");
+var utils = __webpack_require__(/*! ../utils */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/utils.js");
+var common = __webpack_require__(/*! ../common */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/common.js");
+var shaCommon = __webpack_require__(/*! ./common */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/sha/common.js");
 
 var rotl32 = utils.rotl32;
 var sum32 = utils.sum32;
@@ -41139,18 +41556,18 @@ SHA1.prototype._digest = function digest(enc) {
 
 /***/ }),
 
-/***/ "./node_modules/hash.js/lib/hash/sha/224.js":
-/*!**************************************************!*\
-  !*** ./node_modules/hash.js/lib/hash/sha/224.js ***!
-  \**************************************************/
+/***/ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/sha/224.js":
+/*!*************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/sha/224.js ***!
+  \*************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var utils = __webpack_require__(/*! ../utils */ "./node_modules/hash.js/lib/hash/utils.js");
-var SHA256 = __webpack_require__(/*! ./256 */ "./node_modules/hash.js/lib/hash/sha/256.js");
+var utils = __webpack_require__(/*! ../utils */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/utils.js");
+var SHA256 = __webpack_require__(/*! ./256 */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/sha/256.js");
 
 function SHA224() {
   if (!(this instanceof SHA224))
@@ -41181,20 +41598,20 @@ SHA224.prototype._digest = function digest(enc) {
 
 /***/ }),
 
-/***/ "./node_modules/hash.js/lib/hash/sha/256.js":
-/*!**************************************************!*\
-  !*** ./node_modules/hash.js/lib/hash/sha/256.js ***!
-  \**************************************************/
+/***/ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/sha/256.js":
+/*!*************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/sha/256.js ***!
+  \*************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var utils = __webpack_require__(/*! ../utils */ "./node_modules/hash.js/lib/hash/utils.js");
-var common = __webpack_require__(/*! ../common */ "./node_modules/hash.js/lib/hash/common.js");
-var shaCommon = __webpack_require__(/*! ./common */ "./node_modules/hash.js/lib/hash/sha/common.js");
-var assert = __webpack_require__(/*! minimalistic-assert */ "./node_modules/minimalistic-assert/index.js");
+var utils = __webpack_require__(/*! ../utils */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/utils.js");
+var common = __webpack_require__(/*! ../common */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/common.js");
+var shaCommon = __webpack_require__(/*! ./common */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/sha/common.js");
+var assert = __webpack_require__(/*! minimalistic-assert */ "./node_modules/.registry.npmjs.org/minimalistic-assert/1.0.1/node_modules/minimalistic-assert/index.js");
 
 var sum32 = utils.sum32;
 var sum32_4 = utils.sum32_4;
@@ -41298,19 +41715,19 @@ SHA256.prototype._digest = function digest(enc) {
 
 /***/ }),
 
-/***/ "./node_modules/hash.js/lib/hash/sha/384.js":
-/*!**************************************************!*\
-  !*** ./node_modules/hash.js/lib/hash/sha/384.js ***!
-  \**************************************************/
+/***/ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/sha/384.js":
+/*!*************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/sha/384.js ***!
+  \*************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var utils = __webpack_require__(/*! ../utils */ "./node_modules/hash.js/lib/hash/utils.js");
+var utils = __webpack_require__(/*! ../utils */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/utils.js");
 
-var SHA512 = __webpack_require__(/*! ./512 */ "./node_modules/hash.js/lib/hash/sha/512.js");
+var SHA512 = __webpack_require__(/*! ./512 */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/sha/512.js");
 
 function SHA384() {
   if (!(this instanceof SHA384))
@@ -41345,19 +41762,19 @@ SHA384.prototype._digest = function digest(enc) {
 
 /***/ }),
 
-/***/ "./node_modules/hash.js/lib/hash/sha/512.js":
-/*!**************************************************!*\
-  !*** ./node_modules/hash.js/lib/hash/sha/512.js ***!
-  \**************************************************/
+/***/ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/sha/512.js":
+/*!*************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/sha/512.js ***!
+  \*************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var utils = __webpack_require__(/*! ../utils */ "./node_modules/hash.js/lib/hash/utils.js");
-var common = __webpack_require__(/*! ../common */ "./node_modules/hash.js/lib/hash/common.js");
-var assert = __webpack_require__(/*! minimalistic-assert */ "./node_modules/minimalistic-assert/index.js");
+var utils = __webpack_require__(/*! ../utils */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/utils.js");
+var common = __webpack_require__(/*! ../common */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/common.js");
+var assert = __webpack_require__(/*! minimalistic-assert */ "./node_modules/.registry.npmjs.org/minimalistic-assert/1.0.1/node_modules/minimalistic-assert/index.js");
 
 var rotr64_hi = utils.rotr64_hi;
 var rotr64_lo = utils.rotr64_lo;
@@ -41687,17 +42104,17 @@ function g1_512_lo(xh, xl) {
 
 /***/ }),
 
-/***/ "./node_modules/hash.js/lib/hash/sha/common.js":
-/*!*****************************************************!*\
-  !*** ./node_modules/hash.js/lib/hash/sha/common.js ***!
-  \*****************************************************/
+/***/ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/sha/common.js":
+/*!****************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/sha/common.js ***!
+  \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var utils = __webpack_require__(/*! ../utils */ "./node_modules/hash.js/lib/hash/utils.js");
+var utils = __webpack_require__(/*! ../utils */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/utils.js");
 var rotr32 = utils.rotr32;
 
 function ft_1(s, x, y, z) {
@@ -41748,18 +42165,18 @@ exports.g1_256 = g1_256;
 
 /***/ }),
 
-/***/ "./node_modules/hash.js/lib/hash/utils.js":
-/*!************************************************!*\
-  !*** ./node_modules/hash.js/lib/hash/utils.js ***!
-  \************************************************/
+/***/ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/utils.js":
+/*!***********************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash/utils.js ***!
+  \***********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var assert = __webpack_require__(/*! minimalistic-assert */ "./node_modules/minimalistic-assert/index.js");
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js");
+var assert = __webpack_require__(/*! minimalistic-assert */ "./node_modules/.registry.npmjs.org/minimalistic-assert/1.0.1/node_modules/minimalistic-assert/index.js");
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js");
 
 exports.inherits = inherits;
 
@@ -42013,19 +42430,19 @@ exports.shr64_lo = shr64_lo;
 
 /***/ }),
 
-/***/ "./node_modules/hmac-drbg/lib/hmac-drbg.js":
-/*!*************************************************!*\
-  !*** ./node_modules/hmac-drbg/lib/hmac-drbg.js ***!
-  \*************************************************/
+/***/ "./node_modules/.registry.npmjs.org/hmac-drbg/1.0.1/node_modules/hmac-drbg/lib/hmac-drbg.js":
+/*!**************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/hmac-drbg/1.0.1/node_modules/hmac-drbg/lib/hmac-drbg.js ***!
+  \**************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var hash = __webpack_require__(/*! hash.js */ "./node_modules/hash.js/lib/hash.js");
-var utils = __webpack_require__(/*! minimalistic-crypto-utils */ "./node_modules/minimalistic-crypto-utils/lib/utils.js");
-var assert = __webpack_require__(/*! minimalistic-assert */ "./node_modules/minimalistic-assert/index.js");
+var hash = __webpack_require__(/*! hash.js */ "./node_modules/.registry.npmjs.org/hash.js/1.1.4/node_modules/hash.js/lib/hash.js");
+var utils = __webpack_require__(/*! minimalistic-crypto-utils */ "./node_modules/.registry.npmjs.org/minimalistic-crypto-utils/1.0.1/node_modules/minimalistic-crypto-utils/lib/utils.js");
+var assert = __webpack_require__(/*! minimalistic-assert */ "./node_modules/.registry.npmjs.org/minimalistic-assert/1.0.1/node_modules/minimalistic-assert/index.js");
 
 function HmacDRBG(options) {
   if (!(this instanceof HmacDRBG))
@@ -42138,10 +42555,10 @@ HmacDRBG.prototype.generate = function generate(len, enc, add, addEnc) {
 
 /***/ }),
 
-/***/ "./node_modules/ieee754/index.js":
-/*!***************************************!*\
-  !*** ./node_modules/ieee754/index.js ***!
-  \***************************************/
+/***/ "./node_modules/.registry.npmjs.org/ieee754/1.1.12/node_modules/ieee754/index.js":
+/*!***************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/ieee754/1.1.12/node_modules/ieee754/index.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -42233,10 +42650,10 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 
 /***/ }),
 
-/***/ "./node_modules/indexof/index.js":
-/*!***************************************!*\
-  !*** ./node_modules/indexof/index.js ***!
-  \***************************************/
+/***/ "./node_modules/.registry.npmjs.org/indexof/0.0.1/node_modules/indexof/index.js":
+/*!**************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/indexof/0.0.1/node_modules/indexof/index.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -42253,10 +42670,10 @@ module.exports = function(arr, obj){
 
 /***/ }),
 
-/***/ "./node_modules/inherits/inherits_browser.js":
-/*!***************************************************!*\
-  !*** ./node_modules/inherits/inherits_browser.js ***!
-  \***************************************************/
+/***/ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js":
+/*!***************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js ***!
+  \***************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -42287,10 +42704,10 @@ if (typeof Object.create === 'function') {
 
 /***/ }),
 
-/***/ "./node_modules/isarray/index.js":
-/*!***************************************!*\
-  !*** ./node_modules/isarray/index.js ***!
-  \***************************************/
+/***/ "./node_modules/.registry.npmjs.org/isarray/1.0.0/node_modules/isarray/index.js":
+/*!**************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/isarray/1.0.0/node_modules/isarray/index.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -42303,17 +42720,17 @@ module.exports = Array.isArray || function (arr) {
 
 /***/ }),
 
-/***/ "./node_modules/md5.js/index.js":
-/*!**************************************!*\
-  !*** ./node_modules/md5.js/index.js ***!
-  \**************************************/
+/***/ "./node_modules/.registry.npmjs.org/md5.js/1.3.4/node_modules/md5.js/index.js":
+/*!************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/md5.js/1.3.4/node_modules/md5.js/index.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(Buffer) {
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js")
-var HashBase = __webpack_require__(/*! hash-base */ "./node_modules/hash-base/index.js")
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js")
+var HashBase = __webpack_require__(/*! hash-base */ "./node_modules/.registry.npmjs.org/hash-base/3.0.4/node_modules/hash-base/index.js")
 
 var ARRAY16 = new Array(16)
 
@@ -42457,19 +42874,19 @@ function fnI (a, b, c, d, m, k, s) {
 
 module.exports = MD5
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer))
 
 /***/ }),
 
-/***/ "./node_modules/miller-rabin/lib/mr.js":
-/*!*********************************************!*\
-  !*** ./node_modules/miller-rabin/lib/mr.js ***!
-  \*********************************************/
+/***/ "./node_modules/.registry.npmjs.org/miller-rabin/4.0.1/node_modules/miller-rabin/lib/mr.js":
+/*!*************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/miller-rabin/4.0.1/node_modules/miller-rabin/lib/mr.js ***!
+  \*************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var bn = __webpack_require__(/*! bn.js */ "./node_modules/bn.js/lib/bn.js");
-var brorand = __webpack_require__(/*! brorand */ "./node_modules/brorand/index.js");
+var bn = __webpack_require__(/*! bn.js */ "./node_modules/.registry.npmjs.org/bn.js/4.11.8/node_modules/bn.js/lib/bn.js");
+var brorand = __webpack_require__(/*! brorand */ "./node_modules/.registry.npmjs.org/brorand/1.1.0/node_modules/brorand/index.js");
 
 function MillerRabin(rand) {
   this.rand = rand || new brorand.Rand();
@@ -42587,10 +43004,10 @@ MillerRabin.prototype.getDivisor = function getDivisor(n, k) {
 
 /***/ }),
 
-/***/ "./node_modules/minimalistic-assert/index.js":
-/*!***************************************************!*\
-  !*** ./node_modules/minimalistic-assert/index.js ***!
-  \***************************************************/
+/***/ "./node_modules/.registry.npmjs.org/minimalistic-assert/1.0.1/node_modules/minimalistic-assert/index.js":
+/*!**************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/minimalistic-assert/1.0.1/node_modules/minimalistic-assert/index.js ***!
+  \**************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -42609,10 +43026,10 @@ assert.equal = function assertEqual(l, r, msg) {
 
 /***/ }),
 
-/***/ "./node_modules/minimalistic-crypto-utils/lib/utils.js":
-/*!*************************************************************!*\
-  !*** ./node_modules/minimalistic-crypto-utils/lib/utils.js ***!
-  \*************************************************************/
+/***/ "./node_modules/.registry.npmjs.org/minimalistic-crypto-utils/1.0.1/node_modules/minimalistic-crypto-utils/lib/utils.js":
+/*!******************************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/minimalistic-crypto-utils/1.0.1/node_modules/minimalistic-crypto-utils/lib/utils.js ***!
+  \******************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -42679,10 +43096,10 @@ utils.encode = function encode(arr, enc) {
 
 /***/ }),
 
-/***/ "./node_modules/node-libs-browser/mock/empty.js":
-/*!******************************************************!*\
-  !*** ./node_modules/node-libs-browser/mock/empty.js ***!
-  \******************************************************/
+/***/ "./node_modules/.registry.npmjs.org/node-libs-browser/2.1.0/node_modules/node-libs-browser/mock/empty.js":
+/*!***************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/node-libs-browser/2.1.0/node_modules/node-libs-browser/mock/empty.js ***!
+  \***************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -42690,10 +43107,10 @@ utils.encode = function encode(arr, enc) {
 
 /***/ }),
 
-/***/ "./node_modules/parse-asn1/aesid.json":
-/*!********************************************!*\
-  !*** ./node_modules/parse-asn1/aesid.json ***!
-  \********************************************/
+/***/ "./node_modules/.registry.npmjs.org/parse-asn1/5.1.1/node_modules/parse-asn1/aesid.json":
+/*!**********************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/parse-asn1/5.1.1/node_modules/parse-asn1/aesid.json ***!
+  \**********************************************************************************************/
 /*! exports provided: 2.16.840.1.101.3.4.1.1, 2.16.840.1.101.3.4.1.2, 2.16.840.1.101.3.4.1.3, 2.16.840.1.101.3.4.1.4, 2.16.840.1.101.3.4.1.21, 2.16.840.1.101.3.4.1.22, 2.16.840.1.101.3.4.1.23, 2.16.840.1.101.3.4.1.24, 2.16.840.1.101.3.4.1.41, 2.16.840.1.101.3.4.1.42, 2.16.840.1.101.3.4.1.43, 2.16.840.1.101.3.4.1.44, default */
 /***/ (function(module) {
 
@@ -42701,10 +43118,10 @@ module.exports = {"2.16.840.1.101.3.4.1.1":"aes-128-ecb","2.16.840.1.101.3.4.1.2
 
 /***/ }),
 
-/***/ "./node_modules/parse-asn1/asn1.js":
-/*!*****************************************!*\
-  !*** ./node_modules/parse-asn1/asn1.js ***!
-  \*****************************************/
+/***/ "./node_modules/.registry.npmjs.org/parse-asn1/5.1.1/node_modules/parse-asn1/asn1.js":
+/*!*******************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/parse-asn1/5.1.1/node_modules/parse-asn1/asn1.js ***!
+  \*******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -42713,9 +43130,9 @@ module.exports = {"2.16.840.1.101.3.4.1.1":"aes-128-ecb","2.16.840.1.101.3.4.1.2
 // Fedor, you are amazing.
 
 
-var asn1 = __webpack_require__(/*! asn1.js */ "./node_modules/asn1.js/lib/asn1.js")
+var asn1 = __webpack_require__(/*! asn1.js */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1.js")
 
-exports.certificate = __webpack_require__(/*! ./certificate */ "./node_modules/parse-asn1/certificate.js")
+exports.certificate = __webpack_require__(/*! ./certificate */ "./node_modules/.registry.npmjs.org/parse-asn1/5.1.1/node_modules/parse-asn1/certificate.js")
 
 var RSAPrivateKey = asn1.define('RSAPrivateKey', function () {
   this.seq().obj(
@@ -42835,10 +43252,10 @@ exports.signature = asn1.define('signature', function () {
 
 /***/ }),
 
-/***/ "./node_modules/parse-asn1/certificate.js":
-/*!************************************************!*\
-  !*** ./node_modules/parse-asn1/certificate.js ***!
-  \************************************************/
+/***/ "./node_modules/.registry.npmjs.org/parse-asn1/5.1.1/node_modules/parse-asn1/certificate.js":
+/*!**************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/parse-asn1/5.1.1/node_modules/parse-asn1/certificate.js ***!
+  \**************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -42848,7 +43265,7 @@ exports.signature = asn1.define('signature', function () {
 
 
 
-var asn = __webpack_require__(/*! asn1.js */ "./node_modules/asn1.js/lib/asn1.js")
+var asn = __webpack_require__(/*! asn1.js */ "./node_modules/.registry.npmjs.org/asn1.js/4.10.1/node_modules/asn1.js/lib/asn1.js")
 
 var Time = asn.define('Time', function () {
   this.choice({
@@ -42935,10 +43352,10 @@ module.exports = X509Certificate
 
 /***/ }),
 
-/***/ "./node_modules/parse-asn1/fixProc.js":
-/*!********************************************!*\
-  !*** ./node_modules/parse-asn1/fixProc.js ***!
-  \********************************************/
+/***/ "./node_modules/.registry.npmjs.org/parse-asn1/5.1.1/node_modules/parse-asn1/fixProc.js":
+/*!**********************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/parse-asn1/5.1.1/node_modules/parse-asn1/fixProc.js ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -42946,8 +43363,8 @@ module.exports = X509Certificate
 var findProc = /Proc-Type: 4,ENCRYPTED[\n\r]+DEK-Info: AES-((?:128)|(?:192)|(?:256))-CBC,([0-9A-H]+)[\n\r]+([0-9A-z\n\r\+\/\=]+)[\n\r]+/m
 var startRegex = /^-----BEGIN ((?:.* KEY)|CERTIFICATE)-----/m
 var fullRegex = /^-----BEGIN ((?:.* KEY)|CERTIFICATE)-----([0-9A-z\n\r\+\/\=]+)-----END \1-----$/m
-var evp = __webpack_require__(/*! evp_bytestokey */ "./node_modules/evp_bytestokey/index.js")
-var ciphers = __webpack_require__(/*! browserify-aes */ "./node_modules/browserify-aes/browser.js")
+var evp = __webpack_require__(/*! evp_bytestokey */ "./node_modules/.registry.npmjs.org/evp_bytestokey/1.0.3/node_modules/evp_bytestokey/index.js")
+var ciphers = __webpack_require__(/*! browserify-aes */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/browser.js")
 module.exports = function (okey, password) {
   var key = okey.toString()
   var match = key.match(findProc)
@@ -42973,22 +43390,22 @@ module.exports = function (okey, password) {
   }
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer))
 
 /***/ }),
 
-/***/ "./node_modules/parse-asn1/index.js":
-/*!******************************************!*\
-  !*** ./node_modules/parse-asn1/index.js ***!
-  \******************************************/
+/***/ "./node_modules/.registry.npmjs.org/parse-asn1/5.1.1/node_modules/parse-asn1/index.js":
+/*!********************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/parse-asn1/5.1.1/node_modules/parse-asn1/index.js ***!
+  \********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(Buffer) {var asn1 = __webpack_require__(/*! ./asn1 */ "./node_modules/parse-asn1/asn1.js")
-var aesid = __webpack_require__(/*! ./aesid.json */ "./node_modules/parse-asn1/aesid.json")
-var fixProc = __webpack_require__(/*! ./fixProc */ "./node_modules/parse-asn1/fixProc.js")
-var ciphers = __webpack_require__(/*! browserify-aes */ "./node_modules/browserify-aes/browser.js")
-var compat = __webpack_require__(/*! pbkdf2 */ "./node_modules/pbkdf2/browser.js")
+/* WEBPACK VAR INJECTION */(function(Buffer) {var asn1 = __webpack_require__(/*! ./asn1 */ "./node_modules/.registry.npmjs.org/parse-asn1/5.1.1/node_modules/parse-asn1/asn1.js")
+var aesid = __webpack_require__(/*! ./aesid.json */ "./node_modules/.registry.npmjs.org/parse-asn1/5.1.1/node_modules/parse-asn1/aesid.json")
+var fixProc = __webpack_require__(/*! ./fixProc */ "./node_modules/.registry.npmjs.org/parse-asn1/5.1.1/node_modules/parse-asn1/fixProc.js")
+var ciphers = __webpack_require__(/*! browserify-aes */ "./node_modules/.registry.npmjs.org/browserify-aes/1.2.0/node_modules/browserify-aes/browser.js")
+var compat = __webpack_require__(/*! pbkdf2 */ "./node_modules/.registry.npmjs.org/pbkdf2/3.0.16/node_modules/pbkdf2/browser.js")
 module.exports = parseKeys
 
 function parseKeys (buffer) {
@@ -43091,34 +43508,34 @@ function decrypt (data, password) {
   return Buffer.concat(out)
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer))
 
 /***/ }),
 
-/***/ "./node_modules/pbkdf2/browser.js":
-/*!****************************************!*\
-  !*** ./node_modules/pbkdf2/browser.js ***!
-  \****************************************/
+/***/ "./node_modules/.registry.npmjs.org/pbkdf2/3.0.16/node_modules/pbkdf2/browser.js":
+/*!***************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/pbkdf2/3.0.16/node_modules/pbkdf2/browser.js ***!
+  \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports.pbkdf2 = __webpack_require__(/*! ./lib/async */ "./node_modules/pbkdf2/lib/async.js")
-exports.pbkdf2Sync = __webpack_require__(/*! ./lib/sync */ "./node_modules/pbkdf2/lib/sync-browser.js")
+exports.pbkdf2 = __webpack_require__(/*! ./lib/async */ "./node_modules/.registry.npmjs.org/pbkdf2/3.0.16/node_modules/pbkdf2/lib/async.js")
+exports.pbkdf2Sync = __webpack_require__(/*! ./lib/sync */ "./node_modules/.registry.npmjs.org/pbkdf2/3.0.16/node_modules/pbkdf2/lib/sync-browser.js")
 
 
 /***/ }),
 
-/***/ "./node_modules/pbkdf2/lib/async.js":
-/*!******************************************!*\
-  !*** ./node_modules/pbkdf2/lib/async.js ***!
-  \******************************************/
+/***/ "./node_modules/.registry.npmjs.org/pbkdf2/3.0.16/node_modules/pbkdf2/lib/async.js":
+/*!*****************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/pbkdf2/3.0.16/node_modules/pbkdf2/lib/async.js ***!
+  \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(global, process) {var checkParameters = __webpack_require__(/*! ./precondition */ "./node_modules/pbkdf2/lib/precondition.js")
-var defaultEncoding = __webpack_require__(/*! ./default-encoding */ "./node_modules/pbkdf2/lib/default-encoding.js")
-var sync = __webpack_require__(/*! ./sync */ "./node_modules/pbkdf2/lib/sync-browser.js")
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
+/* WEBPACK VAR INJECTION */(function(global, process) {var checkParameters = __webpack_require__(/*! ./precondition */ "./node_modules/.registry.npmjs.org/pbkdf2/3.0.16/node_modules/pbkdf2/lib/precondition.js")
+var defaultEncoding = __webpack_require__(/*! ./default-encoding */ "./node_modules/.registry.npmjs.org/pbkdf2/3.0.16/node_modules/pbkdf2/lib/default-encoding.js")
+var sync = __webpack_require__(/*! ./sync */ "./node_modules/.registry.npmjs.org/pbkdf2/3.0.16/node_modules/pbkdf2/lib/sync-browser.js")
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
 
 var ZERO_BUF
 var subtle = global.crypto && global.crypto.subtle
@@ -43216,14 +43633,14 @@ module.exports = function (password, salt, iterations, keylen, digest, callback)
   }), callback)
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../process/browser.js */ "./node_modules/process/browser.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../webpack/4.12.0/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.0/node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js")))
 
 /***/ }),
 
-/***/ "./node_modules/pbkdf2/lib/default-encoding.js":
-/*!*****************************************************!*\
-  !*** ./node_modules/pbkdf2/lib/default-encoding.js ***!
-  \*****************************************************/
+/***/ "./node_modules/.registry.npmjs.org/pbkdf2/3.0.16/node_modules/pbkdf2/lib/default-encoding.js":
+/*!****************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/pbkdf2/3.0.16/node_modules/pbkdf2/lib/default-encoding.js ***!
+  \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43238,14 +43655,14 @@ if (process.browser) {
 }
 module.exports = defaultEncoding
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../process/browser.js */ "./node_modules/process/browser.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js")))
 
 /***/ }),
 
-/***/ "./node_modules/pbkdf2/lib/precondition.js":
-/*!*************************************************!*\
-  !*** ./node_modules/pbkdf2/lib/precondition.js ***!
-  \*************************************************/
+/***/ "./node_modules/.registry.npmjs.org/pbkdf2/3.0.16/node_modules/pbkdf2/lib/precondition.js":
+/*!************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/pbkdf2/3.0.16/node_modules/pbkdf2/lib/precondition.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43278,24 +43695,24 @@ module.exports = function (password, salt, iterations, keylen) {
   }
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer))
 
 /***/ }),
 
-/***/ "./node_modules/pbkdf2/lib/sync-browser.js":
-/*!*************************************************!*\
-  !*** ./node_modules/pbkdf2/lib/sync-browser.js ***!
-  \*************************************************/
+/***/ "./node_modules/.registry.npmjs.org/pbkdf2/3.0.16/node_modules/pbkdf2/lib/sync-browser.js":
+/*!************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/pbkdf2/3.0.16/node_modules/pbkdf2/lib/sync-browser.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var md5 = __webpack_require__(/*! create-hash/md5 */ "./node_modules/create-hash/md5.js")
-var rmd160 = __webpack_require__(/*! ripemd160 */ "./node_modules/ripemd160/index.js")
-var sha = __webpack_require__(/*! sha.js */ "./node_modules/sha.js/index.js")
+var md5 = __webpack_require__(/*! create-hash/md5 */ "./node_modules/.registry.npmjs.org/create-hash/1.2.0/node_modules/create-hash/md5.js")
+var rmd160 = __webpack_require__(/*! ripemd160 */ "./node_modules/.registry.npmjs.org/ripemd160/2.0.2/node_modules/ripemd160/index.js")
+var sha = __webpack_require__(/*! sha.js */ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/index.js")
 
-var checkParameters = __webpack_require__(/*! ./precondition */ "./node_modules/pbkdf2/lib/precondition.js")
-var defaultEncoding = __webpack_require__(/*! ./default-encoding */ "./node_modules/pbkdf2/lib/default-encoding.js")
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
+var checkParameters = __webpack_require__(/*! ./precondition */ "./node_modules/.registry.npmjs.org/pbkdf2/3.0.16/node_modules/pbkdf2/lib/precondition.js")
+var defaultEncoding = __webpack_require__(/*! ./default-encoding */ "./node_modules/.registry.npmjs.org/pbkdf2/3.0.16/node_modules/pbkdf2/lib/default-encoding.js")
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
 var ZEROS = Buffer.alloc(128)
 var sizes = {
   md5: 16,
@@ -43394,10 +43811,10 @@ module.exports = pbkdf2
 
 /***/ }),
 
-/***/ "./node_modules/process-nextick-args/index.js":
-/*!****************************************************!*\
-  !*** ./node_modules/process-nextick-args/index.js ***!
-  \****************************************************/
+/***/ "./node_modules/.registry.npmjs.org/process-nextick-args/2.0.0/node_modules/process-nextick-args/index.js":
+/*!****************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/process-nextick-args/2.0.0/node_modules/process-nextick-args/index.js ***!
+  \****************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43447,14 +43864,14 @@ function nextTick(fn, arg1, arg2, arg3) {
 }
 
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../process/browser.js */ "./node_modules/process/browser.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js")))
 
 /***/ }),
 
-/***/ "./node_modules/process/browser.js":
-/*!*****************************************!*\
-  !*** ./node_modules/process/browser.js ***!
-  \*****************************************/
+/***/ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js":
+/*!******************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js ***!
+  \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -43646,15 +44063,15 @@ process.umask = function() { return 0; };
 
 /***/ }),
 
-/***/ "./node_modules/public-encrypt/browser.js":
-/*!************************************************!*\
-  !*** ./node_modules/public-encrypt/browser.js ***!
-  \************************************************/
+/***/ "./node_modules/.registry.npmjs.org/public-encrypt/4.0.2/node_modules/public-encrypt/browser.js":
+/*!******************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/public-encrypt/4.0.2/node_modules/public-encrypt/browser.js ***!
+  \******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports.publicEncrypt = __webpack_require__(/*! ./publicEncrypt */ "./node_modules/public-encrypt/publicEncrypt.js");
-exports.privateDecrypt = __webpack_require__(/*! ./privateDecrypt */ "./node_modules/public-encrypt/privateDecrypt.js");
+exports.publicEncrypt = __webpack_require__(/*! ./publicEncrypt */ "./node_modules/.registry.npmjs.org/public-encrypt/4.0.2/node_modules/public-encrypt/publicEncrypt.js");
+exports.privateDecrypt = __webpack_require__(/*! ./privateDecrypt */ "./node_modules/.registry.npmjs.org/public-encrypt/4.0.2/node_modules/public-encrypt/privateDecrypt.js");
 
 exports.privateEncrypt = function privateEncrypt(key, buf) {
   return exports.publicEncrypt(key, buf, true);
@@ -43666,14 +44083,14 @@ exports.publicDecrypt = function publicDecrypt(key, buf) {
 
 /***/ }),
 
-/***/ "./node_modules/public-encrypt/mgf.js":
-/*!********************************************!*\
-  !*** ./node_modules/public-encrypt/mgf.js ***!
-  \********************************************/
+/***/ "./node_modules/.registry.npmjs.org/public-encrypt/4.0.2/node_modules/public-encrypt/mgf.js":
+/*!**************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/public-encrypt/4.0.2/node_modules/public-encrypt/mgf.js ***!
+  \**************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(Buffer) {var createHash = __webpack_require__(/*! create-hash */ "./node_modules/create-hash/browser.js");
+/* WEBPACK VAR INJECTION */(function(Buffer) {var createHash = __webpack_require__(/*! create-hash */ "./node_modules/.registry.npmjs.org/create-hash/1.2.0/node_modules/create-hash/browser.js");
 module.exports = function (seed, len) {
   var t = new Buffer('');
   var  i = 0, c;
@@ -43689,24 +44106,24 @@ function i2ops(c) {
   out.writeUInt32BE(c,0);
   return out;
 }
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer))
 
 /***/ }),
 
-/***/ "./node_modules/public-encrypt/privateDecrypt.js":
-/*!*******************************************************!*\
-  !*** ./node_modules/public-encrypt/privateDecrypt.js ***!
-  \*******************************************************/
+/***/ "./node_modules/.registry.npmjs.org/public-encrypt/4.0.2/node_modules/public-encrypt/privateDecrypt.js":
+/*!*************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/public-encrypt/4.0.2/node_modules/public-encrypt/privateDecrypt.js ***!
+  \*************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(Buffer) {var parseKeys = __webpack_require__(/*! parse-asn1 */ "./node_modules/parse-asn1/index.js");
-var mgf = __webpack_require__(/*! ./mgf */ "./node_modules/public-encrypt/mgf.js");
-var xor = __webpack_require__(/*! ./xor */ "./node_modules/public-encrypt/xor.js");
-var bn = __webpack_require__(/*! bn.js */ "./node_modules/bn.js/lib/bn.js");
-var crt = __webpack_require__(/*! browserify-rsa */ "./node_modules/browserify-rsa/index.js");
-var createHash = __webpack_require__(/*! create-hash */ "./node_modules/create-hash/browser.js");
-var withPublic = __webpack_require__(/*! ./withPublic */ "./node_modules/public-encrypt/withPublic.js");
+/* WEBPACK VAR INJECTION */(function(Buffer) {var parseKeys = __webpack_require__(/*! parse-asn1 */ "./node_modules/.registry.npmjs.org/parse-asn1/5.1.1/node_modules/parse-asn1/index.js");
+var mgf = __webpack_require__(/*! ./mgf */ "./node_modules/.registry.npmjs.org/public-encrypt/4.0.2/node_modules/public-encrypt/mgf.js");
+var xor = __webpack_require__(/*! ./xor */ "./node_modules/.registry.npmjs.org/public-encrypt/4.0.2/node_modules/public-encrypt/xor.js");
+var bn = __webpack_require__(/*! bn.js */ "./node_modules/.registry.npmjs.org/bn.js/4.11.8/node_modules/bn.js/lib/bn.js");
+var crt = __webpack_require__(/*! browserify-rsa */ "./node_modules/.registry.npmjs.org/browserify-rsa/4.0.1/node_modules/browserify-rsa/index.js");
+var createHash = __webpack_require__(/*! create-hash */ "./node_modules/.registry.npmjs.org/create-hash/1.2.0/node_modules/create-hash/browser.js");
+var withPublic = __webpack_require__(/*! ./withPublic */ "./node_modules/.registry.npmjs.org/public-encrypt/4.0.2/node_modules/public-encrypt/withPublic.js");
 module.exports = function privateDecrypt(private_key, enc, reverse) {
   var padding;
   if (private_key.padding) {
@@ -43808,25 +44225,25 @@ function compare(a, b){
   }
   return dif;
 }
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer))
 
 /***/ }),
 
-/***/ "./node_modules/public-encrypt/publicEncrypt.js":
-/*!******************************************************!*\
-  !*** ./node_modules/public-encrypt/publicEncrypt.js ***!
-  \******************************************************/
+/***/ "./node_modules/.registry.npmjs.org/public-encrypt/4.0.2/node_modules/public-encrypt/publicEncrypt.js":
+/*!************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/public-encrypt/4.0.2/node_modules/public-encrypt/publicEncrypt.js ***!
+  \************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(Buffer) {var parseKeys = __webpack_require__(/*! parse-asn1 */ "./node_modules/parse-asn1/index.js");
-var randomBytes = __webpack_require__(/*! randombytes */ "./node_modules/randombytes/browser.js");
-var createHash = __webpack_require__(/*! create-hash */ "./node_modules/create-hash/browser.js");
-var mgf = __webpack_require__(/*! ./mgf */ "./node_modules/public-encrypt/mgf.js");
-var xor = __webpack_require__(/*! ./xor */ "./node_modules/public-encrypt/xor.js");
-var bn = __webpack_require__(/*! bn.js */ "./node_modules/bn.js/lib/bn.js");
-var withPublic = __webpack_require__(/*! ./withPublic */ "./node_modules/public-encrypt/withPublic.js");
-var crt = __webpack_require__(/*! browserify-rsa */ "./node_modules/browserify-rsa/index.js");
+/* WEBPACK VAR INJECTION */(function(Buffer) {var parseKeys = __webpack_require__(/*! parse-asn1 */ "./node_modules/.registry.npmjs.org/parse-asn1/5.1.1/node_modules/parse-asn1/index.js");
+var randomBytes = __webpack_require__(/*! randombytes */ "./node_modules/.registry.npmjs.org/randombytes/2.0.6/node_modules/randombytes/browser.js");
+var createHash = __webpack_require__(/*! create-hash */ "./node_modules/.registry.npmjs.org/create-hash/1.2.0/node_modules/create-hash/browser.js");
+var mgf = __webpack_require__(/*! ./mgf */ "./node_modules/.registry.npmjs.org/public-encrypt/4.0.2/node_modules/public-encrypt/mgf.js");
+var xor = __webpack_require__(/*! ./xor */ "./node_modules/.registry.npmjs.org/public-encrypt/4.0.2/node_modules/public-encrypt/xor.js");
+var bn = __webpack_require__(/*! bn.js */ "./node_modules/.registry.npmjs.org/bn.js/4.11.8/node_modules/bn.js/lib/bn.js");
+var withPublic = __webpack_require__(/*! ./withPublic */ "./node_modules/.registry.npmjs.org/public-encrypt/4.0.2/node_modules/public-encrypt/withPublic.js");
+var crt = __webpack_require__(/*! browserify-rsa */ "./node_modules/.registry.npmjs.org/browserify-rsa/4.0.1/node_modules/browserify-rsa/index.js");
 
 var constants = {
   RSA_PKCS1_OAEP_PADDING: 4,
@@ -43914,18 +44331,18 @@ function nonZero(len, crypto) {
   }
   return out;
 }
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer))
 
 /***/ }),
 
-/***/ "./node_modules/public-encrypt/withPublic.js":
-/*!***************************************************!*\
-  !*** ./node_modules/public-encrypt/withPublic.js ***!
-  \***************************************************/
+/***/ "./node_modules/.registry.npmjs.org/public-encrypt/4.0.2/node_modules/public-encrypt/withPublic.js":
+/*!*********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/public-encrypt/4.0.2/node_modules/public-encrypt/withPublic.js ***!
+  \*********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(Buffer) {var bn = __webpack_require__(/*! bn.js */ "./node_modules/bn.js/lib/bn.js");
+/* WEBPACK VAR INJECTION */(function(Buffer) {var bn = __webpack_require__(/*! bn.js */ "./node_modules/.registry.npmjs.org/bn.js/4.11.8/node_modules/bn.js/lib/bn.js");
 function withPublic(paddedMsg, key) {
   return new Buffer(paddedMsg
     .toRed(bn.mont(key.modulus))
@@ -43935,14 +44352,14 @@ function withPublic(paddedMsg, key) {
 }
 
 module.exports = withPublic;
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer))
 
 /***/ }),
 
-/***/ "./node_modules/public-encrypt/xor.js":
-/*!********************************************!*\
-  !*** ./node_modules/public-encrypt/xor.js ***!
-  \********************************************/
+/***/ "./node_modules/.registry.npmjs.org/public-encrypt/4.0.2/node_modules/public-encrypt/xor.js":
+/*!**************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/public-encrypt/4.0.2/node_modules/public-encrypt/xor.js ***!
+  \**************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -43957,10 +44374,10 @@ module.exports = function xor(a, b) {
 
 /***/ }),
 
-/***/ "./node_modules/randombytes/browser.js":
-/*!*********************************************!*\
-  !*** ./node_modules/randombytes/browser.js ***!
-  \*********************************************/
+/***/ "./node_modules/.registry.npmjs.org/randombytes/2.0.6/node_modules/randombytes/browser.js":
+/*!************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/randombytes/2.0.6/node_modules/randombytes/browser.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -43971,7 +44388,7 @@ function oldBrowser () {
   throw new Error('Secure random number generation is not supported by this browser.\nUse Chrome, Firefox or Internet Explorer 11')
 }
 
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
 var crypto = global.crypto || global.msCrypto
 
 if (crypto && crypto.getRandomValues) {
@@ -44004,14 +44421,14 @@ function randomBytes (size, cb) {
   return bytes
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../process/browser.js */ "./node_modules/process/browser.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../webpack/4.12.0/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.0/node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js")))
 
 /***/ }),
 
-/***/ "./node_modules/randomfill/browser.js":
-/*!********************************************!*\
-  !*** ./node_modules/randomfill/browser.js ***!
-  \********************************************/
+/***/ "./node_modules/.registry.npmjs.org/randomfill/1.0.4/node_modules/randomfill/browser.js":
+/*!**********************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/randomfill/1.0.4/node_modules/randomfill/browser.js ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -44021,8 +44438,8 @@ function randomBytes (size, cb) {
 function oldBrowser () {
   throw new Error('secure random number generation not supported by this browser\nuse chrome, FireFox or Internet Explorer 11')
 }
-var safeBuffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js")
-var randombytes = __webpack_require__(/*! randombytes */ "./node_modules/randombytes/browser.js")
+var safeBuffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js")
+var randombytes = __webpack_require__(/*! randombytes */ "./node_modules/.registry.npmjs.org/randombytes/2.0.6/node_modules/randombytes/browser.js")
 var Buffer = safeBuffer.Buffer
 var kBufferMaxLength = safeBuffer.kMaxLength
 var crypto = global.crypto || global.msCrypto
@@ -44125,26 +44542,26 @@ function randomFillSync (buf, offset, size) {
   return actualFill(buf, offset, size)
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../process/browser.js */ "./node_modules/process/browser.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../webpack/4.12.0/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.0/node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js")))
 
 /***/ }),
 
-/***/ "./node_modules/readable-stream/duplex-browser.js":
-/*!********************************************************!*\
-  !*** ./node_modules/readable-stream/duplex-browser.js ***!
-  \********************************************************/
+/***/ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/duplex-browser.js":
+/*!***************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/duplex-browser.js ***!
+  \***************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! ./lib/_stream_duplex.js */ "./node_modules/readable-stream/lib/_stream_duplex.js");
+module.exports = __webpack_require__(/*! ./lib/_stream_duplex.js */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_duplex.js");
 
 
 /***/ }),
 
-/***/ "./node_modules/readable-stream/lib/_stream_duplex.js":
-/*!************************************************************!*\
-  !*** ./node_modules/readable-stream/lib/_stream_duplex.js ***!
-  \************************************************************/
+/***/ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_duplex.js":
+/*!*******************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_duplex.js ***!
+  \*******************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -44179,7 +44596,7 @@ module.exports = __webpack_require__(/*! ./lib/_stream_duplex.js */ "./node_modu
 
 /*<replacement>*/
 
-var pna = __webpack_require__(/*! process-nextick-args */ "./node_modules/process-nextick-args/index.js");
+var pna = __webpack_require__(/*! process-nextick-args */ "./node_modules/.registry.npmjs.org/process-nextick-args/2.0.0/node_modules/process-nextick-args/index.js");
 /*</replacement>*/
 
 /*<replacement>*/
@@ -44194,19 +44611,22 @@ var objectKeys = Object.keys || function (obj) {
 module.exports = Duplex;
 
 /*<replacement>*/
-var util = __webpack_require__(/*! core-util-is */ "./node_modules/core-util-is/lib/util.js");
-util.inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js");
+var util = __webpack_require__(/*! core-util-is */ "./node_modules/.registry.npmjs.org/core-util-is/1.0.2/node_modules/core-util-is/lib/util.js");
+util.inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js");
 /*</replacement>*/
 
-var Readable = __webpack_require__(/*! ./_stream_readable */ "./node_modules/readable-stream/lib/_stream_readable.js");
-var Writable = __webpack_require__(/*! ./_stream_writable */ "./node_modules/readable-stream/lib/_stream_writable.js");
+var Readable = __webpack_require__(/*! ./_stream_readable */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_readable.js");
+var Writable = __webpack_require__(/*! ./_stream_writable */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_writable.js");
 
 util.inherits(Duplex, Readable);
 
-var keys = objectKeys(Writable.prototype);
-for (var v = 0; v < keys.length; v++) {
-  var method = keys[v];
-  if (!Duplex.prototype[method]) Duplex.prototype[method] = Writable.prototype[method];
+{
+  // avoid scope creep, the keys array can then be collected
+  var keys = objectKeys(Writable.prototype);
+  for (var v = 0; v < keys.length; v++) {
+    var method = keys[v];
+    if (!Duplex.prototype[method]) Duplex.prototype[method] = Writable.prototype[method];
+  }
 }
 
 function Duplex(options) {
@@ -44224,6 +44644,16 @@ function Duplex(options) {
 
   this.once('end', onend);
 }
+
+Object.defineProperty(Duplex.prototype, 'writableHighWaterMark', {
+  // making it explicit this property is not enumerable
+  // because otherwise some prototype manipulation in
+  // userland will fail
+  enumerable: false,
+  get: function () {
+    return this._writableState.highWaterMark;
+  }
+});
 
 // the no-half-open enforcer
 function onend() {
@@ -44268,18 +44698,12 @@ Duplex.prototype._destroy = function (err, cb) {
   pna.nextTick(cb, err);
 };
 
-function forEach(xs, f) {
-  for (var i = 0, l = xs.length; i < l; i++) {
-    f(xs[i], i);
-  }
-}
-
 /***/ }),
 
-/***/ "./node_modules/readable-stream/lib/_stream_passthrough.js":
-/*!*****************************************************************!*\
-  !*** ./node_modules/readable-stream/lib/_stream_passthrough.js ***!
-  \*****************************************************************/
+/***/ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_passthrough.js":
+/*!************************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_passthrough.js ***!
+  \************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -44313,11 +44737,11 @@ function forEach(xs, f) {
 
 module.exports = PassThrough;
 
-var Transform = __webpack_require__(/*! ./_stream_transform */ "./node_modules/readable-stream/lib/_stream_transform.js");
+var Transform = __webpack_require__(/*! ./_stream_transform */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_transform.js");
 
 /*<replacement>*/
-var util = __webpack_require__(/*! core-util-is */ "./node_modules/core-util-is/lib/util.js");
-util.inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js");
+var util = __webpack_require__(/*! core-util-is */ "./node_modules/.registry.npmjs.org/core-util-is/1.0.2/node_modules/core-util-is/lib/util.js");
+util.inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js");
 /*</replacement>*/
 
 util.inherits(PassThrough, Transform);
@@ -44334,10 +44758,10 @@ PassThrough.prototype._transform = function (chunk, encoding, cb) {
 
 /***/ }),
 
-/***/ "./node_modules/readable-stream/lib/_stream_readable.js":
-/*!**************************************************************!*\
-  !*** ./node_modules/readable-stream/lib/_stream_readable.js ***!
-  \**************************************************************/
+/***/ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_readable.js":
+/*!*********************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_readable.js ***!
+  \*********************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -44367,13 +44791,13 @@ PassThrough.prototype._transform = function (chunk, encoding, cb) {
 
 /*<replacement>*/
 
-var pna = __webpack_require__(/*! process-nextick-args */ "./node_modules/process-nextick-args/index.js");
+var pna = __webpack_require__(/*! process-nextick-args */ "./node_modules/.registry.npmjs.org/process-nextick-args/2.0.0/node_modules/process-nextick-args/index.js");
 /*</replacement>*/
 
 module.exports = Readable;
 
 /*<replacement>*/
-var isArray = __webpack_require__(/*! isarray */ "./node_modules/isarray/index.js");
+var isArray = __webpack_require__(/*! isarray */ "./node_modules/.registry.npmjs.org/isarray/1.0.0/node_modules/isarray/index.js");
 /*</replacement>*/
 
 /*<replacement>*/
@@ -44383,7 +44807,7 @@ var Duplex;
 Readable.ReadableState = ReadableState;
 
 /*<replacement>*/
-var EE = __webpack_require__(/*! events */ "./node_modules/events/events.js").EventEmitter;
+var EE = __webpack_require__(/*! events */ "./node_modules/.registry.npmjs.org/events/1.1.1/node_modules/events/events.js").EventEmitter;
 
 var EElistenerCount = function (emitter, type) {
   return emitter.listeners(type).length;
@@ -44391,12 +44815,12 @@ var EElistenerCount = function (emitter, type) {
 /*</replacement>*/
 
 /*<replacement>*/
-var Stream = __webpack_require__(/*! ./internal/streams/stream */ "./node_modules/readable-stream/lib/internal/streams/stream-browser.js");
+var Stream = __webpack_require__(/*! ./internal/streams/stream */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/internal/streams/stream-browser.js");
 /*</replacement>*/
 
 /*<replacement>*/
 
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer;
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer;
 var OurUint8Array = global.Uint8Array || function () {};
 function _uint8ArrayToBuffer(chunk) {
   return Buffer.from(chunk);
@@ -44408,8 +44832,8 @@ function _isUint8Array(obj) {
 /*</replacement>*/
 
 /*<replacement>*/
-var util = __webpack_require__(/*! core-util-is */ "./node_modules/core-util-is/lib/util.js");
-util.inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js");
+var util = __webpack_require__(/*! core-util-is */ "./node_modules/.registry.npmjs.org/core-util-is/1.0.2/node_modules/core-util-is/lib/util.js");
+util.inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js");
 /*</replacement>*/
 
 /*<replacement>*/
@@ -44422,8 +44846,8 @@ if (debugUtil && debugUtil.debuglog) {
 }
 /*</replacement>*/
 
-var BufferList = __webpack_require__(/*! ./internal/streams/BufferList */ "./node_modules/readable-stream/lib/internal/streams/BufferList.js");
-var destroyImpl = __webpack_require__(/*! ./internal/streams/destroy */ "./node_modules/readable-stream/lib/internal/streams/destroy.js");
+var BufferList = __webpack_require__(/*! ./internal/streams/BufferList */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/internal/streams/BufferList.js");
+var destroyImpl = __webpack_require__(/*! ./internal/streams/destroy */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/internal/streams/destroy.js");
 var StringDecoder;
 
 util.inherits(Readable, Stream);
@@ -44443,7 +44867,7 @@ function prependListener(emitter, event, fn) {
 }
 
 function ReadableState(options, stream) {
-  Duplex = Duplex || __webpack_require__(/*! ./_stream_duplex */ "./node_modules/readable-stream/lib/_stream_duplex.js");
+  Duplex = Duplex || __webpack_require__(/*! ./_stream_duplex */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_duplex.js");
 
   options = options || {};
 
@@ -44513,14 +44937,14 @@ function ReadableState(options, stream) {
   this.decoder = null;
   this.encoding = null;
   if (options.encoding) {
-    if (!StringDecoder) StringDecoder = __webpack_require__(/*! string_decoder/ */ "./node_modules/string_decoder/lib/string_decoder.js").StringDecoder;
+    if (!StringDecoder) StringDecoder = __webpack_require__(/*! string_decoder/ */ "./node_modules/.registry.npmjs.org/string_decoder/1.1.1/node_modules/string_decoder/lib/string_decoder.js").StringDecoder;
     this.decoder = new StringDecoder(options.encoding);
     this.encoding = options.encoding;
   }
 }
 
 function Readable(options) {
-  Duplex = Duplex || __webpack_require__(/*! ./_stream_duplex */ "./node_modules/readable-stream/lib/_stream_duplex.js");
+  Duplex = Duplex || __webpack_require__(/*! ./_stream_duplex */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_duplex.js");
 
   if (!(this instanceof Readable)) return new Readable(options);
 
@@ -44669,7 +45093,7 @@ Readable.prototype.isPaused = function () {
 
 // backwards compatibility.
 Readable.prototype.setEncoding = function (enc) {
-  if (!StringDecoder) StringDecoder = __webpack_require__(/*! string_decoder/ */ "./node_modules/string_decoder/lib/string_decoder.js").StringDecoder;
+  if (!StringDecoder) StringDecoder = __webpack_require__(/*! string_decoder/ */ "./node_modules/.registry.npmjs.org/string_decoder/1.1.1/node_modules/string_decoder/lib/string_decoder.js").StringDecoder;
   this._readableState.decoder = new StringDecoder(enc);
   this._readableState.encoding = enc;
   return this;
@@ -45220,6 +45644,16 @@ Readable.prototype.wrap = function (stream) {
   return this;
 };
 
+Object.defineProperty(Readable.prototype, 'readableHighWaterMark', {
+  // making it explicit this property is not enumerable
+  // because otherwise some prototype manipulation in
+  // userland will fail
+  enumerable: false,
+  get: function () {
+    return this._readableState.highWaterMark;
+  }
+});
+
 // exposed for testing purposes only.
 Readable._fromList = fromList;
 
@@ -45345,26 +45779,20 @@ function endReadableNT(state, stream) {
   }
 }
 
-function forEach(xs, f) {
-  for (var i = 0, l = xs.length; i < l; i++) {
-    f(xs[i], i);
-  }
-}
-
 function indexOf(xs, x) {
   for (var i = 0, l = xs.length; i < l; i++) {
     if (xs[i] === x) return i;
   }
   return -1;
 }
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../process/browser.js */ "./node_modules/process/browser.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../webpack/4.12.0/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.0/node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js")))
 
 /***/ }),
 
-/***/ "./node_modules/readable-stream/lib/_stream_transform.js":
-/*!***************************************************************!*\
-  !*** ./node_modules/readable-stream/lib/_stream_transform.js ***!
-  \***************************************************************/
+/***/ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_transform.js":
+/*!**********************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_transform.js ***!
+  \**********************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -45436,11 +45864,11 @@ function indexOf(xs, x) {
 
 module.exports = Transform;
 
-var Duplex = __webpack_require__(/*! ./_stream_duplex */ "./node_modules/readable-stream/lib/_stream_duplex.js");
+var Duplex = __webpack_require__(/*! ./_stream_duplex */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_duplex.js");
 
 /*<replacement>*/
-var util = __webpack_require__(/*! core-util-is */ "./node_modules/core-util-is/lib/util.js");
-util.inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js");
+var util = __webpack_require__(/*! core-util-is */ "./node_modules/.registry.npmjs.org/core-util-is/1.0.2/node_modules/core-util-is/lib/util.js");
+util.inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js");
 /*</replacement>*/
 
 util.inherits(Transform, Duplex);
@@ -45586,10 +46014,10 @@ function done(stream, er, data) {
 
 /***/ }),
 
-/***/ "./node_modules/readable-stream/lib/_stream_writable.js":
-/*!**************************************************************!*\
-  !*** ./node_modules/readable-stream/lib/_stream_writable.js ***!
-  \**************************************************************/
+/***/ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_writable.js":
+/*!*********************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_writable.js ***!
+  \*********************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -45623,7 +46051,7 @@ function done(stream, er, data) {
 
 /*<replacement>*/
 
-var pna = __webpack_require__(/*! process-nextick-args */ "./node_modules/process-nextick-args/index.js");
+var pna = __webpack_require__(/*! process-nextick-args */ "./node_modules/.registry.npmjs.org/process-nextick-args/2.0.0/node_modules/process-nextick-args/index.js");
 /*</replacement>*/
 
 module.exports = Writable;
@@ -45660,23 +46088,23 @@ var Duplex;
 Writable.WritableState = WritableState;
 
 /*<replacement>*/
-var util = __webpack_require__(/*! core-util-is */ "./node_modules/core-util-is/lib/util.js");
-util.inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js");
+var util = __webpack_require__(/*! core-util-is */ "./node_modules/.registry.npmjs.org/core-util-is/1.0.2/node_modules/core-util-is/lib/util.js");
+util.inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js");
 /*</replacement>*/
 
 /*<replacement>*/
 var internalUtil = {
-  deprecate: __webpack_require__(/*! util-deprecate */ "./node_modules/util-deprecate/browser.js")
+  deprecate: __webpack_require__(/*! util-deprecate */ "./node_modules/.registry.npmjs.org/util-deprecate/1.0.2/node_modules/util-deprecate/browser.js")
 };
 /*</replacement>*/
 
 /*<replacement>*/
-var Stream = __webpack_require__(/*! ./internal/streams/stream */ "./node_modules/readable-stream/lib/internal/streams/stream-browser.js");
+var Stream = __webpack_require__(/*! ./internal/streams/stream */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/internal/streams/stream-browser.js");
 /*</replacement>*/
 
 /*<replacement>*/
 
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer;
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer;
 var OurUint8Array = global.Uint8Array || function () {};
 function _uint8ArrayToBuffer(chunk) {
   return Buffer.from(chunk);
@@ -45687,14 +46115,14 @@ function _isUint8Array(obj) {
 
 /*</replacement>*/
 
-var destroyImpl = __webpack_require__(/*! ./internal/streams/destroy */ "./node_modules/readable-stream/lib/internal/streams/destroy.js");
+var destroyImpl = __webpack_require__(/*! ./internal/streams/destroy */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/internal/streams/destroy.js");
 
 util.inherits(Writable, Stream);
 
 function nop() {}
 
 function WritableState(options, stream) {
-  Duplex = Duplex || __webpack_require__(/*! ./_stream_duplex */ "./node_modules/readable-stream/lib/_stream_duplex.js");
+  Duplex = Duplex || __webpack_require__(/*! ./_stream_duplex */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_duplex.js");
 
   options = options || {};
 
@@ -45844,7 +46272,7 @@ if (typeof Symbol === 'function' && Symbol.hasInstance && typeof Function.protot
 }
 
 function Writable(options) {
-  Duplex = Duplex || __webpack_require__(/*! ./_stream_duplex */ "./node_modules/readable-stream/lib/_stream_duplex.js");
+  Duplex = Duplex || __webpack_require__(/*! ./_stream_duplex */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_duplex.js");
 
   // Writable ctor is applied to Duplexes, too.
   // `realHasInstance` is necessary because using plain `instanceof`
@@ -45963,6 +46391,16 @@ function decodeChunk(state, chunk, encoding) {
   }
   return chunk;
 }
+
+Object.defineProperty(Writable.prototype, 'writableHighWaterMark', {
+  // making it explicit this property is not enumerable
+  // because otherwise some prototype manipulation in
+  // userland will fail
+  enumerable: false,
+  get: function () {
+    return this._writableState.highWaterMark;
+  }
+});
 
 // if we're already writing something, then just put this
 // in the queue, and wait our turn.  Otherwise, call _write
@@ -46271,14 +46709,14 @@ Writable.prototype._destroy = function (err, cb) {
   this.end();
   cb(err);
 };
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../process/browser.js */ "./node_modules/process/browser.js"), __webpack_require__(/*! ./../../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js"), __webpack_require__(/*! ./../../../../../webpack/4.12.0/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.0/node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
-/***/ "./node_modules/readable-stream/lib/internal/streams/BufferList.js":
-/*!*************************************************************************!*\
-  !*** ./node_modules/readable-stream/lib/internal/streams/BufferList.js ***!
-  \*************************************************************************/
+/***/ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/internal/streams/BufferList.js":
+/*!********************************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/internal/streams/BufferList.js ***!
+  \********************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -46287,7 +46725,7 @@ Writable.prototype._destroy = function (err, cb) {
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer;
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer;
 var util = __webpack_require__(/*! util */ 1);
 
 function copyBuffer(src, target, offset) {
@@ -46365,10 +46803,10 @@ if (util && util.inspect && util.inspect.custom) {
 
 /***/ }),
 
-/***/ "./node_modules/readable-stream/lib/internal/streams/destroy.js":
-/*!**********************************************************************!*\
-  !*** ./node_modules/readable-stream/lib/internal/streams/destroy.js ***!
-  \**********************************************************************/
+/***/ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/internal/streams/destroy.js":
+/*!*****************************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/internal/streams/destroy.js ***!
+  \*****************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -46377,7 +46815,7 @@ if (util && util.inspect && util.inspect.custom) {
 
 /*<replacement>*/
 
-var pna = __webpack_require__(/*! process-nextick-args */ "./node_modules/process-nextick-args/index.js");
+var pna = __webpack_require__(/*! process-nextick-args */ "./node_modules/.registry.npmjs.org/process-nextick-args/2.0.0/node_modules/process-nextick-args/index.js");
 /*</replacement>*/
 
 // undocumented cb() API, needed for core, not for public API
@@ -46450,76 +46888,76 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./node_modules/readable-stream/lib/internal/streams/stream-browser.js":
-/*!*****************************************************************************!*\
-  !*** ./node_modules/readable-stream/lib/internal/streams/stream-browser.js ***!
-  \*****************************************************************************/
+/***/ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/internal/streams/stream-browser.js":
+/*!************************************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/internal/streams/stream-browser.js ***!
+  \************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! events */ "./node_modules/events/events.js").EventEmitter;
+module.exports = __webpack_require__(/*! events */ "./node_modules/.registry.npmjs.org/events/1.1.1/node_modules/events/events.js").EventEmitter;
 
 
 /***/ }),
 
-/***/ "./node_modules/readable-stream/passthrough.js":
-/*!*****************************************************!*\
-  !*** ./node_modules/readable-stream/passthrough.js ***!
-  \*****************************************************/
+/***/ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/passthrough.js":
+/*!************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/passthrough.js ***!
+  \************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! ./readable */ "./node_modules/readable-stream/readable-browser.js").PassThrough
+module.exports = __webpack_require__(/*! ./readable */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/readable-browser.js").PassThrough
 
 
 /***/ }),
 
-/***/ "./node_modules/readable-stream/readable-browser.js":
-/*!**********************************************************!*\
-  !*** ./node_modules/readable-stream/readable-browser.js ***!
-  \**********************************************************/
+/***/ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/readable-browser.js":
+/*!*****************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/readable-browser.js ***!
+  \*****************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(/*! ./lib/_stream_readable.js */ "./node_modules/readable-stream/lib/_stream_readable.js");
+exports = module.exports = __webpack_require__(/*! ./lib/_stream_readable.js */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_readable.js");
 exports.Stream = exports;
 exports.Readable = exports;
-exports.Writable = __webpack_require__(/*! ./lib/_stream_writable.js */ "./node_modules/readable-stream/lib/_stream_writable.js");
-exports.Duplex = __webpack_require__(/*! ./lib/_stream_duplex.js */ "./node_modules/readable-stream/lib/_stream_duplex.js");
-exports.Transform = __webpack_require__(/*! ./lib/_stream_transform.js */ "./node_modules/readable-stream/lib/_stream_transform.js");
-exports.PassThrough = __webpack_require__(/*! ./lib/_stream_passthrough.js */ "./node_modules/readable-stream/lib/_stream_passthrough.js");
+exports.Writable = __webpack_require__(/*! ./lib/_stream_writable.js */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_writable.js");
+exports.Duplex = __webpack_require__(/*! ./lib/_stream_duplex.js */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_duplex.js");
+exports.Transform = __webpack_require__(/*! ./lib/_stream_transform.js */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_transform.js");
+exports.PassThrough = __webpack_require__(/*! ./lib/_stream_passthrough.js */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_passthrough.js");
 
 
 /***/ }),
 
-/***/ "./node_modules/readable-stream/transform.js":
-/*!***************************************************!*\
-  !*** ./node_modules/readable-stream/transform.js ***!
-  \***************************************************/
+/***/ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/transform.js":
+/*!**********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/transform.js ***!
+  \**********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! ./readable */ "./node_modules/readable-stream/readable-browser.js").Transform
+module.exports = __webpack_require__(/*! ./readable */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/readable-browser.js").Transform
 
 
 /***/ }),
 
-/***/ "./node_modules/readable-stream/writable-browser.js":
-/*!**********************************************************!*\
-  !*** ./node_modules/readable-stream/writable-browser.js ***!
-  \**********************************************************/
+/***/ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/writable-browser.js":
+/*!*****************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/writable-browser.js ***!
+  \*****************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! ./lib/_stream_writable.js */ "./node_modules/readable-stream/lib/_stream_writable.js");
+module.exports = __webpack_require__(/*! ./lib/_stream_writable.js */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/lib/_stream_writable.js");
 
 
 /***/ }),
 
-/***/ "./node_modules/regenerator-runtime/runtime-module.js":
-/*!************************************************************!*\
-  !*** ./node_modules/regenerator-runtime/runtime-module.js ***!
-  \************************************************************/
+/***/ "./node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js":
+/*!************************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime-module.js ***!
+  \************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -46545,7 +46983,7 @@ var oldRuntime = hadRuntime && g.regeneratorRuntime;
 // Force reevalutation of runtime.js.
 g.regeneratorRuntime = undefined;
 
-module.exports = __webpack_require__(/*! ./runtime */ "./node_modules/regenerator-runtime/runtime.js");
+module.exports = __webpack_require__(/*! ./runtime */ "./node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js");
 
 if (hadRuntime) {
   // Restore the original runtime.
@@ -46562,10 +47000,10 @@ if (hadRuntime) {
 
 /***/ }),
 
-/***/ "./node_modules/regenerator-runtime/runtime.js":
-/*!*****************************************************!*\
-  !*** ./node_modules/regenerator-runtime/runtime.js ***!
-  \*****************************************************/
+/***/ "./node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js":
+/*!*****************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/regenerator-runtime/0.11.1/node_modules/regenerator-runtime/runtime.js ***!
+  \*****************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -47300,18 +47738,18 @@ if (hadRuntime) {
 
 /***/ }),
 
-/***/ "./node_modules/ripemd160/index.js":
-/*!*****************************************!*\
-  !*** ./node_modules/ripemd160/index.js ***!
-  \*****************************************/
+/***/ "./node_modules/.registry.npmjs.org/ripemd160/2.0.2/node_modules/ripemd160/index.js":
+/*!******************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/ripemd160/2.0.2/node_modules/ripemd160/index.js ***!
+  \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var Buffer = __webpack_require__(/*! buffer */ "./node_modules/buffer/index.js").Buffer
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js")
-var HashBase = __webpack_require__(/*! hash-base */ "./node_modules/hash-base/index.js")
+var Buffer = __webpack_require__(/*! buffer */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js")
+var HashBase = __webpack_require__(/*! hash-base */ "./node_modules/.registry.npmjs.org/hash-base/3.0.4/node_modules/hash-base/index.js")
 
 var ARRAY16 = new Array(16)
 
@@ -47475,15 +47913,15 @@ module.exports = RIPEMD160
 
 /***/ }),
 
-/***/ "./node_modules/safe-buffer/index.js":
-/*!*******************************************!*\
-  !*** ./node_modules/safe-buffer/index.js ***!
-  \*******************************************/
+/***/ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js":
+/*!**********************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* eslint-disable node/no-deprecated-api */
-var buffer = __webpack_require__(/*! buffer */ "./node_modules/buffer/index.js")
+var buffer = __webpack_require__(/*! buffer */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js")
 var Buffer = buffer.Buffer
 
 // alternative to using Object.keys for old browsers
@@ -47548,14 +47986,14 @@ SafeBuffer.allocUnsafeSlow = function (size) {
 
 /***/ }),
 
-/***/ "./node_modules/sha.js/hash.js":
-/*!*************************************!*\
-  !*** ./node_modules/sha.js/hash.js ***!
-  \*************************************/
+/***/ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/hash.js":
+/*!************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/hash.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
 
 // prototype class for hash functions
 function Hash (blockSize, finalSize) {
@@ -47640,10 +48078,10 @@ module.exports = Hash
 
 /***/ }),
 
-/***/ "./node_modules/sha.js/index.js":
-/*!**************************************!*\
-  !*** ./node_modules/sha.js/index.js ***!
-  \**************************************/
+/***/ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/index.js":
+/*!*************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/index.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -47656,20 +48094,20 @@ var exports = module.exports = function SHA (algorithm) {
   return new Algorithm()
 }
 
-exports.sha = __webpack_require__(/*! ./sha */ "./node_modules/sha.js/sha.js")
-exports.sha1 = __webpack_require__(/*! ./sha1 */ "./node_modules/sha.js/sha1.js")
-exports.sha224 = __webpack_require__(/*! ./sha224 */ "./node_modules/sha.js/sha224.js")
-exports.sha256 = __webpack_require__(/*! ./sha256 */ "./node_modules/sha.js/sha256.js")
-exports.sha384 = __webpack_require__(/*! ./sha384 */ "./node_modules/sha.js/sha384.js")
-exports.sha512 = __webpack_require__(/*! ./sha512 */ "./node_modules/sha.js/sha512.js")
+exports.sha = __webpack_require__(/*! ./sha */ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/sha.js")
+exports.sha1 = __webpack_require__(/*! ./sha1 */ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/sha1.js")
+exports.sha224 = __webpack_require__(/*! ./sha224 */ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/sha224.js")
+exports.sha256 = __webpack_require__(/*! ./sha256 */ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/sha256.js")
+exports.sha384 = __webpack_require__(/*! ./sha384 */ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/sha384.js")
+exports.sha512 = __webpack_require__(/*! ./sha512 */ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/sha512.js")
 
 
 /***/ }),
 
-/***/ "./node_modules/sha.js/sha.js":
-/*!************************************!*\
-  !*** ./node_modules/sha.js/sha.js ***!
-  \************************************/
+/***/ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/sha.js":
+/*!***********************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/sha.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -47681,9 +48119,9 @@ exports.sha512 = __webpack_require__(/*! ./sha512 */ "./node_modules/sha.js/sha5
  * operation was added.
  */
 
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js")
-var Hash = __webpack_require__(/*! ./hash */ "./node_modules/sha.js/hash.js")
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js")
+var Hash = __webpack_require__(/*! ./hash */ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/hash.js")
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
 
 var K = [
   0x5a827999, 0x6ed9eba1, 0x8f1bbcdc | 0, 0xca62c1d6 | 0
@@ -47771,10 +48209,10 @@ module.exports = Sha
 
 /***/ }),
 
-/***/ "./node_modules/sha.js/sha1.js":
-/*!*************************************!*\
-  !*** ./node_modules/sha.js/sha1.js ***!
-  \*************************************/
+/***/ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/sha1.js":
+/*!************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/sha1.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -47787,9 +48225,9 @@ module.exports = Sha
  * See http://pajhome.org.uk/crypt/md5 for details.
  */
 
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js")
-var Hash = __webpack_require__(/*! ./hash */ "./node_modules/sha.js/hash.js")
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js")
+var Hash = __webpack_require__(/*! ./hash */ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/hash.js")
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
 
 var K = [
   0x5a827999, 0x6ed9eba1, 0x8f1bbcdc | 0, 0xca62c1d6 | 0
@@ -47881,10 +48319,10 @@ module.exports = Sha1
 
 /***/ }),
 
-/***/ "./node_modules/sha.js/sha224.js":
-/*!***************************************!*\
-  !*** ./node_modules/sha.js/sha224.js ***!
-  \***************************************/
+/***/ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/sha224.js":
+/*!**************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/sha224.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -47896,10 +48334,10 @@ module.exports = Sha1
  *
  */
 
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js")
-var Sha256 = __webpack_require__(/*! ./sha256 */ "./node_modules/sha.js/sha256.js")
-var Hash = __webpack_require__(/*! ./hash */ "./node_modules/sha.js/hash.js")
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js")
+var Sha256 = __webpack_require__(/*! ./sha256 */ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/sha256.js")
+var Hash = __webpack_require__(/*! ./hash */ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/hash.js")
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
 
 var W = new Array(64)
 
@@ -47945,10 +48383,10 @@ module.exports = Sha224
 
 /***/ }),
 
-/***/ "./node_modules/sha.js/sha256.js":
-/*!***************************************!*\
-  !*** ./node_modules/sha.js/sha256.js ***!
-  \***************************************/
+/***/ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/sha256.js":
+/*!**************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/sha256.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -47960,9 +48398,9 @@ module.exports = Sha224
  *
  */
 
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js")
-var Hash = __webpack_require__(/*! ./hash */ "./node_modules/sha.js/hash.js")
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js")
+var Hash = __webpack_require__(/*! ./hash */ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/hash.js")
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
 
 var K = [
   0x428A2F98, 0x71374491, 0xB5C0FBCF, 0xE9B5DBA5,
@@ -48091,17 +48529,17 @@ module.exports = Sha256
 
 /***/ }),
 
-/***/ "./node_modules/sha.js/sha384.js":
-/*!***************************************!*\
-  !*** ./node_modules/sha.js/sha384.js ***!
-  \***************************************/
+/***/ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/sha384.js":
+/*!**************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/sha384.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js")
-var SHA512 = __webpack_require__(/*! ./sha512 */ "./node_modules/sha.js/sha512.js")
-var Hash = __webpack_require__(/*! ./hash */ "./node_modules/sha.js/hash.js")
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js")
+var SHA512 = __webpack_require__(/*! ./sha512 */ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/sha512.js")
+var Hash = __webpack_require__(/*! ./hash */ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/hash.js")
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
 
 var W = new Array(160)
 
@@ -48159,16 +48597,16 @@ module.exports = Sha384
 
 /***/ }),
 
-/***/ "./node_modules/sha.js/sha512.js":
-/*!***************************************!*\
-  !*** ./node_modules/sha.js/sha512.js ***!
-  \***************************************/
+/***/ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/sha512.js":
+/*!**************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/sha512.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js")
-var Hash = __webpack_require__(/*! ./hash */ "./node_modules/sha.js/hash.js")
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js")
+var Hash = __webpack_require__(/*! ./hash */ "./node_modules/.registry.npmjs.org/sha.js/2.4.11/node_modules/sha.js/hash.js")
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer
 
 var K = [
   0x428a2f98, 0xd728ae22, 0x71374491, 0x23ef65cd,
@@ -48430,10 +48868,10 @@ module.exports = Sha512
 
 /***/ }),
 
-/***/ "./node_modules/stream-browserify/index.js":
-/*!*************************************************!*\
-  !*** ./node_modules/stream-browserify/index.js ***!
-  \*************************************************/
+/***/ "./node_modules/.registry.npmjs.org/stream-browserify/2.0.1/node_modules/stream-browserify/index.js":
+/*!**********************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/stream-browserify/2.0.1/node_modules/stream-browserify/index.js ***!
+  \**********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -48460,15 +48898,15 @@ module.exports = Sha512
 
 module.exports = Stream;
 
-var EE = __webpack_require__(/*! events */ "./node_modules/events/events.js").EventEmitter;
-var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inherits_browser.js");
+var EE = __webpack_require__(/*! events */ "./node_modules/.registry.npmjs.org/events/1.1.1/node_modules/events/events.js").EventEmitter;
+var inherits = __webpack_require__(/*! inherits */ "./node_modules/.registry.npmjs.org/inherits/2.0.3/node_modules/inherits/inherits_browser.js");
 
 inherits(Stream, EE);
-Stream.Readable = __webpack_require__(/*! readable-stream/readable.js */ "./node_modules/readable-stream/readable-browser.js");
-Stream.Writable = __webpack_require__(/*! readable-stream/writable.js */ "./node_modules/readable-stream/writable-browser.js");
-Stream.Duplex = __webpack_require__(/*! readable-stream/duplex.js */ "./node_modules/readable-stream/duplex-browser.js");
-Stream.Transform = __webpack_require__(/*! readable-stream/transform.js */ "./node_modules/readable-stream/transform.js");
-Stream.PassThrough = __webpack_require__(/*! readable-stream/passthrough.js */ "./node_modules/readable-stream/passthrough.js");
+Stream.Readable = __webpack_require__(/*! readable-stream/readable.js */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/readable-browser.js");
+Stream.Writable = __webpack_require__(/*! readable-stream/writable.js */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/writable-browser.js");
+Stream.Duplex = __webpack_require__(/*! readable-stream/duplex.js */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/duplex-browser.js");
+Stream.Transform = __webpack_require__(/*! readable-stream/transform.js */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/transform.js");
+Stream.PassThrough = __webpack_require__(/*! readable-stream/passthrough.js */ "./node_modules/.registry.npmjs.org/readable-stream/2.3.6/node_modules/readable-stream/passthrough.js");
 
 // Backwards-compat with node 0.4.x
 Stream.Stream = Stream;
@@ -48568,17 +49006,41 @@ Stream.prototype.pipe = function(dest, options) {
 
 /***/ }),
 
-/***/ "./node_modules/string_decoder/lib/string_decoder.js":
-/*!***********************************************************!*\
-  !*** ./node_modules/string_decoder/lib/string_decoder.js ***!
-  \***********************************************************/
+/***/ "./node_modules/.registry.npmjs.org/string_decoder/1.1.1/node_modules/string_decoder/lib/string_decoder.js":
+/*!*****************************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/string_decoder/1.1.1/node_modules/string_decoder/lib/string_decoder.js ***!
+  \*****************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/safe-buffer/index.js").Buffer;
+
+/*<replacement>*/
+
+var Buffer = __webpack_require__(/*! safe-buffer */ "./node_modules/.registry.npmjs.org/safe-buffer/5.1.2/node_modules/safe-buffer/index.js").Buffer;
+/*</replacement>*/
 
 var isEncoding = Buffer.isEncoding || function (encoding) {
   encoding = '' + encoding;
@@ -48690,10 +49152,10 @@ StringDecoder.prototype.fillLast = function (buf) {
 };
 
 // Checks the type of a UTF-8 byte, whether it's ASCII, a leading byte, or a
-// continuation byte.
+// continuation byte. If an invalid byte is detected, -2 is returned.
 function utf8CheckByte(byte) {
   if (byte <= 0x7F) return 0;else if (byte >> 5 === 0x06) return 2;else if (byte >> 4 === 0x0E) return 3;else if (byte >> 3 === 0x1E) return 4;
-  return -1;
+  return byte >> 6 === 0x02 ? -1 : -2;
 }
 
 // Checks at most 3 bytes at the end of a Buffer in order to detect an
@@ -48707,13 +49169,13 @@ function utf8CheckIncomplete(self, buf, i) {
     if (nb > 0) self.lastNeed = nb - 1;
     return nb;
   }
-  if (--j < i) return 0;
+  if (--j < i || nb === -2) return 0;
   nb = utf8CheckByte(buf[j]);
   if (nb >= 0) {
     if (nb > 0) self.lastNeed = nb - 2;
     return nb;
   }
-  if (--j < i) return 0;
+  if (--j < i || nb === -2) return 0;
   nb = utf8CheckByte(buf[j]);
   if (nb >= 0) {
     if (nb > 0) {
@@ -48727,7 +49189,7 @@ function utf8CheckIncomplete(self, buf, i) {
 // Validates as many continuation bytes for a multi-byte UTF-8 character as
 // needed or are available. If we see a non-continuation byte where we expect
 // one, we "replace" the validated continuation bytes we've seen so far with
-// UTF-8 replacement characters ('\ufffd'), to match v8's UTF-8 decoding
+// a single UTF-8 replacement character ('\ufffd'), to match v8's UTF-8 decoding
 // behavior. The continuation byte check is included three times in the case
 // where all of the continuation bytes for a character exist in the same buffer.
 // It is also done this way as a slight performance increase instead of using a
@@ -48735,17 +49197,17 @@ function utf8CheckIncomplete(self, buf, i) {
 function utf8CheckExtraBytes(self, buf, p) {
   if ((buf[0] & 0xC0) !== 0x80) {
     self.lastNeed = 0;
-    return '\ufffd'.repeat(p);
+    return '\ufffd';
   }
   if (self.lastNeed > 1 && buf.length > 1) {
     if ((buf[1] & 0xC0) !== 0x80) {
       self.lastNeed = 1;
-      return '\ufffd'.repeat(p + 1);
+      return '\ufffd';
     }
     if (self.lastNeed > 2 && buf.length > 2) {
       if ((buf[2] & 0xC0) !== 0x80) {
         self.lastNeed = 2;
-        return '\ufffd'.repeat(p + 2);
+        return '\ufffd';
       }
     }
   }
@@ -48776,11 +49238,11 @@ function utf8Text(buf, i) {
   return buf.toString('utf8', i, end);
 }
 
-// For UTF-8, a replacement character for each buffered byte of a (partial)
-// character needs to be added to the output.
+// For UTF-8, a replacement character is added when ending on a partial
+// character.
 function utf8End(buf) {
   var r = buf && buf.length ? this.write(buf) : '';
-  if (this.lastNeed) return r + '\ufffd'.repeat(this.lastTotal - this.lastNeed);
+  if (this.lastNeed) return r + '\ufffd';
   return r;
 }
 
@@ -48851,10 +49313,10 @@ function simpleEnd(buf) {
 
 /***/ }),
 
-/***/ "./node_modules/util-deprecate/browser.js":
-/*!************************************************!*\
-  !*** ./node_modules/util-deprecate/browser.js ***!
-  \************************************************/
+/***/ "./node_modules/.registry.npmjs.org/util-deprecate/1.0.2/node_modules/util-deprecate/browser.js":
+/*!******************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/util-deprecate/1.0.2/node_modules/util-deprecate/browser.js ***!
+  \******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -48926,18 +49388,18 @@ function config (name) {
   return String(val).toLowerCase() === 'true';
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../webpack/4.12.0/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.0/node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
-/***/ "./node_modules/vm-browserify/index.js":
-/*!*********************************************!*\
-  !*** ./node_modules/vm-browserify/index.js ***!
-  \*********************************************/
+/***/ "./node_modules/.registry.npmjs.org/vm-browserify/0.0.4/node_modules/vm-browserify/index.js":
+/*!**************************************************************************************************!*\
+  !*** ./node_modules/.registry.npmjs.org/vm-browserify/0.0.4/node_modules/vm-browserify/index.js ***!
+  \**************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var indexOf = __webpack_require__(/*! indexof */ "./node_modules/indexof/index.js");
+var indexOf = __webpack_require__(/*! indexof */ "./node_modules/.registry.npmjs.org/indexof/0.0.1/node_modules/indexof/index.js");
 
 var Object_keys = function (obj) {
     if (Object.keys) return Object.keys(obj)
@@ -49079,7 +49541,7 @@ exports.createContext = Script.createContext = function (context) {
 
 /***/ }),
 
-/***/ "./node_modules/webpack/buildin/global.js":
+/***/ "./node_modules/.registry.npmjs.org/webpack/4.12.0/node_modules/webpack/buildin/global.js":
 /*!***********************************!*\
   !*** (webpack)/buildin/global.js ***!
   \***********************************/
@@ -49110,7 +49572,7 @@ module.exports = g;
 
 /***/ }),
 
-/***/ "./node_modules/webpack/buildin/module.js":
+/***/ "./node_modules/.registry.npmjs.org/webpack/4.12.0/node_modules/webpack/buildin/module.js":
 /*!***********************************!*\
   !*** (webpack)/buildin/module.js ***!
   \***********************************/
@@ -49149,6 +49611,9 @@ module.exports = function(module) {
   \**************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 exports.default = __webpack_require__(/*! ../dist/index-all */ "./dist/index-all.js");
 
@@ -49219,7 +49684,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
     result["default"] = mod;
     return result;
-}
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 // Import the all-in-one library
 const IotaPico = __importStar(require("@iota-pico/lib-browser"));
