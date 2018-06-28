@@ -372,19 +372,21 @@ var bigInt = (function (undefined) {
     SmallInteger.prototype.times = SmallInteger.prototype.multiply;
 
     function square(a) {
+        //console.assert(2 * BASE * BASE < MAX_INT);
         var l = a.length,
             r = createArray(l + l),
             base = BASE,
             product, carry, i, a_i, a_j;
         for (i = 0; i < l; i++) {
             a_i = a[i];
-            for (var j = 0; j < l; j++) {
+            carry = 0 - a_i * a_i;
+            for (var j = i; j < l; j++) {
                 a_j = a[j];
-                product = a_i * a_j + r[i + j];
+                product = 2 * (a_i * a_j) + r[i + j] + carry;
                 carry = Math.floor(product / base);
                 r[i + j] = product - carry * base;
-                r[i + j + 1] += carry;
             }
+            r[i + l] = carry;
         }
         trim(r);
         return r;
@@ -889,6 +891,7 @@ var bigInt = (function (undefined) {
         n = +n;
         if (n < 0) return this.shiftRight(-n);
         var result = this;
+        if (result.isZero()) return result;
         while (n >= powers2Length) {
             result = result.multiply(highestPower2);
             n -= powers2Length - 1;
@@ -906,7 +909,7 @@ var bigInt = (function (undefined) {
         if (n < 0) return this.shiftLeft(-n);
         var result = this;
         while (n >= powers2Length) {
-            if (result.isZero()) return result;
+            if (result.isZero() || (result.isNegative() && result.isUnit())) return result;
             remQuo = divModAny(result, highestPower2);
             result = remQuo[1].isNegative() ? remQuo[0].prev() : remQuo[0];
             n -= powers2Length - 1;
@@ -8707,7 +8710,7 @@ function () {
   }, {
     key: "encodeNonASCII",
     value: function encodeNonASCII(value) {
-      return StringHelper.isString(value) ? value.replace(/[\u007F-\uFFFF]/g, function (chr) {
+      return StringHelper.isString(value) ? value.replace(/[\u0100-\uFFFF]/g, function (chr) {
         return "\\u".concat("0000".concat(chr.charCodeAt(0).toString(16)).substr(-4));
       }) : undefined;
     }
@@ -23511,7 +23514,7 @@ if (( false ? undefined : _typeof(exports)) === 'object' && ( false ? undefined 
   return Module;
 }).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));else {}
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../lib-browser/node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js"), __webpack_require__(/*! ./../../lib-browser/node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer, __webpack_require__(/*! ./../../lib-browser/node_modules/.registry.npmjs.org/webpack/4.12.0/node_modules/webpack/buildin/module.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.0/node_modules/webpack/buildin/module.js")(module)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../lib-browser/node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js"), __webpack_require__(/*! ./../../lib-browser/node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer, __webpack_require__(/*! ./../../lib-browser/node_modules/.registry.npmjs.org/webpack/4.12.2/node_modules/webpack/buildin/module.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.2/node_modules/webpack/buildin/module.js")(module)))
 
 /***/ }),
 
@@ -31236,7 +31239,7 @@ function fromByteArray (uint8) {
   };
 })(typeof module === 'undefined' || module, this);
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../webpack/4.12.0/node_modules/webpack/buildin/module.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.0/node_modules/webpack/buildin/module.js")(module)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../webpack/4.12.2/node_modules/webpack/buildin/module.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.2/node_modules/webpack/buildin/module.js")(module)))
 
 /***/ }),
 
@@ -34848,7 +34851,7 @@ function isnan (val) {
   return val !== val // eslint-disable-line no-self-compare
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../webpack/4.12.0/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.0/node_modules/webpack/buildin/global.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../webpack/4.12.2/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.2/node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
@@ -43633,7 +43636,7 @@ module.exports = function (password, salt, iterations, keylen, digest, callback)
   }), callback)
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../webpack/4.12.0/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.0/node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../webpack/4.12.2/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.2/node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js")))
 
 /***/ }),
 
@@ -44421,7 +44424,7 @@ function randomBytes (size, cb) {
   return bytes
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../webpack/4.12.0/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.0/node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../webpack/4.12.2/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.2/node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js")))
 
 /***/ }),
 
@@ -44542,7 +44545,7 @@ function randomFillSync (buf, offset, size) {
   return actualFill(buf, offset, size)
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../webpack/4.12.0/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.0/node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../webpack/4.12.2/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.2/node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js")))
 
 /***/ }),
 
@@ -45785,7 +45788,7 @@ function indexOf(xs, x) {
   }
   return -1;
 }
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../webpack/4.12.0/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.0/node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../webpack/4.12.2/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.2/node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js")))
 
 /***/ }),
 
@@ -46709,7 +46712,7 @@ Writable.prototype._destroy = function (err, cb) {
   this.end();
   cb(err);
 };
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js"), __webpack_require__(/*! ./../../../../../webpack/4.12.0/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.0/node_modules/webpack/buildin/global.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js"), __webpack_require__(/*! ./../../../../../webpack/4.12.2/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.2/node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
@@ -49388,7 +49391,7 @@ function config (name) {
   return String(val).toLowerCase() === 'true';
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../webpack/4.12.0/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.0/node_modules/webpack/buildin/global.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../webpack/4.12.2/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.2/node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
@@ -49541,7 +49544,7 @@ exports.createContext = Script.createContext = function (context) {
 
 /***/ }),
 
-/***/ "./node_modules/.registry.npmjs.org/webpack/4.12.0/node_modules/webpack/buildin/global.js":
+/***/ "./node_modules/.registry.npmjs.org/webpack/4.12.2/node_modules/webpack/buildin/global.js":
 /*!***********************************!*\
   !*** (webpack)/buildin/global.js ***!
   \***********************************/
@@ -49572,7 +49575,7 @@ module.exports = g;
 
 /***/ }),
 
-/***/ "./node_modules/.registry.npmjs.org/webpack/4.12.0/node_modules/webpack/buildin/module.js":
+/***/ "./node_modules/.registry.npmjs.org/webpack/4.12.2/node_modules/webpack/buildin/module.js":
 /*!***********************************!*\
   !*** (webpack)/buildin/module.js ***!
   \***********************************/

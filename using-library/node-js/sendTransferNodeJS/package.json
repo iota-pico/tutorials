@@ -4,7 +4,7 @@
     "author": "martyn@iota.eco",
     "license": "MIT",
     "dependencies": {
-        "@iota-pico/lib-nodejs": "^0.9.6",
+        "@iota-pico/lib-nodejs": "^0.9.7",
         "big-integer": "^1.6.26"
     },
     "devDependencies": {
