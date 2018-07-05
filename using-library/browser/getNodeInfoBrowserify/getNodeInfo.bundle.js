@@ -8697,9 +8697,9 @@ function () {
      */
 
   }, {
-    key: "isAscii",
-    value: function isAscii(value) {
-      return value === null || value === undefined ? false : /^[\x00-\xFF]*$/.test(value);
+    key: "isASCII",
+    value: function isASCII(value) {
+      return value === null || value === undefined ? false : /^[\x00-\x7F]*$/.test(value);
     }
     /**
      * Encode non ASCII characters with control characters.
@@ -8710,7 +8710,7 @@ function () {
   }, {
     key: "encodeNonASCII",
     value: function encodeNonASCII(value) {
-      return StringHelper.isString(value) ? value.replace(/[\u0100-\uFFFF]/g, function (chr) {
+      return StringHelper.isString(value) ? value.replace(/[\u0080-\uFFFF]/g, function (chr) {
         return "\\u".concat("0000".concat(chr.charCodeAt(0).toString(16)).substr(-4));
       }) : undefined;
     }
@@ -11693,7 +11693,7 @@ function () {
     /**
      * Create the hash for a transaction.
      * @param transaction The transaction to generate the hash.
-     * @returns The hash of thr transaction.
+     * @returns The hash of the transaction.
      */
     value: function hash(transaction) {
       if (!objectHelper_1.ObjectHelper.isType(transaction, transaction_1.Transaction)) {
@@ -13290,7 +13290,7 @@ function () {
         });
       }
 
-      if (!stringHelper_1.StringHelper.isAscii(value)) {
+      if (!stringHelper_1.StringHelper.isASCII(value)) {
         throw new dataError_1.DataError("The value contains non ASCII characters", {
           value: value
         });
@@ -23514,7 +23514,7 @@ if (( false ? undefined : _typeof(exports)) === 'object' && ( false ? undefined 
   return Module;
 }).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));else {}
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../lib-browser/node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js"), __webpack_require__(/*! ./../../lib-browser/node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer, __webpack_require__(/*! ./../../lib-browser/node_modules/.registry.npmjs.org/webpack/4.12.2/node_modules/webpack/buildin/module.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.2/node_modules/webpack/buildin/module.js")(module)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../lib-browser/node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js"), __webpack_require__(/*! ./../../lib-browser/node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js */ "./node_modules/.registry.npmjs.org/buffer/4.9.1/node_modules/buffer/index.js").Buffer, __webpack_require__(/*! ./../../lib-browser/node_modules/.registry.npmjs.org/webpack/4.15.0/node_modules/webpack/buildin/module.js */ "./node_modules/.registry.npmjs.org/webpack/4.15.0/node_modules/webpack/buildin/module.js")(module)))
 
 /***/ }),
 
@@ -31239,7 +31239,7 @@ function fromByteArray (uint8) {
   };
 })(typeof module === 'undefined' || module, this);
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../webpack/4.12.2/node_modules/webpack/buildin/module.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.2/node_modules/webpack/buildin/module.js")(module)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../webpack/4.15.0/node_modules/webpack/buildin/module.js */ "./node_modules/.registry.npmjs.org/webpack/4.15.0/node_modules/webpack/buildin/module.js")(module)))
 
 /***/ }),
 
@@ -34851,7 +34851,7 @@ function isnan (val) {
   return val !== val // eslint-disable-line no-self-compare
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../webpack/4.12.2/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.2/node_modules/webpack/buildin/global.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../webpack/4.15.0/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.15.0/node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
@@ -43636,7 +43636,7 @@ module.exports = function (password, salt, iterations, keylen, digest, callback)
   }), callback)
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../webpack/4.12.2/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.2/node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../webpack/4.15.0/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.15.0/node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js")))
 
 /***/ }),
 
@@ -44424,7 +44424,7 @@ function randomBytes (size, cb) {
   return bytes
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../webpack/4.12.2/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.2/node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../webpack/4.15.0/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.15.0/node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js")))
 
 /***/ }),
 
@@ -44545,7 +44545,7 @@ function randomFillSync (buf, offset, size) {
   return actualFill(buf, offset, size)
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../webpack/4.12.2/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.2/node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../webpack/4.15.0/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.15.0/node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js")))
 
 /***/ }),
 
@@ -45788,7 +45788,7 @@ function indexOf(xs, x) {
   }
   return -1;
 }
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../webpack/4.12.2/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.2/node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../webpack/4.15.0/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.15.0/node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js")))
 
 /***/ }),
 
@@ -46712,7 +46712,7 @@ Writable.prototype._destroy = function (err, cb) {
   this.end();
   cb(err);
 };
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js"), __webpack_require__(/*! ./../../../../../webpack/4.12.2/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.2/node_modules/webpack/buildin/global.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../process/0.11.10/node_modules/process/browser.js */ "./node_modules/.registry.npmjs.org/process/0.11.10/node_modules/process/browser.js"), __webpack_require__(/*! ./../../../../../webpack/4.15.0/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.15.0/node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
@@ -49391,7 +49391,7 @@ function config (name) {
   return String(val).toLowerCase() === 'true';
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../webpack/4.12.2/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.12.2/node_modules/webpack/buildin/global.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../webpack/4.15.0/node_modules/webpack/buildin/global.js */ "./node_modules/.registry.npmjs.org/webpack/4.15.0/node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
@@ -49544,7 +49544,7 @@ exports.createContext = Script.createContext = function (context) {
 
 /***/ }),
 
-/***/ "./node_modules/.registry.npmjs.org/webpack/4.12.2/node_modules/webpack/buildin/global.js":
+/***/ "./node_modules/.registry.npmjs.org/webpack/4.15.0/node_modules/webpack/buildin/global.js":
 /*!***********************************!*\
   !*** (webpack)/buildin/global.js ***!
   \***********************************/
@@ -49575,7 +49575,7 @@ module.exports = g;
 
 /***/ }),
 
-/***/ "./node_modules/.registry.npmjs.org/webpack/4.12.2/node_modules/webpack/buildin/module.js":
+/***/ "./node_modules/.registry.npmjs.org/webpack/4.15.0/node_modules/webpack/buildin/module.js":
 /*!***********************************!*\
   !*** (webpack)/buildin/module.js ***!
   \***********************************/

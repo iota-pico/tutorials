@@ -4,7 +4,7 @@
     "author": "martyn@iota.eco",
     "license": "MIT",
     "dependencies": {
-        "@iota-pico/lib-browser": "^0.9.7",
+        "@iota-pico/lib-browser": "^0.9.8",
         "big-integer": "^1.6.26"
     },
     "devDependencies": {
