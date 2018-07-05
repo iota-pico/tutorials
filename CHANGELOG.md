@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.9.9
+
+* Updated dependencies and README
+
+## v0.9.8
+
+* Updated dependencies
+
 ## v0.9.7
 
 * Reduced umd module size with externals
