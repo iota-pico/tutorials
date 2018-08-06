@@ -15,10 +15,10 @@
         "@iota-pico/pow-wasm": "^0.9.9",
         "@iota-pico/pow-webgl": "^0.9.9",
         "big-integer": "^1.6.26",
-        "systemjs": "^0.21.0",
-        "typescript": "^2.7.2"
+        "systemjs": "^0.21.0"
     },
     "devDependencies": {
-        "serve": "^6.4.9"
+        "serve": "^6.4.9",
+        "typescript": "^2.7.2"
     }
 }
