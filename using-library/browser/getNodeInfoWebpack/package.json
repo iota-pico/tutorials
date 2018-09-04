@@ -5,12 +5,12 @@
     "author": "martyn@iota.eco",
     "license": "MIT",
     "dependencies": {
-        "@iota-pico/lib-browser": "^0.9.9",
-        "big-integer": "^1.6.32"
+        "@iota-pico/lib-browser": "^1.0.0",
+        "big-integer": "^1.6.35"
     },
     "devDependencies": {
-        "serve": "^9.4.0",
-        "typescript": "^2.9.2",
+        "serve": "^10.0.0",
+        "typescript": "^3.0.3",
         "webpack": "^4.16.3",
         "webpack-cli": "^3.1.0"
     },

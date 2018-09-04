@@ -4,14 +4,14 @@
     "author": "martyn@iota.eco",
     "license": "MIT",
     "dependencies": {
-        "@iota-pico/api": "^0.9.9",
-        "@iota-pico/core": "^0.9.9",
-        "@iota-pico/pal-browser": "^0.9.9",
+        "@iota-pico/api": "^1.0.0",
+        "@iota-pico/core": "^1.0.0",
+        "@iota-pico/pal-browser": "^1.0.0",
         "systemjs": "^0.21.0"
     },
     "devDependencies": {
-        "serve": "^6.4.9",
-        "typescript": "^2.7.2"
+        "serve": "^10.0.0",
+        "typescript": "^3.0.3"
     },
     "scripts": {
         "build": "tsc",

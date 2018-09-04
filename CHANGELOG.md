@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.0
+
+* Final 1.0.0 Release
+* Lib files shrunk with different WebPack options and babel removal
+* Updated dependencies and README
+
 ## v0.9.9
 
 * Updated dependencies and README

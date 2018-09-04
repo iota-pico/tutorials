@@ -8,17 +8,17 @@
         "serve": "serve --open"
     },
     "dependencies": {
-        "@iota-pico/core": "^0.9.9",
-        "@iota-pico/crypto": "^0.9.9",
-        "@iota-pico/data": "^0.9.9",
-        "@iota-pico/pow-js": "^0.9.9",
-        "@iota-pico/pow-wasm": "^0.9.9",
-        "@iota-pico/pow-webgl": "^0.9.9",
-        "big-integer": "^1.6.26",
+        "@iota-pico/core": "^1.0.0",
+        "@iota-pico/crypto": "^1.0.0",
+        "@iota-pico/data": "^1.0.0",
+        "@iota-pico/pow-js": "^1.0.0",
+        "@iota-pico/pow-wasm": "^1.0.0",
+        "@iota-pico/pow-webgl": "^1.0.0",
+        "big-integer": "^1.6.35",
         "systemjs": "^0.21.0"
     },
     "devDependencies": {
-        "serve": "^6.4.9",
-        "typescript": "^2.7.2"
+        "serve": "^10.0.0",
+        "typescript": "^3.0.3"
     }
 }

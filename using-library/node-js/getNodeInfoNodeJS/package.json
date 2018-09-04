@@ -4,12 +4,12 @@
     "author": "martyn@iota.eco",
     "license": "MIT",
     "dependencies": {
-        "@iota-pico/lib-nodejs": "^0.9.9",
-        "big-integer": "^1.6.32"
+        "@iota-pico/lib-nodejs": "^1.0.0",
+        "big-integer": "^1.6.35"
     },
     "devDependencies": {
         "@types/node": "^10.5.4",
-        "typescript": "^2.9.2"
+        "typescript": "^3.0.3"
     },
     "scripts": {
         "build": "tsc"

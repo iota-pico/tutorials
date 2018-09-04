@@ -39,7 +39,7 @@ Contributions are always welcome to the project. Feel free to raise issues, crea
 
 # Authors
 
-Come and find us on the IOTA [Discord](https://discordapp.com/invite/fNGZXvh) development channels
+Come and find us on the IOTA [Discord](https://discord.gg/JJysqe9) development channels
 
 * **Martyn Janes** - *obany* - ([https://github.com/obany](https://github.com/obany))
 
@@ -47,11 +47,7 @@ Come and find us on the IOTA [Discord](https://discordapp.com/invite/fNGZXvh) de
 
 IOTA donations are always welcome :smile:
 
-![QR Code for Trinity](https://raw.githubusercontent.com/iota-pico/tutorials/master/donation.png)
-
-```shell
-QWJXX99QDEYWUWXEGA9QXSNOWOKHMFKCMSZTXDFLRZAFQRPQTHQDXSZWQQTAHNDNRYHMIKJYWQLKTFHBWSAOJDHAMB
-```
+![pico@tngl-me](https://cdn.tngl.me/tngl-me/pico/qr.svg)
 
 # License
 
