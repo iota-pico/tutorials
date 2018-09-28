@@ -6,11 +6,11 @@
     "dependencies": {
         "@iota-pico/lib-browser": "^1.0.0",
         "big-integer": "^1.6.35",
-        "systemjs": "^0.21.4"
+        "systemjs": "^0.21.5"
     },
     "devDependencies": {
-        "serve": "^10.0.0",
-        "typescript": "^3.0.3"
+        "serve": "^10.0.2",
+        "typescript": "^3.1.1"
     },
     "scripts": {
         "serve": "serve --open"

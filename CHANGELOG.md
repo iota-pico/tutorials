@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.1
+
+* Refactored NetworkClient to make it more versatile
+
 ## v1.0.0
 
 * Final 1.0.0 Release

@@ -793,7 +793,7 @@ var bigInt = (function (undefined) {
     function millerRabinTest(n, a) {
         var nPrev = n.prev(),
             b = nPrev,
-	    r = 0,
+            r = 0,
             d, t, i, x;
         while (b.isEven()) b = b.divide(2), r++;
         next : for (i = 0; i < a.length; i++) {
@@ -802,6 +802,7 @@ var bigInt = (function (undefined) {
             if (x.equals(Integer[1]) || x.equals(nPrev)) continue;
             for (d = r - 1; d != 0; d--) {
                 x = x.square().mod(n);
+                if (x.isUnit()) return false;    
                 if (x.equals(nPrev)) continue next;
             }
             return false;
@@ -1745,7 +1746,7 @@ class ApiClient {
                 value: command,
                 enumerable: true
             });
-            return this._networkClient.postJson(request, undefined, this.createHeaders())
+            return this._networkClient.json(request, "POST", undefined, this.createHeaders())
                 .then((response) => {
                 this._logger.info(`===> ${command}`, response);
                 return response;
@@ -1868,7 +1869,6 @@ const trits_1 = __webpack_require__(/*! ../../data/data/trits */ "./dist/data/da
 /**
  * Helper class for address signing.
  * Original https://github.com/iotaledger/iota.lib.js/blob/master/lib/crypto/signing/signing.js
- * @internal
  */
 class AddressHelper {
     /**
@@ -4493,6 +4493,21 @@ class NetworkEndPoint {
         this._host = host.replace(/^\/*/, "").replace(/\/*$/, "");
         this._port = port;
         this._rootPath = (rootPath || "").replace(/^\/*/, "").replace(/\/*$/, "");
+    }
+    /**
+     * Create a network endpoint by parsing a uri.
+     * @param uri The uri to parse.
+     * @returns The network endpoint.
+     */
+    static fromUri(uri) {
+        if (stringHelper_1.StringHelper.isEmpty(uri)) {
+            throw new networkError_1.NetworkError("The uri can not be empty");
+        }
+        const parts = /^(https?):\/\/(.*?)(:\d+)?(\/.*)?$/.exec(uri);
+        if (objectHelper_1.ObjectHelper.isEmpty(parts) || parts.length !== 5) {
+            throw new networkError_1.NetworkError(`The uri is not in the correct format '${uri}'`);
+        }
+        return new NetworkEndPoint(parts[1], parts[2], parts[3] ? parseInt(parts[3].substr(1), 10) : 80, parts[4]);
     }
     /**
      * The protocol to access the endpoint with.
@@ -7488,7 +7503,7 @@ class PlatformCrypto {
         if (stringHelper_1.StringHelper.isEmpty(data)) {
             throw new platformError_1.PlatformError("The data must be a non empty string");
         }
-        const buffer = new Buffer(data, "ascii");
+        const buffer = Buffer.from(data, "ascii");
         const encrypted = crypto.privateEncrypt(privateKey, buffer);
         return encrypted.toString("hex");
     }
@@ -7505,7 +7520,7 @@ class PlatformCrypto {
         if (stringHelper_1.StringHelper.isEmpty(data)) {
             throw new platformError_1.PlatformError("The data must be a non empty string");
         }
-        const buffer = new Buffer(data, "hex");
+        const buffer = Buffer.from(data, "hex");
         const decrypted = crypto.publicDecrypt(publicKey, buffer);
         return decrypted.toString("ascii");
     }
@@ -7652,14 +7667,15 @@ class NetworkClient {
     }
     /**
      * Get data asynchronously.
+     * @param data The data to send.
      * @param additionalPath An additional path append to the endpoint path.
      * @param additionalHeaders Extra headers to send with the request.
      * @returns Promise which resolves to the object returned or rejects with error.
      */
-    get(additionalPath, additionalHeaders) {
+    get(data, additionalPath, additionalHeaders) {
         return tslib_1.__awaiter(this, void 0, void 0, function* () {
             this._logger.info("===> NetworkClient::GET Send");
-            const resp = yield this.doRequest("GET", undefined, additionalPath, additionalHeaders);
+            const resp = yield this.doRequest("GET", this.objectToParameters(data), additionalPath, additionalHeaders);
             this._logger.info("<=== NetworkClient::GET Received", resp);
             return resp;
         });
@@ -7680,56 +7696,37 @@ class NetworkClient {
         });
     }
     /**
-     * Get data as JSON asynchronously.
-     * @typeparam U The generic type for the returned object.
-     * @param additionalPath An additional path append to the endpoint path.
-     * @param additionalHeaders Extra headers to send with the request.
-     * @returns Promise which resolves to the object returned or rejects with error.
-     */
-    getJson(additionalPath, additionalHeaders) {
-        return tslib_1.__awaiter(this, void 0, void 0, function* () {
-            this._logger.info("===> NetworkClient::GET Send");
-            return this.doRequest("GET", undefined, additionalPath, additionalHeaders)
-                .then((responseData) => {
-                try {
-                    const response = JSON.parse(responseData);
-                    this._logger.info("===> NetworkClient::GET Received", response);
-                    return response;
-                }
-                catch (err) {
-                    this._logger.info("===> NetworkClient::GET Parse Failed", responseData);
-                    throw (new networkError_1.NetworkError("Failed GET request, unable to parse response", {
-                        endPoint: this._networkEndPoint.getUri(),
-                        response: responseData
-                    }));
-                }
-            });
-        });
-    }
-    /**
-     * Post data as JSON asynchronously.
+     * Request data as JSON asynchronously.
      * @typeparam T The generic type for the object to send.
      * @typeparam U The generic type for the returned object.
-     * @param data The data to send.
+     * @param data The data to send as the JSON body.
+     * @param method The method to send with the request.
      * @param additionalPath An additional path append to the endpoint path.
      * @param additionalHeaders Extra headers to send with the request.
      * @returns Promise which resolves to the object returned or rejects with error.
      */
-    postJson(data, additionalPath, additionalHeaders) {
+    json(data, method, additionalPath, additionalHeaders) {
         return tslib_1.__awaiter(this, void 0, void 0, function* () {
-            this._logger.info("===> NetworkClient::POST Send");
+            this._logger.info(`===> NetworkClient::${method} Send`);
             const headers = additionalHeaders || {};
-            headers["Content-Type"] = "application/json";
-            return this.doRequest("POST", JSON.stringify(data), additionalPath, headers)
+            let localData;
+            if (method === "GET" || method === "DELETE") {
+                localData = this.objectToParameters(data);
+            }
+            else {
+                headers["Content-Type"] = "application/json";
+                localData = JSON.stringify(data);
+            }
+            return this.doRequest(method, localData, additionalPath, headers)
                 .then((responseData) => {
                 try {
                     const response = JSON.parse(responseData);
-                    this._logger.info("===> NetworkClient::POST Received", response);
+                    this._logger.info(`===> NetworkClient::${method} Received`, response);
                     return response;
                 }
                 catch (err) {
-                    this._logger.info("===> NetworkClient::GET Parse Failed", responseData);
-                    throw (new networkError_1.NetworkError("Failed POST request, unable to parse response", {
+                    this._logger.info(`===> NetworkClient::${method} Parse Failed`, responseData);
+                    throw (new networkError_1.NetworkError(`Failed ${method} request, unable to parse response`, {
                         endPoint: this._networkEndPoint.getUri(),
                         response: responseData
                     }));
@@ -7753,6 +7750,9 @@ class NetworkClient {
                 if (!stringHelper_1.StringHelper.isEmpty(additionalPath)) {
                     const stripped = `/${additionalPath.replace(/^\/*/, "")}`;
                     uri += stripped;
+                }
+                if ((method === "GET" || method === "DELETE") && !objectHelper_1.ObjectHelper.isEmpty(data)) {
+                    uri += data;
                 }
                 const req = new XMLHttpRequest();
                 if (this._timeoutMs > 0) {
@@ -7792,9 +7792,31 @@ class NetworkClient {
                     req.setRequestHeader(key, headers[key]);
                 }
                 this._logger.info("===> NetworkClient::Send", { data });
-                req.send(data);
+                if (method === "GET" || method === "DELETE") {
+                    req.send();
+                }
+                else {
+                    req.send(data);
+                }
             });
         });
+    }
+    /* @internal */
+    objectToParameters(data) {
+        let localUri = "";
+        if (data) {
+            const keys = Object.keys(data);
+            if (keys.length > 0) {
+                const parms = [];
+                for (let i = 0; i < keys.length; i++) {
+                    const key = keys[i];
+                    const value = data[key] ? data[key].toString() : "";
+                    parms.push(`${encodeURIComponent(keys[i])}=${encodeURIComponent(value)}`);
+                }
+                localUri += `?${parms.join("&")}`;
+            }
+        }
+        return localUri;
     }
 }
 exports.NetworkClient = NetworkClient;
@@ -7971,7 +7993,7 @@ class ProofOfWorkBox {
                 trytes: trytes.map(t => t.toString())
             };
             const additionalHeaders = { Authorization: this._apiKey };
-            const attachToTangleResponse = yield this._networkClient.postJson(attachToTangleRequest, "commands", additionalHeaders);
+            const attachToTangleResponse = yield this._networkClient.json(attachToTangleRequest, "POST", "commands", additionalHeaders);
             if (objectHelper_1.ObjectHelper.isEmpty(attachToTangleResponse) || stringHelper_1.StringHelper.isEmpty(attachToTangleResponse.jobId)) {
                 throw new cryptoError_1.CryptoError("The attachToTangleRequest did not return a jobId");
             }
@@ -7986,7 +8008,7 @@ class ProofOfWorkBox {
             return new Promise((resolve, reject) => {
                 const intervalId = setInterval(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                     try {
-                        const jobResponse = yield this._networkClient.getJson(`jobs/${jobId}`);
+                        const jobResponse = yield this._networkClient.json(undefined, "GET", `jobs/${jobId}`);
                         if (jobResponse.error) {
                             clearInterval(intervalId);
                             reject(new cryptoError_1.CryptoError(jobResponse.errorMessage));
@@ -8359,7 +8381,7 @@ class ProofOfWorkSrvIo {
             if (this._apiKey) {
                 additionalHeaders.Authorization = `powsrv-token ${this._apiKey}`;
             }
-            const attachToTangleResponse = yield this._networkClient.postJson(attachToTangleRequest, undefined, additionalHeaders);
+            const attachToTangleResponse = yield this._networkClient.json(attachToTangleRequest, "POST", undefined, additionalHeaders);
             if (objectHelper_1.ObjectHelper.isEmpty(attachToTangleResponse) || arrayHelper_1.ArrayHelper.isEmpty(attachToTangleResponse.trytes)) {
                 throw new cryptoError_1.CryptoError("The attachToTangleRequest did not return a response");
             }
@@ -30205,7 +30227,7 @@ module.exports = function (password, salt, iterations, keylen) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var md5 = __webpack_require__(/*! create-hash/md5 */ "./node_modules/create-hash/md5.js")
-var rmd160 = __webpack_require__(/*! ripemd160 */ "./node_modules/ripemd160/index.js")
+var RIPEMD160 = __webpack_require__(/*! ripemd160 */ "./node_modules/ripemd160/index.js")
 var sha = __webpack_require__(/*! sha.js */ "./node_modules/sha.js/index.js")
 
 var checkParameters = __webpack_require__(/*! ./precondition */ "./node_modules/pbkdf2/lib/precondition.js")
@@ -30262,8 +30284,11 @@ function getDigest (alg) {
   function shaFunc (data) {
     return sha(alg).update(data).digest()
   }
+  function rmd160Func (data) {
+    return new RIPEMD160().update(data).digest()
+  }
 
-  if (alg === 'rmd160' || alg === 'ripemd160') return rmd160
+  if (alg === 'rmd160' || alg === 'ripemd160') return rmd160Func
   if (alg === 'md5') return md5
   return shaFunc
 }

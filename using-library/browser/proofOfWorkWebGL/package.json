@@ -4,11 +4,11 @@
     "author": "martyn@iota.eco",
     "license": "MIT",
     "dependencies": {
-        "@iota-pico/lib-browser": "^1.0.0",
+        "@iota-pico/lib-browser": "^1.0.1",
         "big-integer": "^1.6.35"
     },
     "devDependencies": {
-        "serve": "^10.0.0"
+        "serve": "^10.0.2"
     },
     "scripts": {
         "serve": "serve --open"
