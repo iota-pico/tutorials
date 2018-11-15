@@ -8,7 +8,7 @@
         "big-integer": "^1.6.35"
     },
     "devDependencies": {
-        "serve": "^10.0.2"
+        "serve": "^10.1.1"
     },
     "scripts": {
         "serve": "serve --open"
