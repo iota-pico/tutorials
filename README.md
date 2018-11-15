@@ -43,12 +43,6 @@ Come and find us on the IOTA [Discord](https://discord.gg/JJysqe9) development c
 
 * **Martyn Janes** - *obany* - ([https://github.com/obany](https://github.com/obany))
 
-# Donations
-
-IOTA donations are always welcome :smile:
-
-![pico@tngl-me](https://cdn.tngl.me/tngl-me/pico/qr.svg)
-
 # License
 
 This project is licensed under the MIT License - see the [LICENSE](https://github.com/iota-pico/tutorials/blob/master/LICENSE) file for details.
