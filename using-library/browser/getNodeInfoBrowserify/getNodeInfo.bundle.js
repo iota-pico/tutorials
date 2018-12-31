@@ -6,11 +6,13 @@ var bigInt = (function (undefined) {
         LOG_BASE = 7,
         MAX_INT = 9007199254740992,
         MAX_INT_ARR = smallToArray(MAX_INT),
-        LOG_MAX_INT = Math.log(MAX_INT);
+        DEFAULT_ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyz";
 
-    function Integer(v, radix) {
+    var supportsNativeBigInt = typeof BigInt === "function";
+
+    function Integer(v, radix, alphabet, caseSensitive) {
         if (typeof v === "undefined") return Integer[0];
-        if (typeof radix !== "undefined") return +radix === 10 ? parseValue(v) : parseBase(v, radix);
+        if (typeof radix !== "undefined") return +radix === 10 && !alphabet ? parseValue(v) : parseBase(v, radix, alphabet, caseSensitive);
         return parseValue(v);
     }
 
@@ -27,6 +29,11 @@ var bigInt = (function (undefined) {
         this.isSmall = true;
     }
     SmallInteger.prototype = Object.create(Integer.prototype);
+
+    function NativeBigInt(value) {
+        this.value = value;
+    }
+    NativeBigInt.prototype = Object.create(Integer.prototype);
 
     function isPrecise(n) {
         return -MAX_INT < n && n < MAX_INT;
@@ -146,6 +153,11 @@ var bigInt = (function (undefined) {
     };
     SmallInteger.prototype.plus = SmallInteger.prototype.add;
 
+    NativeBigInt.prototype.add = function (v) {
+        return new NativeBigInt(this.value + parseValue(v).value);
+    }
+    NativeBigInt.prototype.plus = NativeBigInt.prototype.add;
+
     function subtract(a, b) { // assumes a and b are arrays with a >= b
         var a_l = a.length,
             b_l = b.length,
@@ -238,6 +250,11 @@ var bigInt = (function (undefined) {
     };
     SmallInteger.prototype.minus = SmallInteger.prototype.subtract;
 
+    NativeBigInt.prototype.subtract = function (v) {
+        return new NativeBigInt(this.value - parseValue(v).value);
+    }
+    NativeBigInt.prototype.minus = NativeBigInt.prototype.subtract;
+
     BigInteger.prototype.negate = function () {
         return new BigInteger(this.value, !this.sign);
     };
@@ -247,6 +264,9 @@ var bigInt = (function (undefined) {
         small.sign = !sign;
         return small;
     };
+    NativeBigInt.prototype.negate = function () {
+        return new NativeBigInt(-this.value);
+    }
 
     BigInteger.prototype.abs = function () {
         return new BigInteger(this.value, false);
@@ -254,6 +274,10 @@ var bigInt = (function (undefined) {
     SmallInteger.prototype.abs = function () {
         return new SmallInteger(Math.abs(this.value));
     };
+    NativeBigInt.prototype.abs = function () {
+        return new NativeBigInt(this.value >= 0 ? this.value : -this.value);
+    }
+
 
     function multiplyLong(a, b) {
         var a_l = a.length,
@@ -371,6 +395,11 @@ var bigInt = (function (undefined) {
     };
     SmallInteger.prototype.times = SmallInteger.prototype.multiply;
 
+    NativeBigInt.prototype.multiply = function (v) {
+        return new NativeBigInt(this.value * parseValue(v).value);
+    }
+    NativeBigInt.prototype.times = NativeBigInt.prototype.multiply;
+
     function square(a) {
         //console.assert(2 * BASE * BASE < MAX_INT);
         var l = a.length,
@@ -401,6 +430,10 @@ var bigInt = (function (undefined) {
         if (isPrecise(value)) return new SmallInteger(value);
         return new BigInteger(square(smallToArray(Math.abs(this.value))), false);
     };
+
+    NativeBigInt.prototype.square = function (v) {
+        return new NativeBigInt(this.value * this.value);
+    }
 
     function divMod1(a, b) { // Left over from previous version. Performs faster than divMod2 on smaller input sizes.
         var a_l = a.length,
@@ -511,6 +544,9 @@ var bigInt = (function (undefined) {
 
     function divModAny(self, v) {
         var value, n = parseValue(v);
+        if (supportsNativeBigInt) {
+            return [new NativeBigInt(self.value / n.value), new NativeBigInt(self.value % n.value)];
+        }
         var a = self.value, b = n.value;
         var quotient;
         if (b === 0) throw new Error("Cannot divide by zero");
@@ -568,17 +604,18 @@ var bigInt = (function (undefined) {
             remainder: result[1]
         };
     };
-    SmallInteger.prototype.divmod = BigInteger.prototype.divmod;
+    NativeBigInt.prototype.divmod = SmallInteger.prototype.divmod = BigInteger.prototype.divmod;
+
 
     BigInteger.prototype.divide = function (v) {
         return divModAny(this, v)[0];
     };
-    SmallInteger.prototype.over = SmallInteger.prototype.divide = BigInteger.prototype.over = BigInteger.prototype.divide;
+    NativeBigInt.prototype.over = NativeBigInt.prototype.divide = SmallInteger.prototype.over = SmallInteger.prototype.divide = BigInteger.prototype.over = BigInteger.prototype.divide;
 
     BigInteger.prototype.mod = function (v) {
         return divModAny(this, v)[1];
     };
-    SmallInteger.prototype.remainder = SmallInteger.prototype.mod = BigInteger.prototype.remainder = BigInteger.prototype.mod;
+    NativeBigInt.prototype.mod = NativeBigInt.prototype.remainder = SmallInteger.prototype.remainder = SmallInteger.prototype.mod = BigInteger.prototype.remainder = BigInteger.prototype.mod;
 
     BigInteger.prototype.pow = function (v) {
         var n = parseValue(v),
@@ -612,6 +649,23 @@ var bigInt = (function (undefined) {
     };
     SmallInteger.prototype.pow = BigInteger.prototype.pow;
 
+    var pow;
+    if (supportsNativeBigInt) {
+        // forced to use eval because ** is a syntax error on pre-ECMAScript2017 environments.
+        pow = eval("(a,b)=>a**b");
+    }
+
+    NativeBigInt.prototype.pow = function (v) {
+        var n = parseValue(v);
+        var a = this.value, b = n.value;
+        if (b === BigInt(0)) return Integer[1];
+        if (a === BigInt(0)) return Integer[0];
+        if (a === BigInt(1)) return Integer[1];
+        if (a === BigInt(-1)) return n.isEven() ? Integer[1] : Integer[-1];
+        if (n.isNegative()) return new NativeBigInt(BigInt(0));
+        return new NativeBigInt(pow(a, b));
+    }
+
     BigInteger.prototype.modPow = function (exp, mod) {
         exp = parseValue(exp);
         mod = parseValue(mod);
@@ -626,7 +680,7 @@ var bigInt = (function (undefined) {
         }
         return r;
     };
-    SmallInteger.prototype.modPow = BigInteger.prototype.modPow;
+    NativeBigInt.prototype.modPow = SmallInteger.prototype.modPow = BigInteger.prototype.modPow;
 
     function compareAbs(a, b) {
         if (a.length !== b.length) {
@@ -655,6 +709,13 @@ var bigInt = (function (undefined) {
         }
         return -1;
     };
+    NativeBigInt.prototype.compareAbs = function (v) {
+        var a = this.value;
+        var b = parseValue(v).value;
+        a = a >= 0 ? a : -a;
+        b = b >= 0 ? b : -b;
+        return a === b ? 0 : a > b ? 1 : -1;
+    }
 
     BigInteger.prototype.compare = function (v) {
         // See discussion about comparison with Infinity:
@@ -700,35 +761,48 @@ var bigInt = (function (undefined) {
     };
     SmallInteger.prototype.compareTo = SmallInteger.prototype.compare;
 
+    NativeBigInt.prototype.compare = function (v) {
+        if (v === Infinity) {
+            return -1;
+        }
+        if (v === -Infinity) {
+            return 1;
+        }
+        var a = this.value;
+        var b = parseValue(v).value;
+        return a === b ? 0 : a > b ? 1 : -1;
+    }
+    NativeBigInt.prototype.compareTo = NativeBigInt.prototype.compare;
+
     BigInteger.prototype.equals = function (v) {
         return this.compare(v) === 0;
     };
-    SmallInteger.prototype.eq = SmallInteger.prototype.equals = BigInteger.prototype.eq = BigInteger.prototype.equals;
+    NativeBigInt.prototype.eq = NativeBigInt.prototype.equals = SmallInteger.prototype.eq = SmallInteger.prototype.equals = BigInteger.prototype.eq = BigInteger.prototype.equals;
 
     BigInteger.prototype.notEquals = function (v) {
         return this.compare(v) !== 0;
     };
-    SmallInteger.prototype.neq = SmallInteger.prototype.notEquals = BigInteger.prototype.neq = BigInteger.prototype.notEquals;
+    NativeBigInt.prototype.neq = NativeBigInt.prototype.notEquals = SmallInteger.prototype.neq = SmallInteger.prototype.notEquals = BigInteger.prototype.neq = BigInteger.prototype.notEquals;
 
     BigInteger.prototype.greater = function (v) {
         return this.compare(v) > 0;
     };
-    SmallInteger.prototype.gt = SmallInteger.prototype.greater = BigInteger.prototype.gt = BigInteger.prototype.greater;
+    NativeBigInt.prototype.gt = NativeBigInt.prototype.greater = SmallInteger.prototype.gt = SmallInteger.prototype.greater = BigInteger.prototype.gt = BigInteger.prototype.greater;
 
     BigInteger.prototype.lesser = function (v) {
         return this.compare(v) < 0;
     };
-    SmallInteger.prototype.lt = SmallInteger.prototype.lesser = BigInteger.prototype.lt = BigInteger.prototype.lesser;
+    NativeBigInt.prototype.lt = NativeBigInt.prototype.lesser = SmallInteger.prototype.lt = SmallInteger.prototype.lesser = BigInteger.prototype.lt = BigInteger.prototype.lesser;
 
     BigInteger.prototype.greaterOrEquals = function (v) {
         return this.compare(v) >= 0;
     };
-    SmallInteger.prototype.geq = SmallInteger.prototype.greaterOrEquals = BigInteger.prototype.geq = BigInteger.prototype.greaterOrEquals;
+    NativeBigInt.prototype.geq = NativeBigInt.prototype.greaterOrEquals = SmallInteger.prototype.geq = SmallInteger.prototype.greaterOrEquals = BigInteger.prototype.geq = BigInteger.prototype.greaterOrEquals;
 
     BigInteger.prototype.lesserOrEquals = function (v) {
         return this.compare(v) <= 0;
     };
-    SmallInteger.prototype.leq = SmallInteger.prototype.lesserOrEquals = BigInteger.prototype.leq = BigInteger.prototype.lesserOrEquals;
+    NativeBigInt.prototype.leq = NativeBigInt.prototype.lesserOrEquals = SmallInteger.prototype.leq = SmallInteger.prototype.lesserOrEquals = BigInteger.prototype.leq = BigInteger.prototype.lesserOrEquals;
 
     BigInteger.prototype.isEven = function () {
         return (this.value[0] & 1) === 0;
@@ -736,6 +810,9 @@ var bigInt = (function (undefined) {
     SmallInteger.prototype.isEven = function () {
         return (this.value & 1) === 0;
     };
+    NativeBigInt.prototype.isEven = function () {
+        return (this.value & BigInt(1)) === BigInt(0);
+    }
 
     BigInteger.prototype.isOdd = function () {
         return (this.value[0] & 1) === 1;
@@ -743,6 +820,9 @@ var bigInt = (function (undefined) {
     SmallInteger.prototype.isOdd = function () {
         return (this.value & 1) === 1;
     };
+    NativeBigInt.prototype.isOdd = function () {
+        return (this.value & BigInt(1)) === BigInt(1);
+    }
 
     BigInteger.prototype.isPositive = function () {
         return !this.sign;
@@ -750,6 +830,7 @@ var bigInt = (function (undefined) {
     SmallInteger.prototype.isPositive = function () {
         return this.value > 0;
     };
+    NativeBigInt.prototype.isPositive = SmallInteger.prototype.isPositive;
 
     BigInteger.prototype.isNegative = function () {
         return this.sign;
@@ -757,6 +838,7 @@ var bigInt = (function (undefined) {
     SmallInteger.prototype.isNegative = function () {
         return this.value < 0;
     };
+    NativeBigInt.prototype.isNegative = SmallInteger.prototype.isNegative;
 
     BigInteger.prototype.isUnit = function () {
         return false;
@@ -764,6 +846,9 @@ var bigInt = (function (undefined) {
     SmallInteger.prototype.isUnit = function () {
         return Math.abs(this.value) === 1;
     };
+    NativeBigInt.prototype.isUnit = function () {
+        return this.abs().value === BigInt(1);
+    }
 
     BigInteger.prototype.isZero = function () {
         return false;
@@ -771,15 +856,18 @@ var bigInt = (function (undefined) {
     SmallInteger.prototype.isZero = function () {
         return this.value === 0;
     };
+    NativeBigInt.prototype.isZero = function () {
+        return this.value === BigInt(0);
+    }
+
     BigInteger.prototype.isDivisibleBy = function (v) {
         var n = parseValue(v);
-        var value = n.value;
-        if (value === 0) return false;
-        if (value === 1) return true;
-        if (value === 2) return this.isEven();
-        return this.mod(n).equals(Integer[0]);
+        if (n.isZero()) return false;
+        if (n.isUnit()) return true;
+        if (n.compareAbs(2) === 0) return this.isEven();
+        return this.mod(n).isZero();
     };
-    SmallInteger.prototype.isDivisibleBy = BigInteger.prototype.isDivisibleBy;
+    NativeBigInt.prototype.isDivisibleBy = SmallInteger.prototype.isDivisibleBy = BigInteger.prototype.isDivisibleBy;
 
     function isBasicPrime(v) {
         var n = v.abs();
@@ -789,43 +877,43 @@ var bigInt = (function (undefined) {
         if (n.lesser(49)) return true;
         // we don't know if it's prime: let the other functions figure it out
     }
-    
+
     function millerRabinTest(n, a) {
         var nPrev = n.prev(),
             b = nPrev,
             r = 0,
             d, t, i, x;
         while (b.isEven()) b = b.divide(2), r++;
-        next : for (i = 0; i < a.length; i++) {
+        next: for (i = 0; i < a.length; i++) {
             if (n.lesser(a[i])) continue;
             x = bigInt(a[i]).modPow(b, n);
-            if (x.equals(Integer[1]) || x.equals(nPrev)) continue;
+            if (x.isUnit() || x.equals(nPrev)) continue;
             for (d = r - 1; d != 0; d--) {
                 x = x.square().mod(n);
-                if (x.isUnit()) return false;    
+                if (x.isUnit()) return false;
                 if (x.equals(nPrev)) continue next;
             }
             return false;
         }
         return true;
     }
-    
-// Set "strict" to true to force GRH-supported lower bound of 2*log(N)^2
+
+    // Set "strict" to true to force GRH-supported lower bound of 2*log(N)^2
     BigInteger.prototype.isPrime = function (strict) {
         var isPrime = isBasicPrime(this);
         if (isPrime !== undefined) return isPrime;
         var n = this.abs();
         var bits = n.bitLength();
-        if(bits <= 64)
+        if (bits <= 64)
             return millerRabinTest(n, [2, 325, 9375, 28178, 450775, 9780504, 1795265022]);
-        var logN = Math.log(2) * bits;
+        var logN = Math.log(2) * bits.toJSNumber();
         var t = Math.ceil((strict === true) ? (2 * Math.pow(logN, 2)) : logN);
         for (var a = [], i = 0; i < t; i++) {
             a.push(bigInt(i + 2));
         }
         return millerRabinTest(n, a);
     };
-    SmallInteger.prototype.isPrime = BigInteger.prototype.isPrime;
+    NativeBigInt.prototype.isPrime = SmallInteger.prototype.isPrime = BigInteger.prototype.isPrime;
 
     BigInteger.prototype.isProbablePrime = function (iterations) {
         var isPrime = isBasicPrime(this);
@@ -837,11 +925,11 @@ var bigInt = (function (undefined) {
         }
         return millerRabinTest(n, a);
     };
-    SmallInteger.prototype.isProbablePrime = BigInteger.prototype.isProbablePrime;
+    NativeBigInt.prototype.isProbablePrime = SmallInteger.prototype.isProbablePrime = BigInteger.prototype.isProbablePrime;
 
     BigInteger.prototype.modInv = function (n) {
         var t = bigInt.zero, newT = bigInt.one, r = parseValue(n), newR = this.abs(), q, lastT, lastR;
-        while (!newR.equals(bigInt.zero)) {
+        while (!newR.isZero()) {
             q = r.divide(newR);
             lastT = t;
             lastR = r;
@@ -850,7 +938,7 @@ var bigInt = (function (undefined) {
             newT = lastT.subtract(q.multiply(newT));
             newR = lastR.subtract(q.multiply(newR));
         }
-        if (!r.equals(1)) throw new Error(this.toString() + " and " + n.toString() + " are not co-prime");
+        if (!r.isUnit()) throw new Error(this.toString() + " and " + n.toString() + " are not co-prime");
         if (t.compare(0) === -1) {
             t = t.add(n);
         }
@@ -860,7 +948,7 @@ var bigInt = (function (undefined) {
         return t;
     };
 
-    SmallInteger.prototype.modInv = BigInteger.prototype.modInv;
+    NativeBigInt.prototype.modInv = SmallInteger.prototype.modInv = BigInteger.prototype.modInv;
 
     BigInteger.prototype.next = function () {
         var value = this.value;
@@ -874,6 +962,9 @@ var bigInt = (function (undefined) {
         if (value + 1 < MAX_INT) return new SmallInteger(value + 1);
         return new BigInteger(MAX_INT_ARR, false);
     };
+    NativeBigInt.prototype.next = function () {
+        return new NativeBigInt(this.value + BigInt(1));
+    }
 
     BigInteger.prototype.prev = function () {
         var value = this.value;
@@ -887,21 +978,23 @@ var bigInt = (function (undefined) {
         if (value - 1 > -MAX_INT) return new SmallInteger(value - 1);
         return new BigInteger(MAX_INT_ARR, true);
     };
+    NativeBigInt.prototype.prev = function () {
+        return new NativeBigInt(this.value - BigInt(1));
+    }
 
     var powersOfTwo = [1];
     while (2 * powersOfTwo[powersOfTwo.length - 1] <= BASE) powersOfTwo.push(2 * powersOfTwo[powersOfTwo.length - 1]);
     var powers2Length = powersOfTwo.length, highestPower2 = powersOfTwo[powers2Length - 1];
 
     function shift_isSmall(n) {
-        return ((typeof n === "number" || typeof n === "string") && +Math.abs(n) <= BASE) ||
-            (n instanceof BigInteger && n.value.length <= 1);
+        return Math.abs(n) <= BASE;
     }
 
-    BigInteger.prototype.shiftLeft = function (n) {
+    BigInteger.prototype.shiftLeft = function (v) {
+        var n = parseValue(v).toJSNumber();
         if (!shift_isSmall(n)) {
             throw new Error(String(n) + " is too large for shifting.");
         }
-        n = +n;
         if (n < 0) return this.shiftRight(-n);
         var result = this;
         if (result.isZero()) return result;
@@ -911,14 +1004,14 @@ var bigInt = (function (undefined) {
         }
         return result.multiply(powersOfTwo[n]);
     };
-    SmallInteger.prototype.shiftLeft = BigInteger.prototype.shiftLeft;
+    NativeBigInt.prototype.shiftLeft = SmallInteger.prototype.shiftLeft = BigInteger.prototype.shiftLeft;
 
-    BigInteger.prototype.shiftRight = function (n) {
+    BigInteger.prototype.shiftRight = function (v) {
         var remQuo;
+        var n = parseValue(v).toJSNumber();
         if (!shift_isSmall(n)) {
             throw new Error(String(n) + " is too large for shifting.");
         }
-        n = +n;
         if (n < 0) return this.shiftLeft(-n);
         var result = this;
         while (n >= powers2Length) {
@@ -930,7 +1023,7 @@ var bigInt = (function (undefined) {
         remQuo = divModAny(result, powersOfTwo[n]);
         return remQuo[1].isNegative() ? remQuo[0].prev() : remQuo[0];
     };
-    SmallInteger.prototype.shiftRight = BigInteger.prototype.shiftRight;
+    NativeBigInt.prototype.shiftRight = SmallInteger.prototype.shiftRight = BigInteger.prototype.shiftRight;
 
     function bitwise(x, y, fn) {
         y = parseValue(y);
@@ -967,28 +1060,31 @@ var bigInt = (function (undefined) {
     BigInteger.prototype.not = function () {
         return this.negate().prev();
     };
-    SmallInteger.prototype.not = BigInteger.prototype.not;
+    NativeBigInt.prototype.not = SmallInteger.prototype.not = BigInteger.prototype.not;
 
     BigInteger.prototype.and = function (n) {
         return bitwise(this, n, function (a, b) { return a & b; });
     };
-    SmallInteger.prototype.and = BigInteger.prototype.and;
+    NativeBigInt.prototype.and = SmallInteger.prototype.and = BigInteger.prototype.and;
 
     BigInteger.prototype.or = function (n) {
         return bitwise(this, n, function (a, b) { return a | b; });
     };
-    SmallInteger.prototype.or = BigInteger.prototype.or;
+    NativeBigInt.prototype.or = SmallInteger.prototype.or = BigInteger.prototype.or;
 
     BigInteger.prototype.xor = function (n) {
         return bitwise(this, n, function (a, b) { return a ^ b; });
     };
-    SmallInteger.prototype.xor = BigInteger.prototype.xor;
+    NativeBigInt.prototype.xor = SmallInteger.prototype.xor = BigInteger.prototype.xor;
 
     var LOBMASK_I = 1 << 30, LOBMASK_BI = (BASE & -BASE) * (BASE & -BASE) | LOBMASK_I;
     function roughLOB(n) { // get lowestOneBit (rough)
         // SmallInteger: return Min(lowestOneBit(n), 1 << 30)
         // BigInteger: return Min(lowestOneBit(n), 1 << 14) [BASE=1e7]
-        var v = n.value, x = typeof v === "number" ? v | LOBMASK_I : v[0] + v[1] * BASE | LOBMASK_BI;
+        var v = n.value,
+            x = typeof v === "number" ? v | LOBMASK_I :
+                typeof v === "bigint" ? v | BigInt(LOBMASK_I) :
+                    v[0] + v[1] * BASE | LOBMASK_BI;
         return x & -x;
     }
 
@@ -1013,7 +1109,7 @@ var bigInt = (function (undefined) {
         }
         return bigInt(integerLogarithm(n, bigInt(2)).e).add(bigInt(1));
     }
-    SmallInteger.prototype.bitLength = BigInteger.prototype.bitLength;
+    NativeBigInt.prototype.bitLength = SmallInteger.prototype.bitLength = BigInteger.prototype.bitLength;
 
     function max(a, b) {
         a = parseValue(a);
@@ -1033,7 +1129,7 @@ var bigInt = (function (undefined) {
         if (b.isZero()) return a;
         var c = Integer[1], d, t;
         while (a.isEven() && b.isEven()) {
-            d = Math.min(roughLOB(a), roughLOB(b));
+            d = min(roughLOB(a), roughLOB(b));
             a = a.divide(d);
             b = b.divide(d);
             c = c.multiply(d);
@@ -1063,53 +1159,50 @@ var bigInt = (function (undefined) {
         var low = min(a, b), high = max(a, b);
         var range = high.subtract(low).add(1);
         if (range.isSmall) return low.add(Math.floor(Math.random() * range));
-        var length = range.value.length - 1;
+        var digits = toBase(range, BASE).value;
         var result = [], restricted = true;
-        for (var i = length; i >= 0; i--) {
-            var top = restricted ? range.value[i] : BASE;
+        for (var i = 0; i < digits.length; i++) {
+            var top = restricted ? digits[i] : BASE;
             var digit = truncate(Math.random() * top);
-            result.unshift(digit);
+            result.push(digit);
             if (digit < top) restricted = false;
         }
-        result = arrayToSmall(result);
-        return low.add(typeof result === "number" ? new SmallInteger(result) : new BigInteger(result, false));
+        return low.add(Integer.fromArray(result, BASE, false));
     }
-    var parseBase = function (text, base) {
+
+    var parseBase = function (text, base, alphabet, caseSensitive) {
+        alphabet = alphabet || DEFAULT_ALPHABET;
+        text = String(text);
+        if (!caseSensitive) {
+            text = text.toLowerCase();
+            alphabet = alphabet.toLowerCase();
+        }
         var length = text.length;
         var i;
         var absBase = Math.abs(base);
-        for (var i = 0; i < length; i++) {
-            var c = text[i].toLowerCase();
+        var alphabetValues = {};
+        for (i = 0; i < alphabet.length; i++) {
+            alphabetValues[alphabet[i]] = i;
+        }
+        for (i = 0; i < length; i++) {
+            var c = text[i];
             if (c === "-") continue;
-            if (/[a-z0-9]/.test(c)) {
-                if (/[0-9]/.test(c) && +c >= absBase) {
+            if (c in alphabetValues) {
+                if (alphabetValues[c] >= absBase) {
                     if (c === "1" && absBase === 1) continue;
                     throw new Error(c + " is not a valid digit in base " + base + ".");
-                } else if (c.charCodeAt(0) - 87 >= absBase) {
-                    throw new Error(c + " is not a valid digit in base " + base + ".");
                 }
-            }
-        }
-        if (2 <= base && base <= 36) {
-            if (length <= LOG_MAX_INT / Math.log(base)) {
-                var result = parseInt(text, base);
-                if (isNaN(result)) {
-                    throw new Error(c + " is not a valid digit in base " + base + ".");
-                }
-                return new SmallInteger(parseInt(text, base));
             }
         }
         base = parseValue(base);
         var digits = [];
         var isNegative = text[0] === "-";
         for (i = isNegative ? 1 : 0; i < text.length; i++) {
-            var c = text[i].toLowerCase(),
-                charCode = c.charCodeAt(0);
-            if (48 <= charCode && charCode <= 57) digits.push(parseValue(c));
-            else if (97 <= charCode && charCode <= 122) digits.push(parseValue(c.charCodeAt(0) - 87));
+            var c = text[i];
+            if (c in alphabetValues) digits.push(parseValue(alphabetValues[c]));
             else if (c === "<") {
                 var start = i;
-                do { i++; } while (text[i] !== ">");
+                do { i++; } while (text[i] !== ">" && i < text.length);
                 digits.push(parseValue(text.slice(start + 1, i)));
             }
             else throw new Error(c + " is not a valid character");
@@ -1126,9 +1219,10 @@ var bigInt = (function (undefined) {
         return isNegative ? val.negate() : val;
     }
 
-    function stringify(digit) {
-        if (digit <= 35) {
-            return "0123456789abcdefghijklmnopqrstuvwxyz".charAt(digit);
+    function stringify(digit, alphabet) {
+        alphabet = alphabet || DEFAULT_ALPHABET;
+        if (digit < alphabet.length) {
+            return alphabet[digit];
         }
         return "<" + digit + ">";
     }
@@ -1143,13 +1237,13 @@ var bigInt = (function (undefined) {
             if (n.isZero()) return { value: [0], isNegative: false };
             if (n.isNegative())
                 return {
-                    value: [].concat.apply([], Array.apply(null, Array(-n))
+                    value: [].concat.apply([], Array.apply(null, Array(-n.toJSNumber()))
                         .map(Array.prototype.valueOf, [1, 0])
                     ),
                     isNegative: false
                 };
 
-            var arr = Array.apply(null, Array(+n - 1))
+            var arr = Array.apply(null, Array(n.toJSNumber() - 1))
                 .map(Array.prototype.valueOf, [0, 1]);
             arr.unshift([1]);
             return {
@@ -1163,11 +1257,11 @@ var bigInt = (function (undefined) {
             neg = true;
             n = n.abs();
         }
-        if (base.equals(1)) {
+        if (base.isUnit()) {
             if (n.isZero()) return { value: [0], isNegative: false };
 
             return {
-                value: Array.apply(null, Array(+n))
+                value: Array.apply(null, Array(n.toJSNumber()))
                     .map(Number.prototype.valueOf, 1),
                 isNegative: neg
             };
@@ -1188,9 +1282,11 @@ var bigInt = (function (undefined) {
         return { value: out.reverse(), isNegative: neg };
     }
 
-    function toBaseString(n, base) {
+    function toBaseString(n, base, alphabet) {
         var arr = toBase(n, base);
-        return (arr.isNegative ? "-" : "") + arr.value.map(stringify).join('');
+        return (arr.isNegative ? "-" : "") + arr.value.map(function (x) {
+            return stringify(x, alphabet);
+        }).join('');
     }
 
     BigInteger.prototype.toArray = function (radix) {
@@ -1201,9 +1297,13 @@ var bigInt = (function (undefined) {
         return toBase(this, radix);
     };
 
-    BigInteger.prototype.toString = function (radix) {
+    NativeBigInt.prototype.toArray = function (radix) {
+        return toBase(this, radix);
+    };
+
+    BigInteger.prototype.toString = function (radix, alphabet) {
         if (radix === undefined) radix = 10;
-        if (radix !== 10) return toBaseString(this, radix);
+        if (radix !== 10) return toBaseString(this, radix, alphabet);
         var v = this.value, l = v.length, str = String(v[--l]), zeros = "0000000", digit;
         while (--l >= 0) {
             digit = String(v[l]);
@@ -1213,12 +1313,15 @@ var bigInt = (function (undefined) {
         return sign + str;
     };
 
-    SmallInteger.prototype.toString = function (radix) {
+    SmallInteger.prototype.toString = function (radix, alphabet) {
         if (radix === undefined) radix = 10;
-        if (radix != 10) return toBaseString(this, radix);
+        if (radix != 10) return toBaseString(this, radix, alphabet);
         return String(this.value);
     };
-    BigInteger.prototype.toJSON = SmallInteger.prototype.toJSON = function () { return this.toString(); }
+
+    NativeBigInt.prototype.toString = SmallInteger.prototype.toString;
+
+    NativeBigInt.prototype.toJSON = BigInteger.prototype.toJSON = SmallInteger.prototype.toJSON = function () { return this.toString(); }
 
     BigInteger.prototype.valueOf = function () {
         return parseInt(this.toString(), 10);
@@ -1229,12 +1332,15 @@ var bigInt = (function (undefined) {
         return this.value;
     };
     SmallInteger.prototype.toJSNumber = SmallInteger.prototype.valueOf;
+    NativeBigInt.prototype.valueOf = NativeBigInt.prototype.toJSNumber = function () {
+        return parseInt(this.toString(), 10);
+    }
 
     function parseStringValue(v) {
         if (isPrecise(+v)) {
             var x = +v;
             if (x === truncate(x))
-                return new SmallInteger(x);
+                return supportsNativeBigInt ? new NativeBigInt(BigInt(x)) : new SmallInteger(x);
             throw new Error("Invalid integer: " + v);
         }
         var sign = v[0] === "-";
@@ -1258,6 +1364,9 @@ var bigInt = (function (undefined) {
         }
         var isValid = /^([0-9][0-9]*)$/.test(v);
         if (!isValid) throw new Error("Invalid integer: " + v);
+        if (supportsNativeBigInt) {
+            return new NativeBigInt(BigInt(sign ? "-" + v : v));
+        }
         var r = [], max = v.length, l = LOG_BASE, min = max - l;
         while (max > 0) {
             r.push(+v.slice(min, max));
@@ -1270,6 +1379,9 @@ var bigInt = (function (undefined) {
     }
 
     function parseNumberValue(v) {
+        if (supportsNativeBigInt) {
+            return new NativeBigInt(BigInt(v));
+        }
         if (isPrecise(v)) {
             if (v !== truncate(v)) throw new Error(v + " is not an integer.");
             return new SmallInteger(v);
@@ -1284,12 +1396,15 @@ var bigInt = (function (undefined) {
         if (typeof v === "string") {
             return parseStringValue(v);
         }
+        if (typeof v === "bigint") {
+            return new NativeBigInt(v);
+        }
         return v;
     }
     // Pre-define numbers in range [-999,999]
     for (var i = 0; i < 1000; i++) {
-        Integer[i] = new SmallInteger(i);
-        if (i > 0) Integer[-i] = new SmallInteger(-i);
+        Integer[i] = parseValue(i);
+        if (i > 0) Integer[-i] = parseValue(-i);
     }
     // Backwards compatibility
     Integer.one = Integer[1];
@@ -1299,7 +1414,7 @@ var bigInt = (function (undefined) {
     Integer.min = min;
     Integer.gcd = gcd;
     Integer.lcm = lcm;
-    Integer.isInstance = function (x) { return x instanceof BigInteger || x instanceof SmallInteger; };
+    Integer.isInstance = function (x) { return x instanceof BigInteger || x instanceof SmallInteger || x instanceof NativeBigInt; };
     Integer.randBetween = randBetween;
 
     Integer.fromArray = function (digits, base, isNegative) {
@@ -2030,7 +2145,7 @@ class BundleHelper {
         return isValid;
     }
     /**
-     * Prepare a bundle.
+     * Prepare a bundle for attaching.
      * @param timeService To use for stamping the transactions.
      * @param transfers The transfers to add to the bundle.
      * @returns Bundle information.
@@ -2165,7 +2280,7 @@ class BundleHelper {
         }
     }
     /**
-     * Finalize a bundle.
+     * Finalize a bundle ready for attaching.
      * @param bundle The bundle to finalize.
      */
     static finalizeBundle(bundle) {
@@ -2371,7 +2486,7 @@ class MultiSigClient {
         return trits_1.Trits.fromArray(iss_1.ISS.digests(key)).toTrytes();
     }
     /**
-     * Validate address.
+     * Validate the address against the digests.
      * @param address The address to validate against the digests.
      * @param digests The digests to use to validate the address.
      * @returns True if the address matches the digests.
@@ -5858,15 +5973,14 @@ class Curl {
                 return this._numberOfRounds;
             }
             case "HASH_LENGTH":
-            case "STATE_LENGTH":
-                {
-                    return Curl[name];
-                }
+            case "STATE_LENGTH": {
+                return Curl[name];
+            }
             default: throw new cryptoError_1.CryptoError(`Unknown constant requested ${name}`);
         }
     }
     /**
-     * Get the state.
+     * Get the internal state.
      * @returns The state.
      */
     getState() {
@@ -6009,15 +6123,14 @@ class Kerl {
         switch (name) {
             case "HASH_LENGTH":
             case "BIT_HASH_LENGTH":
-            case "BYTE_HASH_LENGTH":
-                {
-                    return Kerl[name];
-                }
+            case "BYTE_HASH_LENGTH": {
+                return Kerl[name];
+            }
             default: throw new cryptoError_1.CryptoError(`Unknown constant requested ${name}`);
         }
     }
     /**
-     * Get the state.
+     * Get the internal state.
      * @returns The state.
      */
     getState() {
@@ -8427,6 +8540,7 @@ const cryptoError_1 = __webpack_require__(/*! ../crypto/error/cryptoError */ "./
 const proofOfWorkBase_1 = __webpack_require__(/*! ../crypto/proofOfWork/proofOfWorkBase */ "./dist/crypto/proofOfWork/proofOfWorkBase.js");
 const trytes_1 = __webpack_require__(/*! ../data/data/trytes */ "./dist/data/data/trytes.js");
 // @ts-ignore
+// tslint:disable-next-line:no-default-import
 const iota_pico_pow_wasm_1 = tslib_1.__importDefault(__webpack_require__(/*! ../wasm/iota-pico-pow-wasm */ "./dist/wasm/iota-pico-pow-wasm.js"));
 /**
  * ProofOfWork implementation using WebAssembly.
@@ -8455,9 +8569,11 @@ class ProofOfWorkWasm extends proofOfWorkBase_1.ProofOfWorkBase {
      * @returns Promise.
      */
     initialize() {
-        const _super = name => super[name];
+        const _super = Object.create(null, {
+            initialize: { get: () => super.initialize }
+        });
         return tslib_1.__awaiter(this, void 0, void 0, function* () {
-            yield _super("initialize").call(this);
+            yield _super.initialize.call(this);
             return new Promise((resolve, reject) => tslib_1.__awaiter(this, void 0, void 0, function* () {
                 if (objectHelper_1.ObjectHelper.isEmpty(this._webPlatform.webAssemblyType) || this._webPlatform.webAssemblyType === "undefined") {
                     reject(new cryptoError_1.CryptoError("No WebAssembly support detected"));
@@ -8537,15 +8653,15 @@ const tslib_1 = __webpack_require__(/*! tslib */ "./node_modules/tslib/tslib.es6
 const objectHelper_1 = __webpack_require__(/*! ../../core/helpers/objectHelper */ "./dist/core/helpers/objectHelper.js");
 const spongeFactory_1 = __webpack_require__(/*! ../../crypto/factories/spongeFactory */ "./dist/crypto/factories/spongeFactory.js");
 const trits_1 = __webpack_require__(/*! ../../data/data/trits */ "./dist/data/data/trits.js");
-const add_1 = tslib_1.__importDefault(__webpack_require__(/*! ../shaders/add */ "./dist/pow-webgl/shaders/add.js"));
-const checkCol_1 = tslib_1.__importDefault(__webpack_require__(/*! ../shaders/checkCol */ "./dist/pow-webgl/shaders/checkCol.js"));
-const checkDo_1 = tslib_1.__importDefault(__webpack_require__(/*! ../shaders/checkDo */ "./dist/pow-webgl/shaders/checkDo.js"));
-const checkK_1 = tslib_1.__importDefault(__webpack_require__(/*! ../shaders/checkK */ "./dist/pow-webgl/shaders/checkK.js"));
-const finalize_1 = tslib_1.__importDefault(__webpack_require__(/*! ../shaders/finalize */ "./dist/pow-webgl/shaders/finalize.js"));
-const headers_1 = tslib_1.__importDefault(__webpack_require__(/*! ../shaders/headers */ "./dist/pow-webgl/shaders/headers.js"));
-const increment_1 = tslib_1.__importDefault(__webpack_require__(/*! ../shaders/increment */ "./dist/pow-webgl/shaders/increment.js"));
-const init_1 = tslib_1.__importDefault(__webpack_require__(/*! ../shaders/init */ "./dist/pow-webgl/shaders/init.js"));
-const transform_1 = tslib_1.__importDefault(__webpack_require__(/*! ../shaders/transform */ "./dist/pow-webgl/shaders/transform.js"));
+const add_1 = __webpack_require__(/*! ../shaders/add */ "./dist/pow-webgl/shaders/add.js");
+const checkCol_1 = __webpack_require__(/*! ../shaders/checkCol */ "./dist/pow-webgl/shaders/checkCol.js");
+const checkDo_1 = __webpack_require__(/*! ../shaders/checkDo */ "./dist/pow-webgl/shaders/checkDo.js");
+const checkK_1 = __webpack_require__(/*! ../shaders/checkK */ "./dist/pow-webgl/shaders/checkK.js");
+const finalize_1 = __webpack_require__(/*! ../shaders/finalize */ "./dist/pow-webgl/shaders/finalize.js");
+const headers_1 = __webpack_require__(/*! ../shaders/headers */ "./dist/pow-webgl/shaders/headers.js");
+const increment_1 = __webpack_require__(/*! ../shaders/increment */ "./dist/pow-webgl/shaders/increment.js");
+const init_1 = __webpack_require__(/*! ../shaders/init */ "./dist/pow-webgl/shaders/init.js");
+const transform_1 = __webpack_require__(/*! ../shaders/transform */ "./dist/pow-webgl/shaders/transform.js");
 const webGLWorker_1 = __webpack_require__(/*! ../webGL/webGLWorker */ "./dist/pow-webgl/webGL/webGLWorker.js");
 const pearlDiverState_1 = __webpack_require__(/*! ./pearlDiverState */ "./dist/pow-webgl/pearlDiver/pearlDiverState.js");
 /**
@@ -8565,12 +8681,12 @@ class PearlDiver {
         this._nonceStart = this._hashLength - this._nonceLength;
         this._webGLWorker.initialize(webGLPlatform, this._stateLength + 1, PearlDiver.TEXEL_SIZE);
         this._currentBuffer = this._webGLWorker.getIpt().data;
-        this._webGLWorker.addProgram("init", headers_1.default + add_1.default + init_1.default, "gr_offset");
-        this._webGLWorker.addProgram("increment", headers_1.default + add_1.default + increment_1.default);
-        this._webGLWorker.addProgram("twist", headers_1.default + transform_1.default);
-        this._webGLWorker.addProgram("check", headers_1.default + checkDo_1.default + checkK_1.default, "minWeightMagnitude");
-        this._webGLWorker.addProgram("col_check", headers_1.default + checkCol_1.default);
-        this._webGLWorker.addProgram("finalize", headers_1.default + checkDo_1.default + finalize_1.default);
+        this._webGLWorker.addProgram("init", headers_1.headers + add_1.add + init_1.init, "gr_offset");
+        this._webGLWorker.addProgram("increment", headers_1.headers + add_1.add + increment_1.increment);
+        this._webGLWorker.addProgram("twist", headers_1.headers + transform_1.transform);
+        this._webGLWorker.addProgram("check", headers_1.headers + checkDo_1.checkDo + checkK_1.checkK, "minWeightMagnitude");
+        this._webGLWorker.addProgram("col_check", headers_1.headers + checkCol_1.checkCol);
+        this._webGLWorker.addProgram("finalize", headers_1.headers + checkDo_1.checkDo + finalize_1.finalize);
         this._state = pearlDiverState_1.PearlDiverState.ready;
         this._queue = [];
     }
@@ -8814,9 +8930,11 @@ class ProofOfWorkWebGl extends proofOfWorkBase_1.ProofOfWorkBase {
      * @returns Promise.
      */
     initialize() {
-        const _super = name => super[name];
+        const _super = Object.create(null, {
+            initialize: { get: () => super.initialize }
+        });
         return tslib_1.__awaiter(this, void 0, void 0, function* () {
-            yield _super("initialize").call(this);
+            yield _super.initialize.call(this);
             return new Promise((resolve, reject) => {
                 try {
                     pearlDiver_1.PearlDiver.initialize(this._webGLPlatform);
@@ -8868,7 +8986,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Shaders add.
  */
-exports.default = `
+exports.add = `
 int sum (int a, int b) {
   int my_sum = a + b;
   return my_sum == 2 ? -1 : (my_sum == -2) ? 1 : my_sum;
@@ -8939,7 +9057,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Shaders check_col.
  */
-exports.default = `
+exports.checkCol = `
 void main() {
   init();
   ivec4 my_vec = read();
@@ -8976,7 +9094,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Shaders check_do.
  */
-exports.default = `
+exports.checkDo = `
 int check(int row, int min_weight_magnitude) {
   int nonce_probe, i;
   ivec2 r_texel;
@@ -9003,7 +9121,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Shaders check_k.
  */
-exports.default = `
+exports.checkK = `
 uniform int minWeightMagnitude;
 void main() {
   init();
@@ -9029,7 +9147,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Shaders finalize.
  */
-exports.default = `
+exports.finalize = `
 void main() {
   init();
   ivec4 my_vec = read();
@@ -9060,7 +9178,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Shaders add.
  */
-exports.default = `
+exports.headers = `
 #define HASH_LENGTH 243
 #define NUMBER_OF_ROUNDS 81
 #define INCREMENT_START HASH_LENGTH - 64
@@ -9083,7 +9201,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Shaders increment.
  */
-exports.default = `
+exports.increment = `
 void main() {
   init();
   ivec4 my_vec = read();
@@ -9111,7 +9229,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Shaders init.
  */
-exports.default = `
+exports.init = `
 uniform int gr_offset;
 ivec4 offset() {
   if(my_coord.x >= HASH_LENGTH / 3 && my_coord.x < HASH_LENGTH / 3 * 2 ) {
@@ -9141,7 +9259,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Shaders transform.
  */
-exports.default = `
+exports.transform = `
 ivec2 twist() {
   int alpha, beta, gamma, delta;
   ivec4 v1, v2;
@@ -9178,7 +9296,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Stdlib.
  */
-exports.default = `#version 300 es
+exports.stdlib = `#version 300 es
 precision highp float;
 precision highp int;
 precision highp isampler2D;
@@ -9222,7 +9340,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Vertex Shader code.
  */
-exports.default = `#version 300 es
+exports.vertexShaderCode = `#version 300 es
 layout(location = 0) in vec2 position;
 layout(location = 1) in vec2 texture;
 out vec2 pos;
@@ -9338,10 +9456,9 @@ exports.WebGLHelper = WebGLHelper;
 /***/ (function(module, exports, __webpack_require__) {
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const tslib_1 = __webpack_require__(/*! tslib */ "./node_modules/tslib/tslib.es6.js");
 const cryptoError_1 = __webpack_require__(/*! ../../crypto/error/cryptoError */ "./dist/crypto/error/cryptoError.js");
-const stdlib_1 = tslib_1.__importDefault(__webpack_require__(/*! ./stdlib */ "./dist/pow-webgl/webGL/stdlib.js"));
-const vertexShaderCode_1 = tslib_1.__importDefault(__webpack_require__(/*! ./vertexShaderCode */ "./dist/pow-webgl/webGL/vertexShaderCode.js"));
+const stdlib_1 = __webpack_require__(/*! ./stdlib */ "./dist/pow-webgl/webGL/stdlib.js");
+const vertexShaderCode_1 = __webpack_require__(/*! ./vertexShaderCode */ "./dist/pow-webgl/webGL/vertexShaderCode.js");
 const webGLHelper_1 = __webpack_require__(/*! ./webGLHelper */ "./dist/pow-webgl/webGL/webGLHelper.js");
 /**
  * WebGLWorker.
@@ -9486,13 +9603,13 @@ class WebGLWorker {
     /* @internal */
     createVertexShader() {
         this._vertexShader = this._context.createShader(this._context.VERTEX_SHADER);
-        this._context.shaderSource(this._vertexShader, vertexShaderCode_1.default);
+        this._context.shaderSource(this._vertexShader, vertexShaderCode_1.vertexShaderCode);
         this._context.compileShader(this._vertexShader);
         // This should not fail.
         if (!this._context.getShaderParameter(this._vertexShader, this._context.COMPILE_STATUS)) {
             throw new cryptoError_1.CryptoError(`Could not build vertex shader.
 
---- CODE DUMP ---${vertexShaderCode_1.default}
+--- CODE DUMP ---${vertexShaderCode_1.vertexShaderCode}
 
 --- ERROR LOG ---
 ${this._context.getShaderInfoLog(this._vertexShader)}`);
@@ -9501,7 +9618,7 @@ ${this._context.getShaderInfoLog(this._vertexShader)}`);
     /* @internal */
     createFragmentShader(code) {
         const fragmentShader = this._context.createShader(this._context.FRAGMENT_SHADER);
-        this._context.shaderSource(fragmentShader, stdlib_1.default + code);
+        this._context.shaderSource(fragmentShader, stdlib_1.stdlib + code);
         this._context.compileShader(fragmentShader);
         // Use this output to debug the shader
         // Keep in mind that WebGL GLSL is **much** stricter than e.g. OpenGL GLSL
@@ -9509,7 +9626,7 @@ ${this._context.getShaderInfoLog(this._vertexShader)}`);
             const codeLines = code.split("\n");
             let dbgMsg = "Could not build fragment shader.\n\n------------------ KERNEL CODE DUMP ------------------\n";
             for (let nl = 0; nl < codeLines.length; nl++) {
-                dbgMsg += `${stdlib_1.default.split("\n").length + nl}> ${codeLines[nl]}\n`;
+                dbgMsg += `${stdlib_1.stdlib.split("\n").length + nl}> ${codeLines[nl]}\n`;
             }
             dbgMsg += `\n--------------------- ERROR  LOG ---------------------\n${this._context.getShaderInfoLog(fragmentShader)}`;
             throw new cryptoError_1.CryptoError(dbgMsg);
@@ -28700,6 +28817,16 @@ var inherits = __webpack_require__(/*! inherits */ "./node_modules/inherits/inhe
 
 exports.inherits = inherits;
 
+function isSurrogatePair(msg, i) {
+  if ((msg.charCodeAt(i) & 0xFC00) !== 0xD800) {
+    return false;
+  }
+  if (i < 0 || i + 1 >= msg.length) {
+    return false;
+  }
+  return (msg.charCodeAt(i + 1) & 0xFC00) === 0xDC00;
+}
+
 function toArray(msg, enc) {
   if (Array.isArray(msg))
     return msg.slice();
@@ -28708,14 +28835,29 @@ function toArray(msg, enc) {
   var res = [];
   if (typeof msg === 'string') {
     if (!enc) {
+      // Inspired by stringToUtf8ByteArray() in closure-library by Google
+      // https://github.com/google/closure-library/blob/8598d87242af59aac233270742c8984e2b2bdbe0/closure/goog/crypt/crypt.js#L117-L143
+      // Apache License 2.0
+      // https://github.com/google/closure-library/blob/master/LICENSE
+      var p = 0;
       for (var i = 0; i < msg.length; i++) {
         var c = msg.charCodeAt(i);
-        var hi = c >> 8;
-        var lo = c & 0xff;
-        if (hi)
-          res.push(hi, lo);
-        else
-          res.push(lo);
+        if (c < 128) {
+          res[p++] = c;
+        } else if (c < 2048) {
+          res[p++] = (c >> 6) | 192;
+          res[p++] = (c & 63) | 128;
+        } else if (isSurrogatePair(msg, i)) {
+          c = 0x10000 + ((c & 0x03FF) << 10) + (msg.charCodeAt(++i) & 0x03FF);
+          res[p++] = (c >> 18) | 240;
+          res[p++] = ((c >> 12) & 63) | 128;
+          res[p++] = ((c >> 6) & 63) | 128;
+          res[p++] = (c & 63) | 128;
+        } else {
+          res[p++] = (c >> 12) | 224;
+          res[p++] = ((c >> 6) & 63) | 128;
+          res[p++] = (c & 63) | 128;
+        }
       }
     } else if (enc === 'hex') {
       msg = msg.replace(/[^a-z0-9]+/ig, '');
@@ -35511,7 +35653,7 @@ g = (function() {
 
 try {
 	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1, eval)("this");
+	g = g || new Function("return this")();
 } catch (e) {
 	// This works if the window reference is available
 	if (typeof window === "object") g = window;
