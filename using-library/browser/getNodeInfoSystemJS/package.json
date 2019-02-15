@@ -5,12 +5,12 @@
     "license": "MIT",
     "dependencies": {
         "@iota-pico/lib-browser": "^1.0.0",
-        "big-integer": "^1.6.40",
-        "systemjs": "^2.1.1"
+        "big-integer": "^1.6.41",
+        "systemjs": "^3.0.0"
     },
     "devDependencies": {
-        "serve": "^10.1.1",
-        "typescript": "^3.2.2"
+        "serve": "^10.1.2",
+        "typescript": "^3.3.3"
     },
     "scripts": {
         "serve": "serve --open"

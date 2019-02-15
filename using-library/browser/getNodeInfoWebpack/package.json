@@ -6,13 +6,13 @@
     "license": "MIT",
     "dependencies": {
         "@iota-pico/lib-browser": "^1.0.1",
-        "big-integer": "^1.6.40"
+        "big-integer": "^1.6.41"
     },
     "devDependencies": {
-        "serve": "^10.1.1",
-        "typescript": "^3.2.2",
-        "webpack": "^4.28.3",
-        "webpack-cli": "^3.1.2"
+        "serve": "^10.1.2",
+        "typescript": "^3.3.3",
+        "webpack": "^4.29.3",
+        "webpack-cli": "^3.2.3"
     },
     "scripts": {
         "build": "tsc",

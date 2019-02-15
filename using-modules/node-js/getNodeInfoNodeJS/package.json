@@ -9,7 +9,7 @@
         "@iota-pico/pal-nodejs": "^1.0.1"
     },
     "devDependencies": {
-        "typescript": "^3.2.2"
+        "typescript": "^3.3.3"
     },
     "scripts": {
         "build": "tsc"

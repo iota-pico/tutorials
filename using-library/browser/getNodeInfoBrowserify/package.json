@@ -5,12 +5,12 @@
     "license": "MIT",
     "dependencies": {
         "@iota-pico/lib-browser": "^1.0.1",
-        "big-integer": "^1.6.40"
+        "big-integer": "^1.6.41"
     },
     "devDependencies": {
         "browserify": "^16.2.3",
-        "serve": "^10.1.1",
-        "typescript": "^3.2.2"
+        "serve": "^10.1.2",
+        "typescript": "^3.3.3"
     },
     "scripts": {
         "build": "tsc",
