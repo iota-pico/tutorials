@@ -5,11 +5,11 @@
     "license": "MIT",
     "dependencies": {
         "@iota-pico/lib-nodejs": "1.0.1",
-        "big-integer": "1.6.41"
+        "big-integer": "^1.6.42"
     },
     "devDependencies": {
-        "@types/node": "11.9.4",
-        "typescript": "3.3.3"
+        "@types/node": "^11.11.3",
+        "typescript": "^3.3.3333"
     },
     "scripts": {
         "build": "tsc"

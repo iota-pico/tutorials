@@ -5,10 +5,10 @@
     "license": "MIT",
     "dependencies": {
         "@iota-pico/lib-browser": "1.0.1",
-        "big-integer": "1.6.41"
+        "big-integer": "^1.6.42"
     },
     "devDependencies": {
-        "serve": "10.1.2"
+        "serve": "^10.1.2"
     },
     "scripts": {
         "serve": "serve --open"
