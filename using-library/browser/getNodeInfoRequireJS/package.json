@@ -4,13 +4,13 @@
     "author": "martyn@iota.eco",
     "license": "MIT",
     "dependencies": {
-        "@iota-pico/lib-browser": "^1.0.0",
-        "big-integer": "^1.6.41",
-        "requirejs": "^2.3.6"
+        "@iota-pico/lib-browser": "1.0.0",
+        "big-integer": "1.6.41",
+        "requirejs": "2.3.6"
     },
     "devDependencies": {
-        "serve": "^10.1.2",
-        "typescript": "^3.3.3"
+        "serve": "10.1.2",
+        "typescript": "3.3.3"
     },
     "scripts": {
         "build": "tsc",

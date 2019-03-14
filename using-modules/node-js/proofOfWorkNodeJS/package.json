@@ -4,16 +4,16 @@
     "author": "martyn@iota.eco",
     "license": "MIT",
     "dependencies": {
-        "@iota-pico/core": "^1.0.1",
-        "@iota-pico/crypto": "^1.0.1",
-        "@iota-pico/data": "^1.0.1",
-        "@iota-pico/pal-nodejs": "^1.0.1",
-        "@iota-pico/pow-js": "^1.0.1",
-        "@iota-pico/pow-nodejs": "^1.0.1",
-        "@iota-pico/pow-wasm": "^1.0.1"
+        "@iota-pico/core": "1.0.1",
+        "@iota-pico/crypto": "1.0.1",
+        "@iota-pico/data": "1.0.1",
+        "@iota-pico/pal-nodejs": "1.0.1",
+        "@iota-pico/pow-js": "1.0.1",
+        "@iota-pico/pow-nodejs": "1.0.1",
+        "@iota-pico/pow-wasm": "1.0.1"
     },
     "devDependencies": {
-        "typescript": "^3.3.3"
+        "typescript": "3.3.3"
     },
     "scripts": {
         "build": "tsc"
