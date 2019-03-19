@@ -6,7 +6,7 @@
     "dependencies": {
         "@iota-pico/lib-browser": "^1.0.0",
         "big-integer": "^1.6.42",
-        "systemjs": "^3.0.1"
+        "systemjs": "^3.0.2"
     },
     "devDependencies": {
         "serve": "^10.1.2",

@@ -4,10 +4,10 @@
     "author": "martyn@iota.eco",
     "license": "MIT",
     "dependencies": {
-        "@iota-pico/api": "1.0.1",
-        "@iota-pico/core": "1.0.1",
-        "@iota-pico/pal-browser": "1.0.1",
-        "systemjs": "^3.0.1"
+        "@iota-pico/api": "^1.0.1",
+        "@iota-pico/core": "^1.0.1",
+        "@iota-pico/pal-browser": "^1.0.1",
+        "systemjs": "^3.0.2"
     },
     "devDependencies": {
         "serve": "^10.1.2",
