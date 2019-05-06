@@ -2,7 +2,7 @@
 
 # IOTA Pico Framework Tutorials
 
-A set of tutorials to help use the IOTA Pico Framework. The tutorial are split into two sections, one section uses the individual component modules to function and the other uses the all-in-one libraries. The tutorial are further separated by Browser and NodeJS.
+A set of tutorials to help use the IOTA Pico Framework. The tutorial are split into two sections, one section uses the individual component modules to function, and the other uses the all-in-one libraries. The tutorial are further separated by Browser and NodeJS.
 
 ## Individual Component Libraries
 
