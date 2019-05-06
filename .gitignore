@@ -1,5 +1,6 @@
 node_modules
 .history
 *.tgz
+package-lock.json
 *.log
 
